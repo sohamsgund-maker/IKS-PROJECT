@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Bell, X, User, LogOut, Shield, Settings, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, Bell, X, Shield, Settings, ChevronDown, Sparkles } from 'lucide-react';
 import type { AuthUser } from '../types/movie';
 
 interface NetflixNavbarProps {
@@ -7,11 +7,9 @@ interface NetflixNavbarProps {
   setActiveTab: (tab: string) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
-  currentUser: AuthUser | null;
-  onOpenLogin: () => void;
+  currentUser?: AuthUser | null;
   onOpenAdmin: () => void;
   onOpenSettings: () => void;
-  onLogout: () => void;
   watchlistCount?: number;
 }
 
@@ -20,16 +18,12 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
   setActiveTab,
   searchQuery,
   setSearchQuery,
-  currentUser,
-  onOpenLogin,
   onOpenAdmin,
   onOpenSettings,
-  onLogout,
   watchlistCount = 0,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isCategoriesMenuOpen, setIsCategoriesMenuOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -212,77 +206,22 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
             )}
           </div>
 
-          {/* User Profile Avatar with Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-              className="flex items-center gap-1 sm:gap-2 cursor-pointer focus:outline-none group"
-            >
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-[#E50914] flex items-center justify-center font-bold text-xs text-white shadow">
-                {currentUser ? currentUser.username.substring(0, 2).toUpperCase() : 'U'}
-              </div>
-              <ChevronDown className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-transform duration-200" />
-            </button>
+          {/* Direct Settings & Admin Actions (No Login / Sign-In Avatar) */}
+          <button
+            onClick={onOpenSettings}
+            className="p-1.5 sm:p-2 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+            title="Settings & Audio Preferences"
+          >
+            <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
 
-            {isProfileMenuOpen && (
-              <div className="absolute right-0 top-12 w-52 bg-[#181818] border border-zinc-800 rounded-md shadow-2xl py-2 z-50 text-xs text-zinc-300 animate-fade-in">
-                {currentUser ? (
-                  <div className="px-4 py-2 border-b border-zinc-800">
-                    <span className="font-bold text-white block truncate">{currentUser.username}</span>
-                    <span className="text-[10px] text-zinc-400 block truncate">{currentUser.email}</span>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      onOpenLogin();
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-white hover:bg-zinc-800 flex items-center gap-2 font-bold cursor-pointer"
-                  >
-                    <User className="w-4 h-4 text-[#E50914]" />
-                    <span>Sign In to CineVault</span>
-                  </button>
-                )}
-
-                {currentUser?.role === 'admin' && (
-                  <button
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      onOpenAdmin();
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-zinc-800 flex items-center gap-2 text-amber-400 cursor-pointer"
-                  >
-                    <Shield className="w-4 h-4" />
-                    <span>Admin Dashboard</span>
-                  </button>
-                )}
-
-                <button
-                  onClick={() => {
-                    setIsProfileMenuOpen(false);
-                    onOpenSettings();
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-zinc-800 flex items-center gap-2 cursor-pointer"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Account & Settings</span>
-                </button>
-
-                {currentUser && (
-                  <button
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      onLogout();
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-zinc-800 flex items-center gap-2 text-[#E50914] border-t border-zinc-800 mt-1 cursor-pointer"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Sign Out of CineVault</span>
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+          <button
+            onClick={onOpenAdmin}
+            className="p-1.5 sm:p-2 text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
+            title="Admin Scraper & Movies"
+          >
+            <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
         </div>
       </div>
 

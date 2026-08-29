@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { 
-  Search, ChevronLeft, ChevronRight, Radio, Bell, User, 
-  ShieldCheck, LogOut, PlusCircle, RefreshCw, Zap 
+  Search, ChevronLeft, ChevronRight, Radio, Bell, 
+  ShieldCheck, PlusCircle, RefreshCw, Zap 
 } from 'lucide-react';
 import type { AuthUser } from '../types/movie';
 
@@ -11,12 +11,10 @@ interface HeaderProps {
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   currentUser: AuthUser | null;
-  onOpenLogin: () => void;
   onOpenAdmin: () => void;
   onOpenCustomStream?: () => void;
   onAutoSync?: () => void;
   isSyncing?: boolean;
-  onLogout: () => void;
   onBackHistory?: () => void;
   onForwardHistory?: () => void;
 }
@@ -26,12 +24,10 @@ export const Header: React.FC<HeaderProps> = ({
   searchQuery,
   setSearchQuery,
   currentUser,
-  onOpenLogin,
   onOpenAdmin,
   onOpenCustomStream,
   onAutoSync,
   isSyncing,
-  onLogout,
   onBackHistory,
   onForwardHistory,
 }) => {
@@ -146,47 +142,28 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="w-1.5 h-1.5 rounded-full bg-[#7c5cff] absolute top-2 right-2"></span>
           </button>
 
-          {/* User Profile Pill / Login */}
-          {currentUser ? (
-            <div className="flex items-center gap-2">
-              {currentUser.role === 'admin' && (
-                <button
-                  onClick={onOpenAdmin}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#7c5cff] hover:bg-[#6a46ff] text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-purple-500/20 cursor-pointer"
-                  title="Admin Dashboard"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Admin</span>
-                </button>
-              )}
-
-              <div className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#7c5cff] to-[#4023c7] flex items-center justify-center text-white font-bold text-xs shadow">
-                  {currentUser.username?.[0]?.toUpperCase() || 'U'}
-                </div>
-                <span className="text-xs font-bold text-zinc-200 hidden sm:inline">
-                  {currentUser.username}
-                </span>
-                <button
-                  onClick={onLogout}
-                  title="Logout"
-                  className="text-zinc-500 hover:text-red-400 transition-colors p-1"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
+          {/* User Profile Pill */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+              <div className="w-6 h-6 rounded-lg bg-[#E50914] flex items-center justify-center text-white font-bold text-xs shadow">
+                VIP
               </div>
+              <span className="text-xs font-bold text-zinc-200">
+                {currentUser ? currentUser.username : 'VIP 4K'}
+              </span>
             </div>
-          ) : (
-            <button
-              onClick={onOpenLogin}
-              className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] transition-all cursor-pointer"
-            >
-              <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                <User className="w-3.5 h-3.5" />
-              </div>
-              <span className="text-xs font-bold text-zinc-200">Sign In</span>
-            </button>
-          )}
+
+            {onOpenAdmin && (
+              <button
+                onClick={onOpenAdmin}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#E50914] hover:bg-[#b81d24] text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+                title="Admin Dashboard"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Admin</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </header>

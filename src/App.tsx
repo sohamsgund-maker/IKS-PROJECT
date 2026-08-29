@@ -12,7 +12,6 @@ import { CustomStreamModal } from './components/CustomStreamModal';
 import { WatchPage } from './pages/WatchPage';
 import { LiveTVPage } from './pages/LiveTVPage';
 import { AdminDashboard } from './pages/AdminDashboard';
-import { LoginPage } from './pages/LoginPage';
 import { CheckCircle2, Bookmark, Play, Check } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -64,7 +63,7 @@ export const App: React.FC = () => {
   // Modals state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCustomStreamOpen, setIsCustomStreamOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
+  const [currentUser] = useState<AuthUser | null>(() => {
     try {
       const saved = localStorage.getItem('cinevault_user');
       return saved ? JSON.parse(saved) : null;
@@ -72,8 +71,7 @@ export const App: React.FC = () => {
       return null;
     }
   });
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('cinevault_token'));
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [token] = useState<string | null>(() => localStorage.getItem('cinevault_token'));
   const [isAdminOpen, setIsAdminOpen] = useState(false);
 
   const fetchAllMovies = async () => {
@@ -122,26 +120,6 @@ export const App: React.FC = () => {
       } catch (e) {}
       return updated;
     });
-  };
-
-  const handleLoginSuccess = (user: AuthUser, authToken: string) => {
-    setCurrentUser(user);
-    setToken(authToken);
-    localStorage.setItem('cinevault_user', JSON.stringify(user));
-    localStorage.setItem('cinevault_token', authToken);
-    showToast(`Welcome back, ${user.username}!`);
-    if (user.role === 'admin') {
-      setIsAdminOpen(true);
-    }
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setToken(null);
-    localStorage.removeItem('cinevault_user');
-    localStorage.removeItem('cinevault_token');
-    setIsAdminOpen(false);
-    showToast('Signed out successfully');
   };
 
   // Primary Billboard Hero Movie
@@ -222,10 +200,8 @@ export const App: React.FC = () => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         currentUser={currentUser}
-        onOpenLogin={() => setIsLoginOpen(true)}
         onOpenAdmin={() => setIsAdminOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        onLogout={handleLogout}
         watchlistCount={watchlist.length}
       />
 
@@ -515,14 +491,6 @@ export const App: React.FC = () => {
           token={token}
           onClose={() => setIsAdminOpen(false)}
           onRefreshMovies={fetchAllMovies}
-        />
-      )}
-
-      {/* Login Modal */}
-      {isLoginOpen && (
-        <LoginPage
-          onClose={() => setIsLoginOpen(false)}
-          onLoginSuccess={handleLoginSuccess}
         />
       )}
 
