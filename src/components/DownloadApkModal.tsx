@@ -85,24 +85,24 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
           {/* Download Action Buttons */}
           <div className="space-y-2.5 pt-2">
             <a
-              href={directApkUrl}
+              href={releasesUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-3.5 px-4 rounded-xl bg-[#E50914] hover:bg-[#b80710] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#E50914]/25 transition-all active:scale-98 cursor-pointer"
             >
               <Download className="w-5 h-5" />
-              <span>Download CineVault APK (Direct)</span>
+              <span>Download Official CineVault APK</span>
             </a>
 
             <div className="grid grid-cols-2 gap-2">
               <a
-                href={releasesUrl}
+                href={directApkUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="py-2.5 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 hover:text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                <span>GitHub Releases</span>
+                <span>Direct Mirror</span>
               </a>
 
               <a
@@ -112,7 +112,7 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
                 className="py-2.5 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 hover:text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Globe className="w-3.5 h-3.5" />
-                <span>Cloud Build Artifacts</span>
+                <span>Cloud Builds</span>
               </a>
             </div>
 
