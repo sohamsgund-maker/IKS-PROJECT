@@ -64,7 +64,8 @@ jobs:
       - name: Rename and Prepare APK
         run: |
           mkdir -p build_output
-          find android/app/build/outputs/apk/ -name "*.apk" -exec cp -v {} build_output/CineVault-v1.0.apk \;
+          find android/app/build/ -name "*.apk" -type f -exec cp -v {} build_output/CineVault-v1.0.apk \;
+          cp build_output/CineVault-v1.0.apk /tmp/CineVault-v1.0.apk
           ls -la build_output/
 
       - name: Upload APK Artifact
@@ -81,16 +82,17 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout --orphan apk-release || git checkout -B apk-release
+          git checkout --orphan apk-release
           git rm -rf . || true
           mkdir -p releases
-          cp build_output/CineVault-v1.0.apk releases/CineVault-v1.0.apk
+          cp /tmp/CineVault-v1.0.apk releases/CineVault-v1.0.apk
           git add -f releases/CineVault-v1.0.apk
           git commit -m "Automated build: CineVault Android APK v1.0.0"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/aditys4444/cinevault.git" apk-release --force || true
+          git push "https://x-access-token:${GH_TOKEN}@github.com/aditys4444/cinevault.git" apk-release --force
 
       - name: Create or Update GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create v1.0.0 build_output/CineVault-v1.0.apk --target main --title "CineVault Android App v1.0.0" --notes "Official CineVault Android APK v1.0.0 release with Google Ads monetization and bufferless streaming." --clobber || true
+          gh release delete v1.0.0 --yes || true
+          gh release create v1.0.0 /tmp/CineVault-v1.0.apk --title "CineVault Android App v1.0.0" --notes "Official CineVault Android APK v1.0.0 release with Google Ads monetization and bufferless streaming."
