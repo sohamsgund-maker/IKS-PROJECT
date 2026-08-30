@@ -3,25 +3,19 @@ name: Build Android APK (CineVault)
 on:
   push:
     branches: [ main ]
-    tags:
-      - 'v*'
   workflow_dispatch:
 
-permissions: write-all
+permissions:
+  contents: write
 
 jobs:
-  build-android:
+  build:
     name: Build Android APK
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
 
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Node.js 22 LTS
         uses: actions/setup-node@v4
@@ -30,7 +24,7 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci || npm install
+        run: npm install
 
       - name: Build Web Production Assets
         run: npm run build
@@ -40,54 +34,35 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: 'gradle'
 
-      - name: Sync Web Assets with Capacitor Android
+      - name: Setup Gradle Build Environment
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Sync Capacitor Android
         run: npx cap sync android
 
-      - name: Patch Plugin Compatibility
+      - name: Patch Gradle Files for Java 21 & Maven Central
         run: node scripts/patchAdmob.cjs
 
-      - name: Grant Execute Permission for Gradle Wrapper
+      - name: Grant Execute Permission
         run: chmod +x android/gradlew
 
-      - name: Build Android APK via Gradle
+      - name: Build Android Debug APK
         working-directory: android
-        run: |
-          ./gradlew :app:assembleDebug -x lint -x test -x lintVitalRelease --stacktrace --no-daemon 2>&1 | tee ../gradle_build.log
-          if [ ${PIPESTATUS[0]} -ne 0 ]; then
-            echo "=== GRADLE FAILURE DETECTED ==="
-            exit 1
-          fi
-
-      - name: Upload Build Log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gradle_build_log
-          path: gradle_build.log
-          if-no-files-found: ignore
-
-      - name: Rename and Prepare APK
-        run: |
-          mkdir -p build_output
-          find android/ -name "*.apk" -type f -exec cp -v {} build_output/CineVault-v1.0.apk \;
-          ls -la build_output/
-          if [ ! -f build_output/CineVault-v1.0.apk ]; then
-            echo "Error: APK not found after gradle build!"
-            exit 1
-          fi
+        run: ./gradlew assembleDebug -x lint -x test --stacktrace --no-daemon
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: CineVault-Android-APK
-          path: build_output/CineVault-v1.0.apk
-          if-no-files-found: warn
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
           retention-days: 30
 
-      - name: Create or Update GitHub Release
+      - name: Publish to GitHub Releases
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p build_output
+          cp android/app/build/outputs/apk/debug/app-debug.apk build_output/CineVault-v1.0.apk
           gh release create v1.0.0 build_output/CineVault-v1.0.apk --title "CineVault Android App v1.0.0" --notes "Official CineVault Android APK v1.0.0 release with Google Ads monetization and bufferless streaming." --clobber || true
