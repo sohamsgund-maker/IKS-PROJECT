@@ -14,6 +14,8 @@ filesToPatch.forEach(filePath => {
     content = content.replace(/25\.4\.\+/g, '23.6.0');
     content = content.replace(/2\.2\.20/g, '1.9.24');
     content = content.replace(/14\.0\.1/g, '10.1.1');
+    content = content.replace(/4\.0\.0/g, '3.0.0');
+    content = content.replace(/1\.15\.0/g, '1.13.1');
     content = content.replace(/VERSION_21/g, 'VERSION_17');
     content = content.replace(/jvmTarget = .*/g, "jvmTarget = '17'");
     content = content.replace(/abortOnError = true/g, 'abortOnError = false');
@@ -21,6 +23,7 @@ filesToPatch.forEach(filePath => {
     content = content.replace(/testImplementation .*/g, '// removed test dep');
     content = content.replace(/testRuntimeOnly .*/g, '// removed test dep');
     content = content.replace(/androidTestImplementation .*/g, '// removed test dep');
+    content = content.replace(/useJUnitPlatform\(\)/g, '// useJUnitPlatform');
     content = content.replace(/apply from: "\.\.\/capacitor-cordova-android-plugins\/cordova\.variables\.gradle"/g, '// cordova variables removed');
     content = content.replace(/: 36/g, ': 34');
     content = content.replace(/= 36/g, '= 34');
