@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   RotateCcw, RotateCw, Languages, Server, ChevronDown, Check,
-  Activity, Film
+  Activity, Film, Sparkles, ShieldCheck
 } from 'lucide-react';
 import type { Movie, MovieQuality } from '../types/movie';
 import { getEmbedUrl, STREAMING_SERVERS, SUPPORTED_LANGUAGES } from '../services/api';
@@ -15,15 +15,16 @@ interface WatchPageProps {
 }
 
 const SERVER_PINGS: Record<string, { ping: number; label: string }> = {
-  peachify: { ping: 18, label: 'Hindi / Multi-Audio 1080p' },
+  peachify: { ping: 12, label: 'Hindi / Multi-Audio 1080p' },
   vidlink: { ping: 14, label: 'Fast CDN 1080p' },
+  moviebox: { ping: 16, label: 'MovieBox VIP CDN' },
+  autoembed: { ping: 25, label: 'Universal 4K Scraper' },
+  videasy: { ping: 30, label: 'Clean Player 1080p' },
   vidsrc_icu: { ping: 22, label: 'High-Speed Global' },
-  autoembed: { ping: 35, label: 'Universal 4K' },
-  videasy: { ping: 45, label: 'Clean Player' },
-  smashystream: { ping: 48, label: 'Backup Cloud' },
-  vidking: { ping: 50, label: 'Ultra HD' },
-  vidsrc_to: { ping: 60, label: 'Standard CDN' },
-  '2embed': { ping: 65, label: 'TV Multi-Season' },
+  smashystream: { ping: 38, label: 'Backup Cloud' },
+  vidking: { ping: 42, label: 'Ultra HD' },
+  vidsrc_to: { ping: 50, label: 'Standard CDN' },
+  '2embed': { ping: 55, label: 'TV Multi-Season' },
   direct: { ping: 0, label: 'Direct HTML5' },
 };
 
@@ -32,13 +33,13 @@ export const WatchPage: React.FC<WatchPageProps> = ({
   selectedQuality,
   onBack,
 }) => {
-  // Always default to Hindi Audio Dub
+  // Always default to Hindi Audio Dub as #1 Priority
   const savedAudio = localStorage.getItem('cinevault_selected_audio_lang') || 'Hindi';
   const [selectedLanguage, setSelectedLanguage] = useState<string>(savedAudio);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [langToast, setLangToast] = useState<string | null>(null);
 
-  // Default server prioritizes Hindi multi-audio provider (peachify or vidlink)
+  // Default server prioritizes Hindi multi-audio provider (peachify as #1)
   const initialServer = useMemo(() => {
     const saved = localStorage.getItem('cinevault_default_server');
     if (saved && STREAMING_SERVERS.some(s => s.id === saved)) {
@@ -173,20 +174,13 @@ export const WatchPage: React.FC<WatchPageProps> = ({
     }
   };
 
-  const toggleFullscreen = () => {
-    if (!playerContainerRef.current) return;
-    if (!document.fullscreenElement) {
-      playerContainerRef.current.requestFullscreen?.().catch(() => {});
-    } else {
-      document.exitFullscreen?.().catch(() => {});
-    }
-  };
-
-  const seekDelta = (delta: number) => {
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setVolume(val);
     if (videoRef.current) {
-      const newTime = Math.min(Math.max(videoRef.current.currentTime + delta, 0), duration || 1000);
-      videoRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
+      videoRef.current.volume = val;
+      videoRef.current.muted = val === 0;
+      setIsMuted(val === 0);
     }
   };
 
@@ -198,45 +192,77 @@ export const WatchPage: React.FC<WatchPageProps> = ({
     }
   };
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseFloat(e.target.value);
-    setVolume(val);
-    setIsMuted(val === 0);
+  const seekDelta = (delta: number) => {
     if (videoRef.current) {
-      videoRef.current.volume = val;
-      videoRef.current.muted = val === 0;
+      const newTime = Math.min(Math.max(videoRef.current.currentTime + delta, 0), duration);
+      videoRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
     }
   };
 
-  const currentEmbedUrl = useMemo(() => {
+  const toggleFullscreen = () => {
+    if (!playerContainerRef.current) return;
+    if (!document.fullscreenElement) {
+      playerContainerRef.current.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  // Resolve Embed URL
+  const embedUrl = useMemo(() => {
     return getEmbedUrl(selectedServer, movie, currentSeason, currentEpisode, selectedLanguage);
   }, [selectedServer, movie, currentSeason, currentEpisode, selectedLanguage]);
 
   const activeServerInfo = STREAMING_SERVERS.find(s => s.id === selectedServer) || STREAMING_SERVERS[0];
   const activeLangInfo = SUPPORTED_LANGUAGES.find(l => l.id === selectedLanguage) || SUPPORTED_LANGUAGES[0];
 
+  const hindiServers = STREAMING_SERVERS.filter(s => s.hasHindiAudio);
+  const globalServers = STREAMING_SERVERS.filter(s => !s.hasHindiAudio);
+
   return (
-    <div className="space-y-6 select-none animate-fade-in pb-16 relative">
-      {/* Audio Language Toast Feedback */}
+    <div className="min-h-screen bg-[#0d0d0d] text-white pt-16 sm:pt-20 pb-20 px-3 sm:px-6 lg:px-12 max-w-[1720px] mx-auto select-none">
+      
+      {/* Toast for Language Switch */}
       {langToast && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#181818] border border-[#E50914] text-white text-xs font-bold shadow-2xl animate-fade-in">
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-[#181818] border border-[#E50914] text-white text-xs font-bold shadow-2xl animate-fade-in">
+          <Languages className="w-4 h-4 text-[#E50914]" />
           <span>{langToast}</span>
         </div>
       )}
 
-      {/* 1. Sleek Minimalist Top Navigation Header */}
-      <div className="flex items-center justify-between gap-3 py-1 flex-wrap">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white transition-colors cursor-pointer group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Back to Browse</span>
-        </button>
+      {/* 1. Top Navigation & Info Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3 sm:mb-5 pb-3 border-b border-zinc-800/80">
+        
+        {/* Left: Back Button + Title */}
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 hover:text-white text-xs font-bold transition-colors cursor-pointer flex-shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Back to Browse</span>
+          </button>
 
-        {/* Server & Audio Language Dropdowns */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Audio Language Selector Dropdown (Hindi by Default) */}
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-lg font-black text-white truncate font-display">
+              {movie.title}
+            </h1>
+            <div className="flex items-center gap-2 text-[10px] sm:text-xs text-zinc-400 font-semibold">
+              <span className="text-[#46d369] font-bold">98% Match</span>
+              <span>{movie.releaseYear}</span>
+              <span>•</span>
+              <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+                {activeServerInfo.hasHindiAudio ? '🇮🇳 Hindi Audio Active' : '🌐 Original Audio'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Audio Language Selector + Server Selector */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          
+          {/* Audio Language Dropdown (Priority #1: Hindi) */}
           <div className="relative">
             <button
               onClick={() => {
@@ -252,14 +278,15 @@ export const WatchPage: React.FC<WatchPageProps> = ({
             </button>
 
             {isLangMenuOpen && (
-              <div className="absolute right-0 top-10 w-60 sm:w-68 bg-[#181818] border border-zinc-800 rounded-xl shadow-2xl p-2 z-50 space-y-1 animate-fade-in">
+              <div className="absolute right-0 top-10 w-64 sm:w-72 bg-[#181818] border border-zinc-800 rounded-xl shadow-2xl p-2 z-50 space-y-1 animate-fade-in">
                 <div className="text-[11px] font-bold text-zinc-400 px-3 py-1.5 border-b border-zinc-800 flex items-center justify-between">
-                  <span>SELECT AUDIO LANGUAGE</span>
-                  <span className="text-[#E50914] font-bold">DUAL-AUDIO</span>
+                  <span>AUDIO LANGUAGE PRIORITY</span>
+                  <span className="text-[#E50914] font-bold">#1 HINDI</span>
                 </div>
                 <div className="max-h-60 overflow-y-auto space-y-1 pt-1">
                   {SUPPORTED_LANGUAGES.map((lang) => {
                     const isSelected = selectedLanguage === lang.id;
+                    const isHindiLang = lang.id === 'Hindi';
                     return (
                       <button
                         key={lang.id}
@@ -273,6 +300,11 @@ export const WatchPage: React.FC<WatchPageProps> = ({
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="text-base">{lang.flag}</span>
                           <span className="truncate">{lang.name}</span>
+                          {isHindiLang && (
+                            <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/40">
+                              DEFAULT
+                            </span>
+                          )}
                         </div>
                         {isSelected && <Check className="w-3.5 h-3.5 flex-shrink-0" />}
                       </button>
@@ -283,58 +315,125 @@ export const WatchPage: React.FC<WatchPageProps> = ({
             )}
           </div>
 
-          {/* Clean Server Dropdown */}
+          {/* Server Dropdown with Hindi Availability Status */}
           <div className="relative">
             <button
               onClick={() => {
                 setIsServerMenuOpen(!isServerMenuOpen);
                 setIsLangMenuOpen(false);
               }}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-600 text-white text-xs font-bold transition-colors cursor-pointer shadow-sm"
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full border text-xs font-bold transition-colors cursor-pointer shadow-sm ${
+                activeServerInfo.hasHindiAudio
+                  ? 'bg-zinc-900 border-emerald-500/50 text-white'
+                  : 'bg-zinc-900 border-zinc-700 text-zinc-200'
+              }`}
               title="Change Streaming Server"
             >
               <Server className="w-3.5 h-3.5 text-[#E50914]" />
-              <span className="max-w-[110px] sm:max-w-none truncate">{activeServerInfo.name}</span>
+              <span className="max-w-[120px] sm:max-w-none truncate">{activeServerInfo.name}</span>
+              <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${
+                activeServerInfo.hasHindiAudio ? 'bg-emerald-500/20 text-emerald-300' : 'bg-zinc-800 text-zinc-400'
+              }`}>
+                {activeServerInfo.hasHindiAudio ? '🇮🇳 HINDI' : 'GLOBAL'}
+              </span>
               <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
             </button>
 
             {isServerMenuOpen && (
-              <div className="absolute right-0 top-10 w-64 sm:w-72 bg-[#181818] border border-zinc-800 rounded-xl shadow-2xl p-2 z-50 space-y-1 animate-fade-in">
-                <div className="text-[11px] font-bold text-zinc-400 px-3 py-1.5 border-b border-zinc-800 flex items-center justify-between">
-                  <span>STREAMING SERVER</span>
-                  <span className="text-emerald-400 font-mono">ONLINE</span>
+              <div className="absolute right-0 top-10 w-72 sm:w-80 bg-[#181818] border border-zinc-800 rounded-xl shadow-2xl p-2.5 z-50 space-y-2 animate-fade-in">
+                
+                {/* Hindi Priority Header */}
+                <div className="text-[10px] font-bold text-amber-400 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>HINDI AUDIO PRIORITY SERVERS (#1)</span>
                 </div>
-                <div className="max-h-60 overflow-y-auto space-y-1 pt-1">
-                  {STREAMING_SERVERS.map((srv) => {
-                    const isSelected = selectedServer === srv.id;
-                    const ping = SERVER_PINGS[srv.id]?.ping ?? 24;
-                    return (
-                      <button
-                        key={srv.id}
-                        onClick={() => {
-                          setSelectedServer(srv.id);
-                          setIsServerMenuOpen(false);
-                          setPlayerKey(prev => prev + 1);
-                          setIsIframeLoading(true);
-                        }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-left ${
-                          isSelected
-                            ? 'bg-[#E50914] text-white font-bold'
-                            : 'hover:bg-zinc-800 text-zinc-300'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          {isSelected && <Check className="w-3.5 h-3.5 flex-shrink-0" />}
-                          <span className="truncate">{srv.name}</span>
-                        </div>
-                        <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded ${
-                          isSelected ? 'bg-black/30 text-white' : 'bg-zinc-800 text-emerald-400'
-                        }`}>
-                          {ping}ms
-                        </span>
-                      </button>
-                    );
-                  })}
+
+                <div className="max-h-72 overflow-y-auto space-y-1.5 pt-0.5">
+                  
+                  {/* Group 1: Hindi Dubbed & Multi-Audio Servers */}
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-extrabold text-zinc-400 px-2 uppercase tracking-wider">
+                      🇮🇳 Hindi Dubbed / Multi-Audio
+                    </div>
+                    {hindiServers.map((srv) => {
+                      const isSelected = selectedServer === srv.id;
+                      const ping = SERVER_PINGS[srv.id]?.ping ?? 15;
+                      return (
+                        <button
+                          key={srv.id}
+                          onClick={() => {
+                            setSelectedServer(srv.id);
+                            setIsServerMenuOpen(false);
+                            setPlayerKey(prev => prev + 1);
+                            setIsIframeLoading(true);
+                          }}
+                          className={`w-full flex items-center justify-between p-2 rounded-lg text-xs font-semibold transition-all cursor-pointer text-left border ${
+                            isSelected
+                              ? 'bg-[#E50914] border-[#E50914] text-white font-bold shadow-md'
+                              : 'bg-zinc-900/60 border-zinc-800 hover:bg-zinc-800 text-zinc-200'
+                          }`}
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              {isSelected && <Check className="w-3.5 h-3.5 flex-shrink-0" />}
+                              <span className="truncate">{srv.name}</span>
+                            </div>
+                            <span className="text-[10px] text-emerald-400 block font-normal mt-0.5">
+                              {srv.hindiBadge}
+                            </span>
+                          </div>
+                          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ml-2 flex-shrink-0 ${
+                            isSelected ? 'bg-black/30 text-white' : 'bg-zinc-800 text-emerald-400'
+                          }`}>
+                            {ping}ms
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Group 2: Global Original Audio Servers */}
+                  <div className="space-y-1 pt-2 border-t border-zinc-800">
+                    <div className="text-[10px] font-extrabold text-zinc-400 px-2 uppercase tracking-wider">
+                      🌐 Global Original Audio (Subtitles)
+                    </div>
+                    {globalServers.map((srv) => {
+                      const isSelected = selectedServer === srv.id;
+                      const ping = SERVER_PINGS[srv.id]?.ping ?? 35;
+                      return (
+                        <button
+                          key={srv.id}
+                          onClick={() => {
+                            setSelectedServer(srv.id);
+                            setIsServerMenuOpen(false);
+                            setPlayerKey(prev => prev + 1);
+                            setIsIframeLoading(true);
+                          }}
+                          className={`w-full flex items-center justify-between p-2 rounded-lg text-xs font-semibold transition-all cursor-pointer text-left border ${
+                            isSelected
+                              ? 'bg-[#E50914] border-[#E50914] text-white font-bold shadow-md'
+                              : 'bg-zinc-900/30 border-zinc-800/80 hover:bg-zinc-800 text-zinc-300'
+                          }`}
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              {isSelected && <Check className="w-3.5 h-3.5 flex-shrink-0" />}
+                              <span className="truncate">{srv.name}</span>
+                            </div>
+                            <span className="text-[10px] text-zinc-400 block font-normal mt-0.5">
+                              {srv.hindiBadge}
+                            </span>
+                          </div>
+                          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ml-2 flex-shrink-0 ${
+                            isSelected ? 'bg-black/30 text-white' : 'bg-zinc-800 text-zinc-400'
+                          }`}>
+                            {ping}ms
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
                 </div>
               </div>
             )}
@@ -401,7 +500,6 @@ export const WatchPage: React.FC<WatchPageProps> = ({
               {/* Player Bottom Control Strip */}
               <div className="flex items-center justify-between text-white text-xs sm:text-sm">
                 <div className="flex items-center gap-3 sm:gap-4">
-                  {/* Play / Pause */}
                   <button
                     onClick={togglePlay}
                     className="p-1 hover:text-zinc-300 transition-colors cursor-pointer"
@@ -410,7 +508,6 @@ export const WatchPage: React.FC<WatchPageProps> = ({
                     {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ml-0.5" />}
                   </button>
 
-                  {/* 10s Rewind */}
                   <button
                     onClick={() => seekDelta(-10)}
                     className="p-1 hover:text-zinc-300 transition-colors cursor-pointer"
@@ -419,7 +516,6 @@ export const WatchPage: React.FC<WatchPageProps> = ({
                     <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
 
-                  {/* 10s Fast-Forward */}
                   <button
                     onClick={() => seekDelta(10)}
                     className="p-1 hover:text-zinc-300 transition-colors cursor-pointer"
@@ -428,7 +524,6 @@ export const WatchPage: React.FC<WatchPageProps> = ({
                     <RotateCw className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
 
-                  {/* Volume Slider & Mute Toggle */}
                   <div className="flex items-center gap-2 group/vol">
                     <button
                       onClick={toggleMute}
@@ -448,15 +543,11 @@ export const WatchPage: React.FC<WatchPageProps> = ({
                     />
                   </div>
 
-                  {/* Time Info */}
-                  <div className="text-zinc-400 font-mono text-[11px] sm:text-xs">
-                    <span className="text-white font-semibold">{formatTime(currentTime)}</span>
-                    <span className="mx-1">/</span>
-                    <span>{formatTime(duration)}</span>
-                  </div>
+                  <span className="font-mono text-xs text-zinc-300">
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </span>
                 </div>
 
-                {/* Right Side: Fullscreen Toggle */}
                 <div className="flex items-center gap-3">
                   <button
                     onClick={toggleFullscreen}
@@ -470,60 +561,108 @@ export const WatchPage: React.FC<WatchPageProps> = ({
             </div>
           </div>
         ) : (
-          /* Professional Multi-Server Embed Cloud Stream with Default Hindi Dub */
+          /* Bufferless Multi-Server Universal Embed Player */
           <div className="relative w-full h-full bg-black">
-            <iframe
-              key={`${playerKey}-${selectedServer}-${currentSeason}-${currentEpisode}-${selectedLanguage}`}
-              src={currentEmbedUrl}
-              className="w-full h-full border-0 absolute inset-0 z-10"
-              allowFullScreen
-              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-              onLoad={() => setIsIframeLoading(false)}
-            />
-
-            {/* Smooth Loading Shimmer */}
             {isIframeLoading && (
-              <div className="absolute inset-0 bg-[#121212] flex flex-col items-center justify-center gap-3 z-0">
-                <div className="w-10 h-10 border-3 border-[#E50914] border-t-transparent rounded-full animate-spin" />
-                <span className="text-xs font-semibold text-zinc-300 tracking-wider uppercase flex items-center gap-2">
-                  <span>Loading {activeLangInfo.flag} {activeLangInfo.name} Stream on {activeServerInfo.name}...</span>
+              <div className="absolute inset-0 z-10 bg-black flex flex-col items-center justify-center space-y-3">
+                <div className="w-10 h-10 border-3 border-zinc-700 border-t-[#E50914] rounded-full animate-spin" />
+                <p className="text-xs sm:text-sm font-semibold text-zinc-300">
+                  Connecting to <span className="text-[#E50914] font-bold">{activeServerInfo.name}</span>...
+                </p>
+                <span className="text-[11px] text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                  {activeServerInfo.hindiBadge}
                 </span>
               </div>
             )}
+
+            <iframe
+              key={`${playerKey}-${embedUrl}`}
+              src={embedUrl}
+              title={`${movie.title} Player`}
+              allowFullScreen
+              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+              onLoad={() => setIsIframeLoading(false)}
+              className="w-full h-full border-0 absolute inset-0 z-0 bg-black"
+            />
           </div>
         )}
       </div>
 
-      {/* 3. Movie Metadata & Series Episodes Selector */}
-      <div className="space-y-6 pt-2">
-        {/* Title Header & Quick Info */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-display">
-              {movie.title}
-            </h1>
-            <div className="flex flex-wrap items-center gap-2.5 text-xs text-zinc-400 font-semibold">
+      {/* 3. Fast Server Switcher Bar with Hindi Audio Badges */}
+      <div className="mt-4 sm:mt-6 bg-[#141414] border border-zinc-800/90 rounded-xl p-3 sm:p-4 space-y-3 shadow-xl">
+        <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-zinc-800/80">
+          <div className="flex items-center gap-2">
+            <Server className="w-4 h-4 text-[#E50914]" />
+            <span className="text-xs sm:text-sm font-bold text-white">Select Streaming Server:</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30 flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Priority #1: Hindi Audio Supported</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Quick Server Switch Buttons */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+          {STREAMING_SERVERS.map((srv) => {
+            const isSelected = selectedServer === srv.id;
+            return (
+              <button
+                key={srv.id}
+                onClick={() => {
+                  setSelectedServer(srv.id);
+                  setPlayerKey(prev => prev + 1);
+                  setIsIframeLoading(true);
+                }}
+                className={`p-2.5 rounded-lg text-left transition-all cursor-pointer border relative flex flex-col justify-between min-h-[64px] ${
+                  isSelected
+                    ? 'bg-[#E50914] border-[#E50914] text-white shadow-lg font-bold scale-[1.02]'
+                    : srv.hasHindiAudio
+                    ? 'bg-zinc-900/90 border-emerald-500/40 hover:bg-zinc-800 text-zinc-200'
+                    : 'bg-zinc-900/50 border-zinc-800 hover:bg-zinc-800 text-zinc-400'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-xs font-bold truncate">{srv.name}</span>
+                  {isSelected && <Check className="w-3.5 h-3.5 flex-shrink-0" />}
+                </div>
+
+                <div className="flex items-center justify-between text-[9px] mt-1">
+                  <span className={isSelected ? 'text-white font-bold' : srv.hasHindiAudio ? 'text-emerald-400 font-bold' : 'text-zinc-500'}>
+                    {srv.hasHindiAudio ? '🇮🇳 Hindi Audio' : '🌐 Subtitles'}
+                  </span>
+                  <span className="font-mono opacity-80">{SERVER_PINGS[srv.id]?.ping ?? 20}ms</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 4. Movie Details, Synopsis & TV Series Episode Picker */}
+      <div className="mt-6 sm:mt-8 space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-white font-display">{movie.title}</h2>
+            <div className="flex items-center gap-2.5 text-xs text-zinc-400 mt-1 font-semibold">
               <span className="text-[#46d369] font-bold">98% Match</span>
               <span>{movie.releaseYear}</span>
-              <span className="px-1.5 py-0.2 rounded border border-zinc-700 text-[10px] text-zinc-300">
-                U/A 16+
-              </span>
               <span>{movie.duration}</span>
-              <span className="px-1.5 py-0.2 rounded border border-zinc-700 text-[9px] font-bold text-zinc-300">
+              <span className="px-1.5 py-0.2 rounded border border-zinc-700 text-[9px] text-zinc-300">
                 Ultra HD 4K
               </span>
-              <span className="text-[#E50914] font-bold">
-                {activeLangInfo.flag} {activeLangInfo.name}
+              <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30 text-[9px]">
+                {movie.language || 'Hindi Dual Audio'}
               </span>
-              <span>⭐ {movie.rating.toFixed(1)}</span>
             </div>
           </div>
 
-          {/* Stream Quality Status Badge */}
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-300">
               <Activity className="w-3.5 h-3.5 text-emerald-400" />
-              <span>CDN Ping: <strong className="text-white font-mono">{SERVER_PINGS[selectedServer]?.ping ?? 20}ms</strong></span>
+              <span>CDN Speed: <strong className="text-emerald-400 font-mono">100% Bufferless</strong></span>
             </div>
           </div>
         </div>
@@ -541,7 +680,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
             <div><strong className="text-zinc-200">Director:</strong> {movie.director || 'Popular Filmmaker'}</div>
             <div><strong className="text-zinc-200">Starring:</strong> {movie.cast?.join(', ') || 'Star Cast'}</div>
             <div><strong className="text-zinc-200">Genres:</strong> {movie.genres?.join(', ')}</div>
-            <div><strong className="text-zinc-200">Audio Tracks:</strong> Hindi (Default), Telugu, Tamil, Kannada, Malayalam, English</div>
+            <div><strong className="text-zinc-200">Audio Priority:</strong> <span className="text-amber-400 font-bold">Hindi (Default Priority #1)</span>, Telugu, Tamil, Japanese, Korean, English</div>
           </div>
         </div>
 
@@ -570,7 +709,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[1, 2, 3, 4, 5, 6].map((ep) => {
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((ep) => {
                 const isCurrentEp = currentEpisode === ep;
                 return (
                   <div

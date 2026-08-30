@@ -8,22 +8,112 @@ export interface StreamingServer {
   id: string;
   name: string;
   badge?: string;
-  isHindi?: boolean;
+  hasHindiAudio: boolean;
+  hindiBadge: string;
   description: string;
+  priority: number;
 }
 
 export const STREAMING_SERVERS: StreamingServer[] = [
-  { id: 'vidlink', name: 'VidLink 1080p (Primary)', badge: 'Bufferless', description: 'Fast bufferless 1080p stream with subtitle support' },
-  { id: 'moviebox', name: 'MovieBox / ShortTV VIP', badge: 'High Speed CDN', description: 'Ultra-fast direct stream from MovieBox CDN with subtitles' },
-  { id: 'vidsrc_icu', name: 'VidSrc Fast CDN', badge: 'High Speed', description: 'Direct high-speed multi-source stream' },
-  { id: 'peachify', name: 'Peachify (Hindi Dub)', badge: 'Hindi / Dual Audio', isHindi: true, description: 'Direct Hindi dubbed and dual audio streams' },
-  { id: 'autoembed', name: 'AutoEmbed 4K', badge: 'Auto Scraper', description: 'Universal multi-server failover' },
-  { id: 'smashystream', name: 'SmashyStream HD', badge: 'Backup', description: 'Reliable multi-server backup' },
-  { id: 'videasy', name: 'Videasy HD', badge: 'Multi-Source', description: 'Multi-source stream with clean player' },
-  { id: 'vidking', name: 'VidKing 4K', badge: 'Ultra HD', description: 'High-bitrate server with auto-next episode' },
-  { id: 'vidsrc_to', name: 'VidSrc Cloud', badge: 'Global', description: 'High reliability backup streaming server' },
-  { id: '2embed', name: '2Embed VIP', badge: 'Full TV', description: 'Comprehensive TV shows and multi-season support' },
-  { id: 'direct', name: 'Direct HTML5 Player', badge: 'No Fail', description: 'Plays direct media stream with 100% uptime' },
+  {
+    id: 'peachify',
+    name: 'Peachify VIP (Hindi Dub)',
+    badge: '1080p VIP',
+    hasHindiAudio: true,
+    hindiBadge: '🇮🇳 Hindi Dubbed & Dual Audio',
+    description: 'Dedicated Hindi dubbed audio & dual-audio 1080p high bitrate stream',
+    priority: 1
+  },
+  {
+    id: 'vidlink',
+    name: 'VidLink Ultra (Multi-Audio)',
+    badge: 'Bufferless',
+    hasHindiAudio: true,
+    hindiBadge: '🇮🇳 Hindi Audio Track Supported',
+    description: 'Fast bufferless 1080p CDN with Hindi audio track & auto-subtitles',
+    priority: 2
+  },
+  {
+    id: 'moviebox',
+    name: 'MovieBox / ShortTV VIP',
+    badge: 'High Speed CDN',
+    hasHindiAudio: true,
+    hindiBadge: '🇮🇳 Hindi Audio Stream',
+    description: 'Direct high-speed stream from MovieBox VIP servers with Hindi audio',
+    priority: 3
+  },
+  {
+    id: 'autoembed',
+    name: 'AutoEmbed 4K Multi',
+    badge: 'Auto Scraper',
+    hasHindiAudio: true,
+    hindiBadge: '🇮🇳 Hindi Auto-Detect',
+    description: 'Universal 4K multi-server scraper with Hindi language priority',
+    priority: 4
+  },
+  {
+    id: 'videasy',
+    name: 'Videasy HD Stream',
+    badge: 'Clean Player',
+    hasHindiAudio: true,
+    hindiBadge: '🇮🇳 Hindi Audio & Sub',
+    description: 'Multi-source stream with clean player and Hindi audio support',
+    priority: 5
+  },
+  {
+    id: 'vidsrc_icu',
+    name: 'VidSrc Fast CDN',
+    badge: 'Global 1080p',
+    hasHindiAudio: false,
+    hindiBadge: '🌐 Original + Hindi Subtitles',
+    description: 'Direct high-speed multi-source original audio stream with subtitles',
+    priority: 6
+  },
+  {
+    id: 'smashystream',
+    name: 'SmashyStream Backup',
+    badge: 'Backup',
+    hasHindiAudio: false,
+    hindiBadge: '🌐 Original Audio',
+    description: 'Reliable cloud backup server for global movies and series',
+    priority: 7
+  },
+  {
+    id: 'vidking',
+    name: 'VidKing 4K Ultra',
+    badge: 'Ultra HD',
+    hasHindiAudio: false,
+    hindiBadge: '🌐 Original Audio',
+    description: 'High-bitrate server with auto-next episode and 4K capability',
+    priority: 8
+  },
+  {
+    id: 'vidsrc_to',
+    name: 'VidSrc Cloud VIP',
+    badge: 'Global Cloud',
+    hasHindiAudio: false,
+    hindiBadge: '🌐 Original Audio',
+    description: 'High reliability backup streaming server',
+    priority: 9
+  },
+  {
+    id: '2embed',
+    name: '2Embed Full TV',
+    badge: 'Full Seasons',
+    hasHindiAudio: false,
+    hindiBadge: '🌐 Original Audio',
+    description: 'Comprehensive TV shows and multi-season support',
+    priority: 10
+  },
+  {
+    id: 'direct',
+    name: 'Direct HTML5 Player',
+    badge: '100% Up',
+    hasHindiAudio: false,
+    hindiBadge: '🌐 Direct Video',
+    description: 'Plays direct media stream with 100% bufferless uptime',
+    priority: 11
+  },
 ];
 
 const DEFAULT_SAMPLE_VIDEO = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4';
