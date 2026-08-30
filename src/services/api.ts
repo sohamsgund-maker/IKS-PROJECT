@@ -242,89 +242,20 @@ export const api = {
       console.warn('Backend scraper sync offline, using client discovery');
     }
 
-    // Client-side live discovery fallback
-    try {
-      const res = await fetch('https://api.themoviedb.org/3/trending/all/week?api_key=8265bd1679663a7ea12ac168da84d2e8');
-      if (res.ok) {
-        const json = await res.json();
-        const liveItems: Movie[] = (json.results || []).map((item: any) => ({
-          _id: String(item.id),
-          id: String(item.id),
-          tmdbId: item.id,
-          title: item.title || item.name || 'Untitled',
-          slug: `${(item.title || item.name || 'movie').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${item.id}`,
-          description: item.overview || 'Streaming in 1080p Full HD with dual-audio and subtitles.',
-          posterUrl: item.poster_path ? `https://image.tmdb.org/t/p/w780${item.poster_path}` : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80',
-          backdropUrl: item.backdrop_path ? `https://image.tmdb.org/t/p/original${item.backdrop_path}` : '',
-          trailerUrl: '',
-          releaseYear: parseInt((item.release_date || item.first_air_date || '2024').substring(0, 4), 10) || 2024,
-          language: item.original_language === 'hi' ? 'Hindi (Bollywood)' : (item.original_language === 'te' ? 'Telugu (South)' : 'English'),
-          genres: item.original_language === 'hi' ? ['Bollywood', 'Action'] : (item.original_language === 'ja' ? ['Anime', 'Action'] : ['Hollywood', 'Action']),
-          duration: item.first_air_date ? 'TV Series' : '2h 10m',
-          rating: Number((item.vote_average || 8.2).toFixed(1)),
-          director: 'Cinema Studio',
-          cast: ['Featured Stars'],
-          type: item.first_air_date ? 'series' : 'movie',
-          featured: item.popularity > 150,
-          trending: true,
-          qualities: [
-            { quality: '1080p', videoUrl: `https://vidlink.pro/${item.first_air_date ? 'tv' : 'movie'}/${item.id}`, fileSize: '2.4 GB' },
-            { quality: '720p', videoUrl: `https://player.videasy.net/${item.first_air_date ? 'tv' : 'movie'}/${item.id}`, fileSize: '1.2 GB' },
-            { quality: '480p', videoUrl: `https://peachify.top/embed/${item.first_air_date ? 'tv' : 'movie'}/${item.id}?dub=Hindi`, fileSize: '650 MB' }
-          ],
-          videoUrl: `https://player.videasy.net/${item.first_air_date ? 'tv' : 'movie'}/${item.id}`,
-          downloadUrl: `https://vidlink.pro/${item.first_air_date ? 'tv' : 'movie'}/${item.id}`
-        }));
-
-        const merged = [...FALLBACK_MOVIES];
-        liveItems.forEach(live => {
-          if (!merged.some(m => m.tmdbId === live.tmdbId)) {
-            merged.push(live);
-          }
-        });
-
-        try {
-          localStorage.setItem('cinevault_scraped_cache', JSON.stringify(merged));
-        } catch (e) {}
-        return { count: merged.length, data: merged };
-      }
-    } catch (clientErr) {}
-
     return { count: FALLBACK_MOVIES.length, data: FALLBACK_MOVIES };
   },
 
   getMovies: async (params?: { type?: string; genre?: string; sort?: string; language?: string; year?: string }): Promise<Movie[]> => {
     let list = [...FALLBACK_MOVIES];
 
-    // Check localStorage cache for previous live scrapes
-    try {
-      const cached = localStorage.getItem('cinevault_scraped_cache');
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const map = new Map();
-          // Insert parsed live items first, then OVERWRITE with verified FALLBACK_MOVIES
-          parsed.forEach(m => {
-            if (m.tmdbId) map.set(m.tmdbId, m);
-          });
-          FALLBACK_MOVIES.forEach(m => {
-            if (m.tmdbId) map.set(m.tmdbId, m);
-          });
-          list = Array.from(map.values());
-        }
-      }
-    } catch (e) {}
-
     try {
       const query = new URLSearchParams(params as any).toString();
-      const res = await fetch(`${API_BASE}/movies?${query}`, { signal: AbortSignal.timeout(2500) });
+      const res = await fetch(`${API_BASE}/movies?${query}`, { signal: AbortSignal.timeout(1500) });
       if (res.ok) {
         const data = await res.json();
-        if (data.length > 0) list = data;
+        if (Array.isArray(data) && data.length > 0) list = data;
       }
-    } catch {
-      // Use list from above
-    }
+    } catch {}
 
     if (params?.type) list = list.filter(m => m.type === params.type);
     if (params?.genre && params.genre !== 'All') list = list.filter(m => m.genres?.includes(params.genre!));

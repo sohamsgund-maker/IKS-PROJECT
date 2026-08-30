@@ -13,10 +13,10 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "releaseYear": 2024,
     "language": "Telugu / Hindi",
     "genres": [
-      "South Indian",
       "Action",
-      "Thriller",
-      "Crime"
+      "Crime",
+      "Drama",
+      "South Indian"
     ],
     "duration": "3h 20m",
     "rating": 6.2,
@@ -24,7 +24,8 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "cast": [
       "Allu Arjun",
       "Rashmika Mandanna",
-      "Fahadh Faasil"
+      "Fahadh Faasil",
+      "Jagapathi Babu"
     ],
     "type": "movie",
     "featured": true,
@@ -65,10 +66,10 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "releaseYear": 2024,
     "language": "Telugu / Hindi",
     "genres": [
-      "South Indian",
       "Sci-Fi",
       "Action",
-      "Mythology"
+      "Mythology",
+      "South Indian"
     ],
     "duration": "3h 01m",
     "rating": 6.4,
@@ -118,18 +119,19 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "releaseYear": 2024,
     "language": "Telugu / Hindi",
     "genres": [
-      "South Indian",
       "Action",
       "Drama",
-      "Thriller"
+      "Thriller",
+      "South Indian"
     ],
     "duration": "2h 58m",
     "rating": 6.9,
     "director": "Koratala Siva",
     "cast": [
-      "Jr. NTR",
+      "N.T. Rama Rao Jr.",
       "Janhvi Kapoor",
-      "Saif Ali Khan"
+      "Saif Ali Khan",
+      "Prakash Raj"
     ],
     "type": "movie",
     "featured": true,
@@ -170,10 +172,10 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "releaseYear": 2024,
     "language": "Tamil / Hindi",
     "genres": [
-      "South Indian",
       "Action",
-      "Biography",
-      "Drama"
+      "Drama",
+      "War",
+      "South Indian"
     ],
     "duration": "2h 47m",
     "rating": 7.4,
@@ -181,7 +183,8 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "cast": [
       "Sivakarthikeyan",
       "Sai Pallavi",
-      "Bhuvan Arora"
+      "Bhuvan Arora",
+      "Rahul Bose"
     ],
     "type": "movie",
     "featured": false,
@@ -214,7 +217,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "id": "1129608",
     "tmdbId": 1129608,
     "title": "The Greatest of All Time (GOAT)",
-    "slug": "the-greatest-of-all-time-goat-1129608",
+    "slug": "the-greatest-of-all-time-goat--1129608",
     "description": "A once decorated member of the Special Anti-Terrorism Squad (SATS) is called back into action by his former colleagues for an important mission, setting him on a dangerous collision course with his own past.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/kk9SmNt6QcP5thvSYELWvO0NWuC.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/wuHD3SiccbQvHUT1LE9o8j9dJlU.jpg",
@@ -223,11 +226,12 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "language": "Tamil / Hindi",
     "genres": [
       "Action",
+      "Sci-Fi",
       "Thriller",
-      "Sci-Fi"
+      "South Indian"
     ],
     "duration": "3h 03m",
-    "rating": 8.4,
+    "rating": 4.7,
     "director": "Venkat Prabhu",
     "cast": [
       "Thalapathy Vijay",
@@ -274,10 +278,10 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "releaseYear": 2024,
     "language": "Telugu / Hindi",
     "genres": [
-      "South Indian",
-      "Crime",
       "Drama",
-      "Thriller"
+      "Crime",
+      "Thriller",
+      "South Indian"
     ],
     "duration": "2h 30m",
     "rating": 7.7,
@@ -285,6 +289,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "cast": [
       "Dulquer Salmaan",
       "Meenakshi Chaudhary",
+      "Hyper Aadi",
       "Ramki"
     ],
     "type": "movie",
@@ -326,10 +331,9 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "releaseYear": 2024,
     "language": "Telugu / Hindi",
     "genres": [
-      "South Indian",
       "Action",
       "Thriller",
-      "Drama"
+      "South Indian"
     ],
     "duration": "2h 55m",
     "rating": 6.6,
@@ -337,7 +341,8 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "cast": [
       "Nani",
       "S. J. Suryah",
-      "Priyanka Mohan"
+      "Priyanka Arul Mohan",
+      "Abhirami"
     ],
     "type": "movie",
     "featured": false,
@@ -367,33 +372,34 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "80938",
-    "tmdbId": 80938,
+    "id": "1084812",
+    "tmdbId": 1084812,
     "title": "Aavesham",
-    "slug": "aavesham-80938",
-    "description": "Three college students in Bangalore befriend an eccentric, local gangster named Ranga to get back at their senior bullies, unleashing absolute chaotic fun.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/2J5eeroLDY0d45mVjpuGhcLZs3W.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/6SLyu9ygASsrOqkCpjAwtyG9PWW.jpg",
+    "slug": "aavesham-1084812",
+    "description": "Three college freshmen in Bangalore befriend an eccentric gangster to get revenge on their senior bullies.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/k5RWPaNjgRcNvGoawYaQHQwyctI.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/6WxEPaZGFWmQegUmseoGtlTKtQq.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Aavesham+trailer",
-    "releaseYear": 1994,
+    "releaseYear": 2024,
     "language": "Malayalam / Hindi",
     "genres": [
-      "South Indian",
       "Action",
-      "Comedy"
+      "Comedy",
+      "South Indian"
     ],
     "duration": "2h 38m",
-    "rating": 3.5,
+    "rating": 7.4,
     "director": "Jithu Madhavan",
     "cast": [
       "Fahadh Faasil",
       "Hipzster",
-      "Mithun Jai Shankar"
+      "Mithun Jai Shankar",
+      "Roshan Shanavas"
     ],
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "80938",
+    "_id": "1084812",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -429,10 +435,10 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "releaseYear": 2024,
     "language": "Malayalam / Hindi",
     "genres": [
-      "South Indian",
-      "Adventure",
+      "Survival",
+      "Thriller",
       "Drama",
-      "Thriller"
+      "South Indian"
     ],
     "duration": "2h 15m",
     "rating": 7.8,
@@ -440,7 +446,8 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "cast": [
       "Soubin Shahir",
       "Sreenath Bhasi",
-      "Balu Varghese"
+      "Balu Varghese",
+      "Ganapathi"
     ],
     "type": "movie",
     "featured": true,
@@ -481,11 +488,10 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "releaseYear": 2024,
     "language": "Tamil / Hindi",
     "genres": [
-      "South Indian",
       "Action",
-      "Crime",
+      "Thriller",
       "Mystery",
-      "Thriller"
+      "South Indian"
     ],
     "duration": "2h 21m",
     "rating": 7.7,
@@ -493,7 +499,8 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "cast": [
       "Vijay Sethupathi",
       "Anurag Kashyap",
-      "Mamta Mohandas"
+      "Mamta Mohandas",
+      "Natty"
     ],
     "type": "movie",
     "featured": true,
@@ -584,11 +591,11 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "backdropUrl": "https://image.tmdb.org/t/p/original/1TdCtQaAqZhKRSOSbPi1EPToJxN.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Bhool+Bhulaiyaa+3+trailer",
     "releaseYear": 2024,
-    "language": "Hindi",
+    "language": "Hindi (Bollywood)",
     "genres": [
-      "Bollywood",
       "Comedy",
-      "Horror"
+      "Horror",
+      "Bollywood"
     ],
     "duration": "2h 38m",
     "rating": 5.5,
@@ -636,11 +643,11 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "backdropUrl": "https://image.tmdb.org/t/p/original/lexEx0B4WDOXGfqPTj4R8FCrE7H.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Singham+Again+trailer",
     "releaseYear": 2024,
-    "language": "Hindi",
+    "language": "Hindi (Bollywood)",
     "genres": [
-      "Bollywood",
       "Action",
-      "Drama"
+      "Crime",
+      "Bollywood"
     ],
     "duration": "2h 45m",
     "rating": 5,
@@ -650,9 +657,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Kareena Kapoor Khan",
       "Ranveer Singh",
       "Akshay Kumar",
-      "Deepika Padukone",
-      "Tiger Shroff",
-      "Arjun Kapoor"
+      "Deepika Padukone"
     ],
     "type": "movie",
     "featured": true,
@@ -682,34 +687,34 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "949536",
-    "tmdbId": 949536,
+    "id": "1160018",
+    "tmdbId": 1160018,
     "title": "Kill",
-    "slug": "kill-949536",
-    "description": "North America has been divided into four main quadrants. A power-hungry corporation has taken over the conventional prison system and made criminals the new law enforcers.  The owner of that corporation, nanoscientist Eion Prescott, created a nano-virus called Onyx. Which is distributed through deadly watches to criminals. First, infecting them. Then, forcing them into eliminating each other for freedom. Who can topple the corporation's entire system from within?",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/bXvSKLCillha6wxY0yxoRCM2WQl.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/zyqAhNJqwiop5yUOJ8SHV27labY.jpg",
+    "slug": "kill-1160018",
+    "description": "When an army commando finds out his true love is engaged against her will, he boards a New Dehli-bound train in a daring quest to derail the arranged marriage. But when a gang of knife-wielding thieves begin to terrorize innocent passengers on his train, the commando takes them on, one by one.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/m2zXTuNPkywdYLyWlVyJZW2QOJH.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/u060S4drIWntmLeMDGe7mD0V6Jh.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Kill+movie+trailer",
-    "releaseYear": 2026,
-    "language": "Hindi",
+    "releaseYear": 2024,
+    "language": "Hindi (Bollywood)",
     "genres": [
-      "Bollywood",
       "Action",
       "Thriller",
-      "Crime"
+      "Bollywood"
     ],
     "duration": "1h 45m",
-    "rating": 5,
+    "rating": 7.2,
     "director": "Nikhil Nagesh Bhat",
     "cast": [
       "Lakshya",
       "Raghav Juyal",
-      "Tanya Maniktala"
+      "Tanya Maniktala",
+      "Abhishek Chauhan"
     ],
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "949536",
+    "_id": "1160018",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -743,20 +748,20 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "backdropUrl": "https://image.tmdb.org/t/p/original/4Yr1efAiQ55YdV9R7N4WOntpmZ5.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Munjya+trailer",
     "releaseYear": 2024,
-    "language": "Hindi",
+    "language": "Hindi (Bollywood)",
     "genres": [
-      "Bollywood",
-      "Comedy",
       "Horror",
-      "Fantasy"
+      "Comedy",
+      "Bollywood"
     ],
     "duration": "2h 03m",
     "rating": 6.2,
     "director": "Aditya Sarpotdar",
     "cast": [
-      "Abhay Verma",
       "Sharvari Wagh",
-      "Mona Singh"
+      "Abhay Verma",
+      "Mona Singh",
+      "Sathyaraj"
     ],
     "type": "movie",
     "featured": false,
@@ -795,12 +800,12 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "backdropUrl": "https://image.tmdb.org/t/p/original/b21xN1TVcFeuEKdSGxEjGKfOYhE.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Chandu+Champion+trailer",
     "releaseYear": 2024,
-    "language": "Hindi",
+    "language": "Hindi (Bollywood)",
     "genres": [
-      "Bollywood",
       "Biography",
       "Drama",
-      "Sport"
+      "Sport",
+      "Bollywood"
     ],
     "duration": "2h 23m",
     "rating": 7.2,
@@ -808,7 +813,8 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "cast": [
       "Kartik Aaryan",
       "Vijay Raaz",
-      "Bhuvan Arora"
+      "Bhuvan Arora",
+      "Yashpal Sharma"
     ],
     "type": "movie",
     "featured": false,
@@ -847,12 +853,11 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "backdropUrl": "https://image.tmdb.org/t/p/original/yNGAfRd0VZwtSAZiC1WXWqCbvIb.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Shaitaan+trailer",
     "releaseYear": 2024,
-    "language": "Hindi",
+    "language": "Hindi (Bollywood)",
     "genres": [
-      "Bollywood",
       "Horror",
       "Thriller",
-      "Mystery"
+      "Bollywood"
     ],
     "duration": "2h 12m",
     "rating": 6.3,
@@ -860,7 +865,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "cast": [
       "Ajay Devgn",
       "R. Madhavan",
-      "Jyotika",
+      "Jyothika",
       "Janki Bodiwala"
     ],
     "type": "movie",
@@ -891,33 +896,34 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "11667",
-    "tmdbId": 11667,
+    "id": "784651",
+    "tmdbId": 784651,
     "title": "Fighter",
-    "slug": "fighter-11667",
-    "description": "Colonel Guile and various other martial arts heroes fight against the tyranny of dictator M. Bison and his cohorts.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/6yh95dD2Y6uWAlPfWCZZygBM1ec.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/vmXRiIs6alZFDtlHlUT3Tx5rHww.jpg",
+    "slug": "fighter-784651",
+    "description": "As India faces a militant attack in Kashmir, the country’s best combat aviators join forces under a reckless yet brilliant squadron leader to form 'Air Dragons', faces mortal dangers and their inner demons.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/zqFuriKJ6pYDvf72kXNLONnuE8k.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/vcc6NDwsMwNrwHgVuI9lGdWJLB8.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Fighter+trailer",
-    "releaseYear": 1994,
-    "language": "Hindi",
+    "releaseYear": 2024,
+    "language": "Hindi (Bollywood)",
     "genres": [
-      "Bollywood",
       "Action",
-      "Thriller"
+      "War",
+      "Bollywood"
     ],
     "duration": "2h 46m",
-    "rating": 4.7,
+    "rating": 6.2,
     "director": "Siddharth Anand",
     "cast": [
       "Hrithik Roshan",
       "Deepika Padukone",
-      "Anil Kapoor"
+      "Anil Kapoor",
+      "Karan Singh Grover"
     ],
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "11667",
+    "_id": "784651",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -2209,114 +2215,6 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "801688",
-    "id": "801688",
-    "tmdbId": 801688,
-    "title": "Kalki 2898-AD",
-    "slug": "kalki-2898-ad-801688",
-    "description": "In the year 2898 AD, around 6000 years after Kurukshetra war, Ashwatthama gears up for his final battle of redemption at the sign of hope in a dystopian world and Bhairava, a wisecracking and self-interested bounty hunter, tired of the perilous life becomes the hurdle in the process.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/rstcAnBeCkxNQjNp3YXrF6IP1tW.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/o8XSR1SONnjcsv84NRu6Mwsl5io.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=Kalki%202898-AD%20official%20trailer",
-    "releaseYear": 2024,
-    "language": "Telugu / Hindi",
-    "genres": [
-      "South Indian",
-      "Drama",
-      "Action",
-      "Fantasy",
-      "Science Fiction"
-    ],
-    "duration": "2h 56m",
-    "rating": 6.4,
-    "director": "Nag Ashwin",
-    "cast": [
-      "Amitabh Bachchan",
-      "Prabhas",
-      "Deepika Padukone",
-      "Kamal Haasan"
-    ],
-    "type": "movie",
-    "featured": true,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
-    "_id": "857598",
-    "id": "857598",
-    "tmdbId": 857598,
-    "title": "Pushpa 2 - The Rule",
-    "slug": "pushpa-2-the-rule-857598",
-    "description": "As his smuggling empire grows, a brazen Pushpa longs for power and respect on his vengeful journey, while facing old rivals and new.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/bhxZj3y59cK7JtGdV285dhDRaMe.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/5nEyyLkElpD7zkqh41aSkTCchcc.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=Pushpa%202%20-%20The%20Rule%20official%20trailer",
-    "releaseYear": 2024,
-    "language": "Telugu / Hindi",
-    "genres": [
-      "South Indian",
-      "Action",
-      "Drama",
-      "Thriller",
-      "Crime"
-    ],
-    "duration": "3h 45m",
-    "rating": 6.2,
-    "director": "Sukumar",
-    "cast": [
-      "Allu Arjun",
-      "Rashmika Mandanna",
-      "Fahadh Faasil",
-      "Jagadeesh Bandari"
-    ],
-    "type": "movie",
-    "featured": true,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
     "_id": "690957",
     "id": "690957",
     "tmdbId": 690957,
@@ -2451,58 +2349,6 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ],
     "type": "movie",
     "featured": true,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
-    "_id": "811941",
-    "id": "811941",
-    "tmdbId": 811941,
-    "title": "Devara: Part 1",
-    "slug": "devara-part-1-811941",
-    "description": "Devara, a fearless man from a coastal region, embarks on a perilous journey into the treacherous world of the sea to safeguard the lives of his people. Unbeknownst to him, his brother Bhaira is plotting a conspiracy against him. As events unfold, Devara passes on his legacy to his mild-mannered and timid son, Varada.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/lQfuaXjANoTsdx5iS0gCXlK9D2L.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/hAQnXxOwCjgYcKRgTdYPRC8neqL.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=Devara%3A%20Part%201%20official%20trailer",
-    "releaseYear": 2024,
-    "language": "Telugu / Hindi",
-    "genres": [
-      "South Indian",
-      "Action",
-      "Drama"
-    ],
-    "duration": "2h 55m",
-    "rating": 6.9,
-    "director": "Koratala Siva",
-    "cast": [
-      "N.T. Rama Rao Jr.",
-      "Saif Ali Khan",
-      "Prakash Raj",
-      "Srikanth"
-    ],
-    "type": "movie",
-    "featured": false,
     "trending": true,
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
@@ -2957,26 +2803,26 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "_id": "1112426",
     "id": "1112426",
     "tmdbId": 1112426,
-    "title": "Stree 2",
-    "slug": "stree-2-1112426",
+    "title": "Stree 2: Sarkate Ka Aatank",
+    "slug": "stree-2-sarkate-ka-aatank-1112426",
     "description": "Following the events of 'Stree', the town of Chanderi is being haunted again. This time, women are mysteriously abducted by a terrifying headless entity. Once again, it's up to Vicky and friends to save their town and loved ones.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/nfnhwfUEFuSOxxf4jDdBlY6Lccw.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/fVV0A67kDjTTQ4CvUn8LoletRmI.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Stree%202%20official%20trailer",
     "releaseYear": 2024,
-    "language": "Hindi",
+    "language": "Hindi (Bollywood)",
     "genres": [
-      "Bollywood",
+      "Comedy",
       "Horror",
-      "Comedy"
+      "Bollywood"
     ],
     "duration": "2h 23m",
     "rating": 6.7,
     "director": "Amar Kaushik",
     "cast": [
-      "Rajkummar Rao",
       "Shraddha Kapoor",
-      "Aparshakti Khurana",
+      "Rajkummar Rao",
+      "Pankaj Tripathi",
       "Abhishek Banerjee"
     ],
     "type": "movie",
@@ -3111,111 +2957,6 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "11667",
-    "id": "11667",
-    "tmdbId": 11667,
-    "title": "Street Fighter",
-    "slug": "street-fighter-11667",
-    "description": "Colonel Guile and various other martial arts heroes fight against the tyranny of dictator M. Bison and his cohorts.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/6yh95dD2Y6uWAlPfWCZZygBM1ec.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/vmXRiIs6alZFDtlHlUT3Tx5rHww.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=Street%20Fighter%20official%20trailer",
-    "releaseYear": 1994,
-    "language": "Hindi",
-    "genres": [
-      "Bollywood",
-      "Action",
-      "Comedy",
-      "Fantasy"
-    ],
-    "duration": "1h 42m",
-    "rating": 4.7,
-    "director": "Steven E. de Souza",
-    "cast": [
-      "Jean-Claude Van Damme",
-      "Raúl Juliá",
-      "Kylie Minogue",
-      "Byron Mann"
-    ],
-    "type": "movie",
-    "featured": false,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
-    "_id": "980599",
-    "id": "980599",
-    "tmdbId": 980599,
-    "title": "Bhool Bhulaiyaa 3",
-    "slug": "bhool-bhulaiyaa-3-980599",
-    "description": "Rooh Baba ventures into a haunted mansion in the kingdom of Raktaghat in West Bengal, where he confronts two vengeful spirits, both asserting to be Manjulika.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/3AfHD1HoaQpQwKH8kxRdBKVmzeU.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/1TdCtQaAqZhKRSOSbPi1EPToJxN.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=Bhool%20Bhulaiyaa%203%20official%20trailer",
-    "releaseYear": 2024,
-    "language": "Hindi",
-    "genres": [
-      "Bollywood",
-      "Horror",
-      "Comedy"
-    ],
-    "duration": "2h 38m",
-    "rating": 5.5,
-    "director": "Anees Bazmee",
-    "cast": [
-      "Kartik Aaryan",
-      "Vidya Balan",
-      "Madhuri Dixit",
-      "Triptii Dimri"
-    ],
-    "type": "movie",
-    "featured": false,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
     "_id": "864692",
     "id": "864692",
     "tmdbId": 864692,
@@ -3322,58 +3063,6 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "1187619",
-    "id": "1187619",
-    "tmdbId": 1187619,
-    "title": "Shaitaan",
-    "slug": "shaitaan-1187619",
-    "description": "Kabir and his family's fun weekend retreat takes terrifying turn when an intruder takes over the control of the  body of his teenage daughter, putting her at the mercy of his increasingly sinister orders.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/oRvFzcagAcC6Q317xtV7QXzwBnj.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/yNGAfRd0VZwtSAZiC1WXWqCbvIb.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=Shaitaan%20official%20trailer",
-    "releaseYear": 2024,
-    "language": "Hindi",
-    "genres": [
-      "Bollywood",
-      "Thriller",
-      "Horror"
-    ],
-    "duration": "2h 12m",
-    "rating": 6.3,
-    "director": "Vikas Bahl",
-    "cast": [
-      "Ajay Devgn",
-      "R. Madhavan",
-      "Janki Bodiwala",
-      "Jyothika"
-    ],
-    "type": "movie",
-    "featured": false,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
     "_id": "960876",
     "id": "960876",
     "tmdbId": 960876,
@@ -3452,111 +3141,6 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Katrina Kaif",
       "Emraan Hashmi",
       "Simran"
-    ],
-    "type": "movie",
-    "featured": false,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
-    "_id": "1020951",
-    "id": "1020951",
-    "tmdbId": 1020951,
-    "title": "Chandu Champion",
-    "slug": "chandu-champion-1020951",
-    "description": "9 bullet wounds (one still in the body), three different sports and an unshakable determination to fulfill the dream of an Olympic Gold later, Muralikant Petkar, India's first Paralympian to finish at the top of the podium, got the recognition by his own country 45 years after he achieved what no athlete from his country could.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/AprEYzaWgMuSQtJXMxz1P5Z3e3P.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/b21xN1TVcFeuEKdSGxEjGKfOYhE.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=Chandu%20Champion%20official%20trailer",
-    "releaseYear": 2024,
-    "language": "Hindi",
-    "genres": [
-      "Bollywood",
-      "Drama"
-    ],
-    "duration": "2h 23m",
-    "rating": 7.2,
-    "director": "Kabir Khan",
-    "cast": [
-      "Kartik Aaryan",
-      "Vijay Raaz",
-      "Bhuvan Arora",
-      "Rajpal Yadav"
-    ],
-    "type": "movie",
-    "featured": false,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
-    "_id": "1014214",
-    "id": "1014214",
-    "tmdbId": 1014214,
-    "title": "Singham Again",
-    "slug": "singham-again-1014214",
-    "description": "The cop universe expands with newer additions while the old ones return led by Bajirao Singham. Singham Again interweaves the mythological epic Ramayana's good vs evil narrative when his wife Avni Kamath gets abducted by Danger Lanka setting Bajirao and his gang of Sangram Bhalerao and Veer Sooryavanshi along with Satya and Shakti Shetty on a mission to rescue her.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/2JbNkHg8m7LaBy61LyrnnlenaxY.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/lexEx0B4WDOXGfqPTj4R8FCrE7H.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=Singham%20Again%20official%20trailer",
-    "releaseYear": 2024,
-    "language": "Hindi",
-    "genres": [
-      "Bollywood",
-      "Action",
-      "Drama",
-      "Thriller",
-      "Crime"
-    ],
-    "duration": "2h 25m",
-    "rating": 5,
-    "director": "Rohit Shetty",
-    "cast": [
-      "Ajay Devgn",
-      "Akshay Kumar",
-      "Ranveer Singh",
-      "Tiger Shroff"
     ],
     "type": "movie",
     "featured": false,
@@ -5164,59 +4748,6 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "127532",
-    "id": "127532",
-    "tmdbId": 127532,
-    "title": "Solo Leveling",
-    "slug": "solo-leveling-127532",
-    "description": "They say whatever doesn’t kill you makes you stronger, but that’s not the case for the world’s weakest hunter Sung Jinwoo. After being brutally slaughtered by monsters in a high-ranking dungeon, Jinwoo came back with the System, a program only he could see, that’s leveling him up in every way. Now, he’s inspired to discover the secrets behind his powers and the dungeon that spawned them.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/geCRueV3ElhRTr0xtJuEWJt6dJ1.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/xMNH87maNLt9n2bMDYeI6db5VFm.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=Solo%20Leveling%20official%20trailer",
-    "releaseYear": 2024,
-    "language": "Japanese / Hindi",
-    "genres": [
-      "Anime",
-      "Animation",
-      "Action & Adventure",
-      "Sci-Fi & Fantasy"
-    ],
-    "duration": "1 Season",
-    "rating": 8.7,
-    "director": "Acclaimed Filmmaker",
-    "cast": [
-      "Taito Ban",
-      "Genta Nakamura",
-      "Haruna Mikawa",
-      "Reina Ueda"
-    ],
-    "type": "series",
-    "featured": false,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
     "_id": "94605",
     "id": "94605",
     "tmdbId": 94605,
@@ -5428,58 +4959,6 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "111110",
-    "id": "111110",
-    "tmdbId": 111110,
-    "title": "ONE PIECE",
-    "slug": "one-piece-111110",
-    "description": "With his straw hat and ragtag crew, young pirate Monkey D. Luffy goes on an epic voyage for treasure.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/blWCPEqDGLBuLB9u89CxP9ORQP4.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/qD211Hb5XwFxrszzBBe5EUYJerh.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=ONE%20PIECE%20official%20trailer",
-    "releaseYear": 2023,
-    "language": "Japanese / Hindi",
-    "genres": [
-      "Anime",
-      "Action & Adventure",
-      "Sci-Fi & Fantasy"
-    ],
-    "duration": "3 Seasons",
-    "rating": 8.1,
-    "director": "Matt Owens",
-    "cast": [
-      "Iñaki Godoy",
-      "Emily Rudd",
-      "Mackenyu",
-      "Jacob Gibson"
-    ],
-    "type": "series",
-    "featured": false,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
     "_id": "129",
     "id": "129",
     "tmdbId": 129,
@@ -5558,60 +5037,6 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Mone Kamishiraishi",
       "Ryo Narita",
       "Aoi Yuuki"
-    ],
-    "type": "movie",
-    "featured": false,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
-    "_id": "916224",
-    "id": "916224",
-    "tmdbId": 916224,
-    "title": "Suzume",
-    "slug": "suzume-916224",
-    "description": "Suzume, 17, lost her mother as a little girl. On her way to school, she meets a mysterious young man. But her curiosity unleashes a calamity that endangers the entire population of Japan, and so Suzume embarks on a journey to set things right.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/yStW1TXF5s7Tbtu9KjIZEaWl6HL.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/4tdV5AeojEdbvn6VpeQrbuDlmzs.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=Suzume%20official%20trailer",
-    "releaseYear": 2022,
-    "language": "Japanese",
-    "genres": [
-      "Anime",
-      "Animation",
-      "Drama",
-      "Adventure",
-      "Fantasy"
-    ],
-    "duration": "2h 2m",
-    "rating": 7.9,
-    "director": "Makoto Shinkai",
-    "cast": [
-      "Nanoka Hara",
-      "Hokuto Matsumura",
-      "Eri Fukatsu",
-      "Shota Sometani"
     ],
     "type": "movie",
     "featured": false,
@@ -5815,7 +5240,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Thriller"
     ],
     "duration": "1h 31m",
-    "rating": 8.8,
+    "rating": 8.7,
     "director": "Chava Cartas",
     "cast": [
       "Alfonso Herrera",
@@ -7526,59 +6951,6 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "1368337",
-    "id": "1368337",
-    "tmdbId": 1368337,
-    "title": "The Odyssey",
-    "slug": "the-odyssey-1368337",
-    "description": "Odysseus, the legendary King of Ithaca, embarks on a long and perilous journey home following the Trojan War. Throughout his voyage, he is forced to confront the whims of gods, mythological monsters, and trials that stretch both his cunning and his humanity to the breaking point.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/5rhTDKUhPYvpdQIijFIs5VoWsON.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/RMXG8myu1aGlNUsRjtxzmpdMK0.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=The%20Odyssey%20trailer",
-    "releaseYear": 2026,
-    "language": "English (Hollywood)",
-    "genres": [
-      "Adventure",
-      "Fantasy",
-      "Action",
-      "Hollywood"
-    ],
-    "duration": "1h 26m",
-    "rating": 8,
-    "director": "Marcel Walz",
-    "cast": [
-      "Myrom Kingery",
-      "Morgan Flanagan",
-      "Patrick Byrnes",
-      "Dominic Keating"
-    ],
-    "type": "movie",
-    "featured": false,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
     "_id": "1384216",
     "id": "1384216",
     "tmdbId": 1384216,
@@ -8364,58 +7736,6 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "969681",
-    "id": "969681",
-    "tmdbId": 969681,
-    "title": "Spider-Man",
-    "slug": "spider-man-969681",
-    "description": "Fighting crime full-time as Spider-Man in a world that doesn't remember him—and the pressure of seeing his old friends move on without him—sparks a change in Peter Parker he may not have the power to control. But that transformation might also be the only thing that can stop a shocking new threat to the city and those he loves - a powerful villain no one can even see.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/bjiS5ipwxb9JFy3XRRN4OAilSeX.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/pq1Mhdt9LbkQM5TOjuVZpcczbf.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=Spider-Man%20trailer",
-    "releaseYear": 2026,
-    "language": "English (Hollywood)",
-    "genres": [
-      "Action",
-      "Science Fiction",
-      "Hollywood"
-    ],
-    "duration": "2h 1m",
-    "rating": 7.9,
-    "director": "Sam Raimi",
-    "cast": [
-      "Tobey Maguire",
-      "Willem Dafoe",
-      "Kirsten Dunst",
-      "James Franco"
-    ],
-    "type": "movie",
-    "featured": false,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
     "_id": "1226863",
     "id": "1226863",
     "tmdbId": 1226863,
@@ -8603,59 +7923,6 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Jason Bateman",
       "Ke Huy Quan",
       "Fortune Feimster"
-    ],
-    "type": "movie",
-    "featured": false,
-    "trending": true,
-    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "qualities": [
-      {
-        "quality": "1080p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "2.4 GB"
-      },
-      {
-        "quality": "720p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "1.2 GB"
-      },
-      {
-        "quality": "480p",
-        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-        "fileSize": "550 MB"
-      }
-    ]
-  },
-  {
-    "_id": "1439930",
-    "id": "1439930",
-    "tmdbId": 1439930,
-    "title": "The Punisher: One Last Kill",
-    "slug": "the-punisher-one-last-kill-1439930",
-    "description": "As Frank Castle searches for meaning beyond revenge, an unexpected force pulls him back into the fight.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/qQclTgLMDvGBuUBFGHRipxkEwWR.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/qO55CD8tgVL1T4WKn6zYFFiD6lL.jpg",
-    "trailerUrl": "https://www.youtube.com/results?search_query=The%20Punisher%3A%20One%20Last%20Kill%20trailer",
-    "releaseYear": 2026,
-    "language": "English (Hollywood)",
-    "genres": [
-      "Action",
-      "Drama",
-      "Crime",
-      "Hollywood"
-    ],
-    "duration": "0h 51m",
-    "rating": 8.3,
-    "director": "Reinaldo Marcus Green",
-    "cast": [
-      "Jon Bernthal",
-      "Deborah Ann Woll",
-      "Jason R. Moore",
-      "Judith Light"
     ],
     "type": "movie",
     "featured": false,
@@ -9589,7 +8856,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "1h 43m",
-    "rating": 8.1,
+    "rating": 8,
     "director": "Dave Green",
     "cast": [
       "Will Forte",

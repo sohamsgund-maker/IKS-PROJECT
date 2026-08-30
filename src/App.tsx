@@ -77,16 +77,10 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
+    try {
+      localStorage.removeItem('cinevault_scraped_cache');
+    } catch {}
     fetchAllMovies();
-
-    // Auto-sync scraper
-    const timer = setTimeout(() => {
-      api.syncAllScraper().then(res => {
-        if (res?.data && res.data.length > 0) setMovies(res.data);
-      }).catch(() => {});
-    }, 2500);
-
-    return () => clearTimeout(timer);
   }, []);
 
   const handleToggleWatchlist = (movie: Movie) => {
