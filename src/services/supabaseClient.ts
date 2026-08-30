@@ -45,7 +45,7 @@ export async function getCloudMovies(): Promise<Movie[] | null> {
           tmdbId: item.tmdb_id || item.tmdbId,
           language: item.language || 'Hindi',
           director: item.director,
-          cast: item.cast || [],
+          cast: item.cast || item.starring || item.actors || [],
           qualities: item.qualities || [
             { quality: '1080p', videoUrl: item.video_url || item.videoUrl || '' }
           ]
