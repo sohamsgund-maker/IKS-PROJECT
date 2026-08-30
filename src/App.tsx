@@ -377,70 +377,111 @@ export const App: React.FC = () => {
           )}
         </div>
       ) : activeTab === 'south' ? (
-        /* South Indian View */
-        <div className="pt-28 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto space-y-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white font-display">🏹 South Indian Pan-India Blockbusters</h1>
-          <NetflixRow title="🔥 Trending South Indian Pan-India Hits" movies={southIndianMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="⚡ High-Octane Action & Mass Masala" movies={southIndianMovies.filter(m => m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="🏹 Epic Fantasy, Sci-Fi & Mythological" movies={southIndianMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Fantasy') || m.genres?.includes('Mythology'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="🕵️ Crime, Mystery & Suspense Thrillers" movies={southIndianMovies.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Thriller') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+        /* South Indian View with Dedicated Hero Banner */
+        <div className="space-y-4">
+          <NetflixBillboard
+            movies={southIndianMovies.slice(0, 6)}
+            onPlay={handlePlayMovie}
+            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
+            onToggleWatchlist={handleToggleWatchlist}
+          />
+          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
+            <NetflixRow title="🔥 Trending South Indian Pan-India Hits" movies={southIndianMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="⚡ High-Octane Action & Mass Masala" movies={southIndianMovies.filter(m => m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🏹 Epic Fantasy, Sci-Fi & Mythological" movies={southIndianMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Fantasy') || m.genres?.includes('Mythology'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🕵️ Crime, Mystery & Suspense Thrillers" movies={southIndianMovies.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Thriller') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+          </div>
         </div>
       ) : activeTab === 'bollywood' ? (
-        /* Bollywood View */
-        <div className="pt-28 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto space-y-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white font-display">🇮🇳 Bollywood Hits (Hindi Cinema)</h1>
-          <NetflixRow title="🔥 Trending Bollywood Blockbusters" movies={bollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="😂 Non-Stop Comedy & Family Entertainers" movies={bollywoodMovies.filter(m => m.genres?.includes('Comedy'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="🎭 Drama, Romance & Emotional Superhits" movies={bollywoodMovies.filter(m => m.genres?.includes('Drama') || m.genres?.includes('Romance'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="🩸 Dark Thrillers, Action & Crime" movies={bollywoodMovies.filter(m => m.genres?.includes('Action') || m.genres?.includes('Horror') || m.genres?.includes('Thriller'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+        /* Bollywood View with Dedicated Hero Banner */
+        <div className="space-y-4">
+          <NetflixBillboard
+            movies={bollywoodMovies.slice(0, 6)}
+            onPlay={handlePlayMovie}
+            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
+            onToggleWatchlist={handleToggleWatchlist}
+          />
+          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
+            <NetflixRow title="🔥 Trending Bollywood Blockbusters" movies={bollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="😂 Non-Stop Comedy & Family Entertainers" movies={bollywoodMovies.filter(m => m.genres?.includes('Comedy'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🎭 Drama, Romance & Emotional Superhits" movies={bollywoodMovies.filter(m => m.genres?.includes('Drama') || m.genres?.includes('Romance'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🩸 Dark Thrillers, Action & Crime" movies={bollywoodMovies.filter(m => m.genres?.includes('Action') || m.genres?.includes('Horror') || m.genres?.includes('Thriller'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+          </div>
         </div>
       ) : activeTab === 'movies' ? (
-        /* Hollywood & Global Movies View */
-        <div className="pt-28 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto space-y-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white font-display">🌍 Hollywood & Global Blockbusters</h1>
-          <NetflixRow title="🔥 Hollywood Mega Blockbusters" movies={hollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="🚀 Sci-Fi, Marvel & Multiverse Spectaculars" movies={hollywoodMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="🎨 Animated & Family Hits" movies={hollywoodMovies.filter(m => m.genres?.includes('Animation') || m.genres?.includes('Family'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="🏆 Award-Winning & Critically Acclaimed" movies={hollywoodMovies.filter(m => m.rating >= 8.0)} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+        /* Hollywood & Global Movies View with Dedicated Hero Banner */
+        <div className="space-y-4">
+          <NetflixBillboard
+            movies={hollywoodMovies.slice(0, 6)}
+            onPlay={handlePlayMovie}
+            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
+            onToggleWatchlist={handleToggleWatchlist}
+          />
+          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
+            <NetflixRow title="🔥 Hollywood Mega Blockbusters" movies={hollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🚀 Sci-Fi, Marvel & Multiverse Spectaculars" movies={hollywoodMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🎨 Animated & Family Hits" movies={hollywoodMovies.filter(m => m.genres?.includes('Animation') || m.genres?.includes('Family'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🏆 Award-Winning & Critically Acclaimed" movies={hollywoodMovies.filter(m => m.rating >= 8.0)} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+          </div>
         </div>
       ) : activeTab === 'kdrama' ? (
-        /* K-Dramas & Korean Cinema View */
-        <div className="pt-28 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto space-y-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white font-display">🇰🇷 K-Dramas & Korean Cinema</h1>
-          <NetflixRow title="🔥 Top Trending K-Dramas" movies={kdramaList} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="❤️ Romantic & Heartwarming K-Dramas" movies={kdramaList.filter(m => m.genres?.includes('Romance') || m.genres?.includes('Comedy'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="🧟 Thriller, Zombie & Dark Fantasy K-Dramas" movies={kdramaList.filter(m => m.genres?.includes('Thriller') || m.genres?.includes('Horror') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+        /* K-Dramas & Korean Cinema View with Dedicated Hero Banner */
+        <div className="space-y-4">
+          <NetflixBillboard
+            movies={kdramaList.slice(0, 6)}
+            onPlay={handlePlayMovie}
+            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
+            onToggleWatchlist={handleToggleWatchlist}
+          />
+          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
+            <NetflixRow title="🔥 Top Trending K-Dramas" movies={kdramaList} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="❤️ Romantic & Heartwarming K-Dramas" movies={kdramaList.filter(m => m.genres?.includes('Romance') || m.genres?.includes('Comedy'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🧟 Thriller, Zombie & Dark Fantasy K-Dramas" movies={kdramaList.filter(m => m.genres?.includes('Thriller') || m.genres?.includes('Horror') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+          </div>
         </div>
       ) : activeTab === 'anime' ? (
-        /* Anime View */
-        <div className="pt-28 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto space-y-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white font-display">⚔️ Popular Anime Spotlight</h1>
-          <NetflixRow title="🔥 Trending Shonen & Dark Fantasy Anime" movies={animeList} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="⚡ Action, Superpowers & Battles" movies={animeList.filter(m => m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="🌸 Supernatural, Isekai & Adventure" movies={animeList.filter(m => m.genres?.includes('Supernatural') || m.genres?.includes('Fantasy') || m.genres?.includes('Adventure'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="🎬 Masterpiece Anime Movies" movies={animeList.filter(m => m.type === 'movie')} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+        /* Anime View with Dedicated Hero Banner */
+        <div className="space-y-4">
+          <NetflixBillboard
+            movies={animeList.slice(0, 6)}
+            onPlay={handlePlayMovie}
+            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
+            onToggleWatchlist={handleToggleWatchlist}
+          />
+          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
+            <NetflixRow title="🔥 Trending Shonen & Dark Fantasy Anime" movies={animeList} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="⚡ Action, Superpowers & Battles" movies={animeList.filter(m => m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🌸 Supernatural, Isekai & Adventure" movies={animeList.filter(m => m.genres?.includes('Supernatural') || m.genres?.includes('Fantasy') || m.genres?.includes('Adventure'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🎬 Masterpiece Anime Movies" movies={animeList.filter(m => m.type === 'movie')} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+          </div>
         </div>
       ) : activeTab === 'series' ? (
-        /* TV Series View */
-        <div className="pt-28 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto space-y-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white font-display">📺 TV Shows & Web Series</h1>
-          <NetflixRow title="🔥 Binge-Worthy TV Shows" movies={webSeries} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="🚀 Sci-Fi, Mystery & Supernatural Series" movies={webSeries.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-          <NetflixRow title="💥 Crime, Thrillers & Drama Series" movies={webSeries.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Drama'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+        /* TV Series View with Dedicated Hero Banner */
+        <div className="space-y-4">
+          <NetflixBillboard
+            movies={webSeries.slice(0, 6)}
+            onPlay={handlePlayMovie}
+            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
+            onToggleWatchlist={handleToggleWatchlist}
+          />
+          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
+            <NetflixRow title="🔥 Binge-Worthy TV Shows" movies={webSeries} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🚀 Sci-Fi, Mystery & Supernatural Series" movies={webSeries.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="💥 Crime, Thrillers & Drama Series" movies={webSeries.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Drama'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+          </div>
         </div>
       ) : (
-        /* NETFLIX HOMEPAGE (Full Netflix Experience) */
+        /* NETFLIX HOMEPAGE (Full Netflix Experience with Auto-Rotating Hero Carousel) */
         <div className="space-y-4">
-          {/* 1. Massive Netflix Billboard Hero */}
-          {heroMovie && (
-            <NetflixBillboard
-              movie={heroMovie}
-              onPlay={handlePlayMovie}
-              onMoreInfo={(m) => setSelectedMovieForInfo(m)}
-              onToggleWatchlist={handleToggleWatchlist}
-              isWatchlisted={Boolean((heroMovie.id && watchlistIds.has(heroMovie.id)) || (heroMovie.tmdbId && watchlistIds.has(heroMovie.tmdbId)))}
-            />
-          )}
+          {/* 1. Massive Netflix Billboard Hero with Multi-Banner Auto-Rotation */}
+          <NetflixBillboard
+            movies={movies.filter(m => m.featured || m.trending).slice(0, 8)}
+            movie={heroMovie}
+            onPlay={handlePlayMovie}
+            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
+            onToggleWatchlist={handleToggleWatchlist}
+            isWatchlisted={Boolean((heroMovie?.id && watchlistIds.has(heroMovie.id)) || (heroMovie?.tmdbId && watchlistIds.has(heroMovie.tmdbId)))}
+          />
 
           <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
             {/* 2. Top 10 in India Today (Numbered Rank Row) */}

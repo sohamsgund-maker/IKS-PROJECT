@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Play, Plus, Check, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Plus, Check, Info, Star } from 'lucide-react';
 import type { Movie } from '../types/movie';
 
 interface NetflixRowProps {
@@ -94,21 +94,29 @@ export const NetflixRow: React.FC<NetflixRowProps> = ({
                     {rank}
                   </span>
 
-                  {/* Card Poster */}
+                  {/* Card Poster Banner */}
                   <div className="w-28 sm:w-36 md:w-44 aspect-[2/3] rounded overflow-hidden bg-[#202020] relative shadow-lg netflix-card-hover z-20">
                     <img
-                      src={movie.posterUrl}
+                      src={movie.posterUrl || movie.backdropUrl}
                       alt={movie.title}
                       className="w-full h-full object-cover img-smooth"
                       loading="lazy"
                       decoding="async"
                     />
 
+                    {/* Top Quality Badge */}
+                    <div className="absolute top-1.5 right-1.5 z-20">
+                      <span className="px-1 py-0.2 rounded bg-black/80 backdrop-blur-sm text-[8px] sm:text-[9px] font-black text-amber-400 border border-amber-500/30 flex items-center gap-0.5">
+                        <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                        {movie.rating ? movie.rating.toFixed(1) : '8.5'}
+                      </span>
+                    </div>
+
                     {/* Hover Overlay Actions (Laptop/Desktop) */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/card:opacity-100 transition-opacity p-2 flex flex-col justify-between hidden sm:flex">
                       <div className="flex justify-end">
-                        <span className="px-1 py-0.5 rounded bg-black/80 text-[10px] font-bold text-[#46d369]">
-                          98% Match
+                        <span className="px-1 py-0.5 rounded bg-[#E50914] text-[9px] font-extrabold text-white">
+                          4K UHD
                         </span>
                       </div>
                       <div className="flex items-center justify-center gap-2">
@@ -118,6 +126,7 @@ export const NetflixRow: React.FC<NetflixRowProps> = ({
                             onPlayMovie(movie);
                           }}
                           className="p-2 rounded-full bg-white text-black hover:bg-white/80 cursor-pointer transition-transform hover:scale-110"
+                          title="Play"
                         >
                           <Play className="w-4 h-4 fill-current ml-0.5" />
                         </button>
@@ -128,6 +137,7 @@ export const NetflixRow: React.FC<NetflixRowProps> = ({
                               onToggleWatchlist(movie);
                             }}
                             className="p-2 rounded-full border border-white/60 hover:border-white text-white bg-black/40 cursor-pointer"
+                            title="Watchlist"
                           >
                             {isWatchlisted ? <Check className="w-4 h-4 text-[#E50914]" /> : <Plus className="w-4 h-4" />}
                           </button>
@@ -139,7 +149,7 @@ export const NetflixRow: React.FC<NetflixRowProps> = ({
               );
             }
 
-            /* Standard Netflix Landscape / Poster Card */
+            /* Standard Netflix Landscape Backdrop Banner Card */
             return (
               <div
                 key={movie.id || movie.tmdbId || idx}
@@ -155,12 +165,23 @@ export const NetflixRow: React.FC<NetflixRowProps> = ({
                     loading="lazy"
                     decoding="async"
                   />
+                  
+                  {/* Top Badges (Quality & Language) */}
+                  <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between z-10 pointer-events-none">
+                    <span className="px-1.5 py-0.2 rounded bg-black/75 backdrop-blur-sm text-[8px] sm:text-[9px] font-black text-white border border-white/20">
+                      4K UHD
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded bg-[#E50914]/90 text-[8px] sm:text-[9px] font-bold text-white shadow">
+                      {movie.language?.includes('Hindi') ? 'HINDI' : (movie.language?.includes('Telugu') ? 'TELUGU' : 'DUAL')}
+                    </span>
+                  </div>
+
                   {/* Subtle shadow overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
                   {/* Title overlay inside card */}
                   <div className="absolute bottom-1.5 left-2 right-2">
-                    <h3 className="text-xs sm:text-sm font-bold text-white truncate drop-shadow-md">
+                    <h3 className="text-xs sm:text-sm font-bold text-white truncate drop-shadow-md font-display">
                       {movie.title}
                     </h3>
                   </div>
