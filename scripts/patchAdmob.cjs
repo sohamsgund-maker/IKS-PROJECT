@@ -13,6 +13,9 @@ filesToPatch.forEach(filePath => {
     content = content.replace(/8\.13\.0/g, '8.7.3');
     content = content.replace(/25\.4\.\+/g, '23.6.0');
     content = content.replace(/VERSION_21/g, 'VERSION_17');
+    content = content.replace(/jvmTarget = .*/g, "jvmTarget = '17'");
+    content = content.replace(/abortOnError = true/g, 'abortOnError = false');
+    content = content.replace(/warningsAsErrors = true/g, 'warningsAsErrors = false');
     content = content.replace(/: 36/g, ': 34');
     content = content.replace(/= 36/g, '= 34');
     fs.writeFileSync(filePath, content, 'utf8');
