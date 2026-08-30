@@ -3,6 +3,8 @@ name: Build Android APK (CineVault)
 on:
   push:
     branches: [ main ]
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
