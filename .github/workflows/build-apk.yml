@@ -42,14 +42,6 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept Android SDK Licenses & Install Platform 34
-        run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
-
       - name: Sync Web Assets with Capacitor Android
         run: npx cap sync android
 
