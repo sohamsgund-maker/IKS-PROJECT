@@ -10,6 +10,10 @@
     --netflix-light: #e5e5e5;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: #141414;
     color: #ffffff;
@@ -17,7 +21,6 @@
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeSpeed;
   }
 
   h1, h2, h3, h4, .font-display {
@@ -25,31 +28,23 @@
   }
 }
 
-/* Low-Range & Budget Device High Performance Utilities */
+/* High Performance Card Transformations */
 .netflix-card-hover {
-  transform: translate3d(0, 0, 0);
+  transform: translateZ(0);
   backface-visibility: hidden;
-  will-change: auto;
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .netflix-card-hover:hover {
-    transform: scale3d(1.05, 1.05, 1);
+    transform: scale(1.04);
     z-index: 30;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85);
   }
 }
 
-/* Off-screen Content Rendering Optimization (Saves 80%+ GPU & CPU on scroll) */
-.netflix-row-container {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 240px;
-}
-
 .img-smooth {
-  content-visibility: auto;
-  transform: translate3d(0, 0, 0);
+  transform: translateZ(0);
 }
 
 /* Custom Minimal Netflix Scrollbar */

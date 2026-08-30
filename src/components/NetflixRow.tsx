@@ -23,7 +23,6 @@ export const NetflixRow: React.FC<NetflixRowProps> = memo(({
 }) => {
   const rowRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(true);
 
   if (!movies || movies.length === 0) return null;
 
@@ -33,19 +32,12 @@ export const NetflixRow: React.FC<NetflixRowProps> = memo(({
       const scrollAmount = clientWidth * 0.75;
       const newScrollLeft = direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount;
       rowRef.current.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
-    }
-  };
-
-  const onScroll = () => {
-    if (rowRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = rowRef.current;
-      setShowLeftArrow(scrollLeft > 20);
-      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 20);
+      setShowLeftArrow(newScrollLeft > 10);
     }
   };
 
   return (
-    <section className="space-y-1.5 group/row relative px-3 sm:px-8 lg:px-12 my-3 sm:my-6 select-none netflix-row-container">
+    <section className="space-y-1.5 relative px-3 sm:px-8 lg:px-12 my-3 sm:my-6 select-none">
       {/* Row Header Title */}
       <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-[#e5e5e5] hover:text-white transition-colors tracking-tight flex items-center justify-between font-display cursor-pointer px-1">
         <span className="truncate">{title}</span>
@@ -55,7 +47,7 @@ export const NetflixRow: React.FC<NetflixRowProps> = memo(({
       </h2>
 
       {/* Slider Container */}
-      <div className="relative">
+      <div className="relative group/row">
         {/* Left Arrow Button (Desktop Only) */}
         {showLeftArrow && (
           <button
@@ -67,11 +59,10 @@ export const NetflixRow: React.FC<NetflixRowProps> = memo(({
           </button>
         )}
 
-        {/* Horizontal Card Track */}
+        {/* Horizontal Card Track (Fluid touch scrollable in all directions) */}
         <div
           ref={rowRef}
-          onScroll={onScroll}
-          className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none py-2 px-1 overscroll-x-contain touch-pan-x"
+          className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none py-2 px-1"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {movies.map((movie, idx) => {
@@ -181,7 +172,7 @@ export const NetflixRow: React.FC<NetflixRowProps> = memo(({
 
                   {/* Title overlay inside card */}
                   <div className="absolute bottom-1 left-2 right-2">
-                    <h3 className="text-xs sm:text-sm font-bold text-white truncate drop-shadow-md font-display">
+                    <h3 className="text-xs sm:text-sm font-bold text-white truncate drop-shadow font-display">
                       {movie.title}
                     </h3>
                   </div>
@@ -250,15 +241,13 @@ export const NetflixRow: React.FC<NetflixRowProps> = memo(({
         </div>
 
         {/* Right Arrow Button (Desktop Only) */}
-        {showRightArrow && (
-          <button
-            onClick={() => handleScroll('right')}
-            className="hidden md:flex absolute right-0 top-0 bottom-0 z-40 w-10 sm:w-12 bg-black/80 hover:bg-black text-white items-center justify-center transition-all cursor-pointer rounded-l"
-            title="Scroll Right"
-          >
-            <ChevronRight className="w-7 h-7" />
-          </button>
-        )}
+        <button
+          onClick={() => handleScroll('right')}
+          className="hidden md:flex absolute right-0 top-0 bottom-0 z-40 w-10 sm:w-12 bg-black/80 hover:bg-black text-white items-center justify-center transition-all cursor-pointer rounded-l"
+          title="Scroll Right"
+        >
+          <ChevronRight className="w-7 h-7" />
+        </button>
       </div>
     </section>
   );

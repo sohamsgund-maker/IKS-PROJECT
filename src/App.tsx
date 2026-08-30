@@ -136,7 +136,7 @@ export const App: React.FC = () => {
     return movies.filter((m) => 
       m.genres?.includes('Bollywood') || 
       m.language?.toLowerCase().includes('hindi')
-    );
+    ).slice(0, 16);
   }, [movies]);
 
   const southIndianMovies = useMemo(() => {
@@ -148,7 +148,7 @@ export const App: React.FC = () => {
         m.language?.toLowerCase().includes('kannada') ||
         m.language?.toLowerCase().includes('malayalam') ||
         m.language?.toLowerCase().includes('south')
-    );
+    ).slice(0, 16);
   }, [movies]);
 
   const hollywoodMovies = useMemo(() => {
@@ -160,7 +160,7 @@ export const App: React.FC = () => {
           !m.genres?.includes('Anime') &&
           !m.genres?.includes('K-Drama') &&
           m.type === 'movie')
-    );
+    ).slice(0, 16);
   }, [movies]);
 
   const kdramaList = useMemo(() => {
@@ -174,7 +174,7 @@ export const App: React.FC = () => {
         m.title.toLowerCase().includes('glory') ||
         m.title.toLowerCase().includes('sweet home') ||
         m.title.toLowerCase().includes('all of us are dead')
-    );
+    ).slice(0, 16);
   }, [movies]);
 
   const animeList = useMemo(() => {
@@ -182,13 +182,13 @@ export const App: React.FC = () => {
       (m) => 
         m.genres?.includes('Anime') || 
         m.language?.toLowerCase().includes('japanese')
-    );
+    ).slice(0, 16);
   }, [movies]);
 
   const webSeries = useMemo(() => {
     return movies.filter(
       (m) => m.type === 'series' && !m.genres?.includes('Anime')
-    );
+    ).slice(0, 16);
   }, [movies]);
 
   // Instant & Debounced Search Results
