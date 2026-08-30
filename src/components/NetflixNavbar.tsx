@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { Search, Bell, X, Settings, ChevronDown, Sparkles } from 'lucide-react';
 import type { AuthUser } from '../types/movie';
 
@@ -12,7 +12,7 @@ interface NetflixNavbarProps {
   watchlistCount?: number;
 }
 
-export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
+export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
   activeTab,
   setActiveTab,
   searchQuery,
@@ -27,8 +27,15 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 25);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -64,14 +71,14 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
 
   return (
     <header
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 inset-x-0 z-50 transition-colors duration-200 ${
         isScrolled
-          ? 'bg-[#141414]/95 backdrop-blur-md shadow-2xl border-b border-white/5'
-          : 'bg-gradient-to-b from-black/90 via-black/50 to-transparent'
+          ? 'bg-[#141414]/98 shadow-xl border-b border-zinc-800'
+          : 'bg-gradient-to-b from-black/90 via-black/40 to-transparent'
       }`}
     >
       {/* Primary Top Bar */}
-      <div className="max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 h-14 sm:h-18 flex items-center justify-between gap-3 sm:gap-4">
+      <div className="max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 h-14 sm:h-16 flex items-center justify-between gap-3 sm:gap-4">
         {/* Left Side: Brand Logo + Primary Nav Links */}
         <div className="flex items-center gap-4 sm:gap-8 lg:gap-10">
           {/* Netflix Red Logo */}
@@ -82,7 +89,7 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
             }}
             className="flex items-center gap-1 cursor-pointer select-none group focus:outline-none"
           >
-            <span className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tighter text-[#E50914] uppercase drop-shadow-md group-hover:scale-105 transition-transform font-display">
+            <span className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tighter text-[#E50914] uppercase drop-shadow font-display">
               CINEVAULT
             </span>
           </button>
@@ -113,18 +120,18 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
 
         {/* Right Side: Search, Notifications, Settings */}
         <div className="flex items-center gap-2 sm:gap-4 text-white">
-          {/* Search Box (Expandable Netflix Style) */}
+          {/* Search Box */}
           <div className="relative flex items-center">
             {isSearchOpen ? (
-              <div className="flex items-center bg-black/90 border border-white/80 px-2.5 py-1.5 rounded-sm transition-all duration-300 shadow-xl">
+              <div className="flex items-center bg-black/95 border border-white/80 px-2.5 py-1.5 rounded-sm shadow-xl">
                 <Search className="w-4 h-4 text-white mr-2 flex-shrink-0" />
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Titles, people, genres..."
+                  placeholder="Search movies, anime, stars..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none w-32 sm:w-60"
+                  className="bg-transparent text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none w-36 sm:w-60"
                 />
                 <button
                   onClick={() => {
@@ -174,9 +181,10 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
                 <div className="space-y-2.5">
                   <div className="flex gap-3 items-start hover:bg-zinc-800/50 p-1.5 rounded transition-colors cursor-pointer">
                     <img
-                      src="https://image.tmdb.org/t/p/w780/oiIPU4lvnI0Ag2K9cyAi44eCaoE.jpg"
+                      src="https://image.tmdb.org/t/p/w342/oiIPU4lvnI0Ag2K9cyAi44eCaoE.jpg"
                       alt="Toxic"
                       className="w-12 h-16 object-cover rounded"
+                      loading="lazy"
                     />
                     <div>
                       <span className="font-bold text-white block">New Arrival: Toxic</span>
@@ -187,9 +195,10 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
                   </div>
                   <div className="flex gap-3 items-start hover:bg-zinc-800/50 p-1.5 rounded transition-colors cursor-pointer">
                     <img
-                      src="https://image.tmdb.org/t/p/w780/bS4p0m5kL1w8kL5n0a2B4m8o0.jpg"
+                      src="https://image.tmdb.org/t/p/w342/bS4p0m5kL1w8kL5n0a2B4m8o0.jpg"
                       alt="Pushpa 2"
                       className="w-12 h-16 object-cover rounded"
+                      loading="lazy"
                     />
                     <div>
                       <span className="font-bold text-white block">Pushpa 2: The Rule</span>
@@ -203,19 +212,19 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
             )}
           </div>
 
-          {/* Settings & Audio Preferences */}
+          {/* Settings */}
           <button
             onClick={onOpenSettings}
             className="p-1.5 sm:p-2 text-zinc-300 hover:text-white transition-colors cursor-pointer"
-            title="Settings & Audio Preferences"
+            title="Settings"
           >
             <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>
 
-      {/* Mobile Sub-Header Category Pills (Netflix App Mobile UI) */}
-      <div className="lg:hidden px-4 pb-2 pt-0.5 flex items-center justify-around text-xs font-semibold border-t border-white/5 bg-black/40 backdrop-blur-sm">
+      {/* Mobile Sub-Header Category Pills */}
+      <div className="lg:hidden px-4 pb-2 pt-0.5 flex items-center justify-around text-xs font-semibold border-t border-zinc-800/80 bg-[#141414]">
         <button
           onClick={() => {
             setActiveTab('series');
@@ -242,7 +251,7 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
 
         <button
           onClick={() => setIsCategoriesMenuOpen(true)}
-          className="flex items-center gap-1 py-1 px-3 rounded-full text-zinc-300 hover:text-white border border-zinc-700 bg-zinc-900/60 cursor-pointer"
+          className="flex items-center gap-1 py-1 px-3 rounded-full text-zinc-300 hover:text-white border border-zinc-700 bg-zinc-900 cursor-pointer"
         >
           <span>Categories</span>
           <ChevronDown className="w-3.5 h-3.5" />
@@ -251,8 +260,8 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
 
       {/* Mobile Categories Modal / Drawer */}
       {isCategoriesMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col justify-end p-4 animate-fade-in">
-          <div className="bg-[#181818] border border-zinc-800 rounded-2xl p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/90 flex flex-col justify-end p-4 animate-fade-in">
+          <div className="bg-[#181818] border border-zinc-800 rounded-2xl p-5 space-y-3 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
               <span className="text-base font-bold text-white flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#E50914]" />
@@ -276,8 +285,8 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
                     setSearchQuery('');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className={`text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-between ${
-                    activeTab === cat.id ? 'bg-[#E50914] text-white font-bold' : 'bg-zinc-800/60 text-zinc-200 hover:bg-zinc-800'
+                  className={`text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-between ${
+                    activeTab === cat.id ? 'bg-[#E50914] text-white font-bold' : 'bg-zinc-800/70 text-zinc-200 hover:bg-zinc-800'
                   }`}
                 >
                   <span>{cat.label}</span>
@@ -290,4 +299,6 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
       )}
     </header>
   );
-};
+});
+
+export default NetflixNavbar;

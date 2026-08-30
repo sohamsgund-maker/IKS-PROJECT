@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { Play, Info, Volume2, VolumeX, Plus, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Movie } from '../types/movie';
 
@@ -11,7 +11,7 @@ interface NetflixBillboardProps {
   isWatchlisted?: boolean;
 }
 
-export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
+export const NetflixBillboard: React.FC<NetflixBillboardProps> = memo(({
   movie,
   movies,
   onPlay,
@@ -27,13 +27,35 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
   const billboardList = movies && movies.length > 0 ? movies : (movie ? [movie] : []);
   const activeMovie = billboardList[currentIndex] || billboardList[0] || movie;
 
-  // Auto-rotate hero banners every 6.5s unless hovered
+  // Auto-rotate hero banners every 7s unless hovered or page is hidden
   useEffect(() => {
     if (billboardList.length <= 1 || isHovered) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % billboardList.length);
-    }, 6500);
-    return () => clearInterval(interval);
+
+    let interval: any = null;
+    const startTimer = () => {
+      interval = setInterval(() => {
+        if (!document.hidden) {
+          setCurrentIndex((prev) => (prev + 1) % billboardList.length);
+        }
+      }, 7000);
+    };
+
+    startTimer();
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        clearInterval(interval);
+      } else {
+        startTimer();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [billboardList.length, isHovered]);
 
   if (!activeMovie) return null;
@@ -50,12 +72,12 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
 
   return (
     <div 
-      className="relative w-full h-[65vh] sm:h-[78vh] lg:h-[88vh] bg-black select-none overflow-hidden group/billboard"
+      className="relative w-full h-[60vh] sm:h-[75vh] lg:h-[85vh] bg-black select-none overflow-hidden group/billboard"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Cinematic Edge-to-Edge Backdrop Banner */}
-      <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-950">
+      <div className="absolute inset-0 bg-black">
         <img
           key={activeMovie.id || activeMovie.tmdbId}
           src={activeMovie.backdropUrl || activeMovie.posterUrl}
@@ -63,18 +85,17 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
           fetchPriority="high"
           decoding="async"
           onError={(e) => {
-            // Fallback to posterUrl if backdrop fails
             const target = e.currentTarget;
             if (activeMovie.posterUrl && target.src !== activeMovie.posterUrl) {
               target.src = activeMovie.posterUrl;
             }
           }}
-          className="w-full h-full object-cover object-top sm:object-center transform scale-105 transition-all duration-1000 animate-fade-in img-smooth"
+          className="w-full h-full object-cover object-top sm:object-center transform scale-100 sm:scale-105 transition-transform duration-700 animate-fade-in img-smooth"
         />
         {/* Netflix Signature Multi-layered Dark Gradients */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/50 to-transparent w-full sm:w-2/3 hidden sm:block" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/60 to-black/30 sm:via-[#141414]/30" />
-        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/80 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/80 to-transparent" />
       </div>
 
       {/* Manual Slide Navigation Arrows (Desktop / Tablet) */}
@@ -82,7 +103,7 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
         <>
           <button
             onClick={handlePrev}
-            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-40 w-11 h-11 rounded-full bg-black/40 hover:bg-black/80 text-white items-center justify-center transition-all opacity-0 group-hover/billboard:opacity-100 cursor-pointer backdrop-blur-sm shadow-xl"
+            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white items-center justify-center transition-all opacity-0 group-hover/billboard:opacity-100 cursor-pointer shadow-lg"
             title="Previous Banner"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -90,7 +111,7 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
 
           <button
             onClick={handleNext}
-            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-40 w-11 h-11 rounded-full bg-black/40 hover:bg-black/80 text-white items-center justify-center transition-all opacity-0 group-hover/billboard:opacity-100 cursor-pointer backdrop-blur-sm shadow-xl"
+            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white items-center justify-center transition-all opacity-0 group-hover/billboard:opacity-100 cursor-pointer shadow-lg"
             title="Next Banner"
           >
             <ChevronRight className="w-6 h-6" />
@@ -99,25 +120,25 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
       )}
 
       {/* Content Container (Desktop & Mobile Layout) */}
-      <div className="relative z-20 max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 h-full flex flex-col justify-end pb-12 sm:pb-24 lg:pb-28">
+      <div className="relative z-20 max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 h-full flex flex-col justify-end pb-10 sm:pb-20 lg:pb-24">
         
         {/* Mobile Centered Content Layout (< 640px) */}
-        <div className="sm:hidden flex flex-col items-center text-center space-y-3 pb-2">
+        <div className="sm:hidden flex flex-col items-center text-center space-y-2.5 pb-2">
           {/* N Series / Film Badge */}
-          <div className="flex items-center gap-1.5">
-            <span className="font-display font-black text-[#E50914] text-lg">N</span>
-            <span className="text-[10px] font-bold text-zinc-300 tracking-[0.2em] uppercase">
+          <div className="flex items-center gap-1">
+            <span className="font-display font-black text-[#E50914] text-base">N</span>
+            <span className="text-[9px] font-bold text-zinc-300 tracking-[0.2em] uppercase">
               {activeMovie.type === 'series' ? 'SERIES' : 'FILM'}
             </span>
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl font-black text-white tracking-tight leading-tight drop-shadow-md font-display line-clamp-2 px-2">
+          <h1 className="text-xl font-black text-white tracking-tight leading-tight drop-shadow font-display line-clamp-2 px-2">
             {activeMovie.title}
           </h1>
 
           {/* Centered Genre Chips */}
-          <div className="flex flex-wrap items-center justify-center gap-1.5 text-[11px] text-zinc-300 font-semibold">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 text-[10px] text-zinc-300 font-semibold">
             {activeMovie.genres?.slice(0, 3).map((g, i) => (
               <span key={g} className="flex items-center">
                 {g}
@@ -129,12 +150,11 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
           </div>
 
           {/* 3-Button Mobile Control Bar */}
-          <div className="flex items-center justify-center gap-6 w-full pt-1">
-            {/* My List Icon Button */}
+          <div className="flex items-center justify-center gap-5 w-full pt-1">
             {onToggleWatchlist && (
               <button
                 onClick={() => onToggleWatchlist(activeMovie)}
-                className="flex flex-col items-center gap-1 text-zinc-200 hover:text-white cursor-pointer min-w-[50px]"
+                className="flex flex-col items-center gap-1 text-zinc-200 hover:text-white cursor-pointer min-w-[48px]"
               >
                 {isWatchlisted ? (
                   <Check className="w-5 h-5 text-[#E50914]" />
@@ -148,7 +168,7 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
             {/* Prominent Center Play Button */}
             <button
               onClick={() => onPlay(activeMovie)}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 rounded bg-white text-black font-extrabold text-sm shadow-xl active:scale-95 cursor-pointer"
+              className="flex items-center justify-center gap-2 px-6 py-2 rounded bg-white text-black font-extrabold text-sm shadow-xl active:scale-95 cursor-pointer"
             >
               <Play className="w-4 h-4 fill-current ml-0.5" />
               <span>Play</span>
@@ -157,7 +177,7 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
             {/* Info Icon Button */}
             <button
               onClick={() => onMoreInfo(activeMovie)}
-              className="flex flex-col items-center gap-1 text-zinc-200 hover:text-white cursor-pointer min-w-[50px]"
+              className="flex flex-col items-center gap-1 text-zinc-200 hover:text-white cursor-pointer min-w-[48px]"
             >
               <Info className="w-5 h-5 text-white" />
               <span className="text-[10px] font-medium">Info</span>
@@ -166,7 +186,7 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
         </div>
 
         {/* Desktop / Tablet Left-Aligned Layout (>= 640px) */}
-        <div className="hidden sm:flex flex-col max-w-2xl lg:max-w-3xl space-y-4 sm:space-y-6">
+        <div className="hidden sm:flex flex-col max-w-2xl lg:max-w-3xl space-y-3 sm:space-y-4">
           {/* N Series / Film Badge */}
           <div className="flex items-center gap-2">
             <span className="font-display font-black text-[#E50914] text-xl tracking-tighter">N</span>
@@ -176,18 +196,14 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
           </div>
 
           {/* Giant Title */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-none drop-shadow-2xl font-display">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-none drop-shadow font-display">
             {activeMovie.title}
           </h1>
 
           {/* Metadata Chips */}
-          <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm font-semibold">
+          <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-semibold">
             <span className="text-[#46d369] font-bold">98% Match</span>
             <span className="text-zinc-300">{activeMovie.releaseYear}</span>
-            <span className="px-1.5 py-0.5 rounded border border-zinc-500 text-[10px] text-zinc-300 font-bold uppercase">
-              U/A 16+
-            </span>
-            <span className="text-zinc-300">{activeMovie.duration}</span>
             <span className="px-1.5 py-0.2 rounded border border-zinc-600 text-[9px] text-zinc-400 font-bold">
               Ultra HD 4K
             </span>
@@ -197,35 +213,35 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
           </div>
 
           {/* Synopsis */}
-          <p className="text-xs sm:text-sm lg:text-base text-zinc-200 line-clamp-3 leading-relaxed drop-shadow-md max-w-xl font-normal">
+          <p className="text-xs sm:text-sm text-zinc-200 line-clamp-3 leading-relaxed drop-shadow max-w-xl font-normal">
             {activeMovie.description}
           </p>
 
           {/* Desktop Action Buttons */}
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-3 pt-1">
             <button
               onClick={() => onPlay(activeMovie)}
-              className="flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 rounded bg-white hover:bg-white/80 text-black font-extrabold text-sm sm:text-base transition-all cursor-pointer shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 sm:px-7 py-2 sm:py-2.5 rounded bg-white hover:bg-white/80 text-black font-extrabold text-sm transition-all cursor-pointer shadow-lg active:scale-95"
             >
-              <Play className="w-5 h-5 fill-current" />
+              <Play className="w-4 h-4 fill-current" />
               <span>Play</span>
             </button>
 
             <button
               onClick={() => onMoreInfo(activeMovie)}
-              className="flex items-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 rounded bg-zinc-600/70 hover:bg-zinc-600/50 text-white font-bold text-sm sm:text-base transition-all cursor-pointer backdrop-blur-md active:scale-95"
+              className="flex items-center gap-2 px-5 sm:px-6 py-2 sm:py-2.5 rounded bg-zinc-700/80 hover:bg-zinc-700 text-white font-bold text-sm transition-all cursor-pointer active:scale-95"
             >
-              <Info className="w-5 h-5" />
+              <Info className="w-4 h-4" />
               <span>More Info</span>
             </button>
 
             {onToggleWatchlist && (
               <button
                 onClick={() => onToggleWatchlist(activeMovie)}
-                className="p-2.5 sm:p-3 rounded-full border border-white/40 hover:border-white text-white hover:bg-white/10 transition-colors cursor-pointer"
+                className="p-2 sm:p-2.5 rounded-full border border-white/40 hover:border-white text-white hover:bg-white/10 transition-colors cursor-pointer"
                 title={isWatchlisted ? 'In My List' : 'Add to My List'}
               >
-                {isWatchlisted ? <Check className="w-5 h-5 text-[#E50914]" /> : <Plus className="w-5 h-5" />}
+                {isWatchlisted ? <Check className="w-4 h-4 text-[#E50914]" /> : <Plus className="w-4 h-4" />}
               </button>
             )}
           </div>
@@ -233,8 +249,8 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
 
       </div>
 
-      {/* Volume, Maturity & Carousel Dots (Desktop Right) */}
-      <div className="absolute right-0 bottom-24 lg:bottom-28 z-30 hidden sm:flex items-center gap-3 pr-4 sm:pr-8 lg:pr-12">
+      {/* Volume & Carousel Dots (Desktop Right) */}
+      <div className="absolute right-0 bottom-20 lg:bottom-24 z-30 hidden sm:flex items-center gap-3 pr-4 sm:pr-8 lg:pr-12">
         {/* Banner Slide Dots */}
         {billboardList.length > 1 && (
           <div className="flex items-center gap-1.5 mr-2">
@@ -253,16 +269,14 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
 
         <button
           onClick={() => setIsMuted(!isMuted)}
-          className="p-2.5 rounded-full border border-white/60 hover:border-white text-white bg-black/40 hover:bg-black/60 transition-colors cursor-pointer backdrop-blur-sm"
+          className="p-2 rounded-full border border-white/60 hover:border-white text-white bg-black/50 hover:bg-black/80 transition-colors cursor-pointer"
           title={isMuted ? 'Unmute' : 'Mute'}
         >
-          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
         </button>
-
-        <div className="border-l-4 border-zinc-400 bg-black/50 backdrop-blur-sm py-1 px-3 text-xs text-zinc-300 font-bold uppercase tracking-wider">
-          U/A 16+
-        </div>
       </div>
     </div>
   );
-};
+});
+
+export default NetflixBillboard;
