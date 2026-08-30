@@ -18,6 +18,9 @@ filesToPatch.forEach(filePath => {
     content = content.replace(/jvmTarget = .*/g, "jvmTarget = '17'");
     content = content.replace(/abortOnError = true/g, 'abortOnError = false');
     content = content.replace(/warningsAsErrors = true/g, 'warningsAsErrors = false');
+    content = content.replace(/testImplementation .*/g, '// removed test dep');
+    content = content.replace(/testRuntimeOnly .*/g, '// removed test dep');
+    content = content.replace(/androidTestImplementation .*/g, '// removed test dep');
     content = content.replace(/: 36/g, ': 34');
     content = content.replace(/= 36/g, '= 34');
     fs.writeFileSync(filePath, content, 'utf8');
