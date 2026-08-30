@@ -3,7 +3,8 @@ import Hls from 'hls.js';
 import {
   ArrowLeft, Settings, X, Check, Play,
   Maximize, Languages, Server,
-  Sparkles, Film, ListVideo, Zap, Activity
+  Sparkles, Film, ListVideo, Zap, Activity,
+  Captions, Subtitles, Volume2
 } from 'lucide-react';
 import type { Movie, MovieQuality } from '../types/movie';
 import { getEmbedUrl, SUPPORTED_LANGUAGES } from '../services/api';
@@ -21,7 +22,6 @@ interface CDNServer {
   location: string;
   badge: string;
   ping: number;
-  hasHindi: boolean;
 }
 
 const CDN_SERVERS: CDNServer[] = [
@@ -31,15 +31,13 @@ const CDN_SERVERS: CDNServer[] = [
     location: 'Mumbai / Delhi Edge',
     badge: '⚡ Lowest Latency',
     ping: 12,
-    hasHindi: true,
   },
   {
     id: 'autoembed',
     name: 'Edge CDN 2 (Cloudflare VIP)',
-    location: 'Singapore Fast VIP',
+    location: 'Singapore VIP',
     badge: '🛡️ High Bandwidth',
     ping: 16,
-    hasHindi: true,
   },
   {
     id: 'videasy',
@@ -47,7 +45,6 @@ const CDN_SERVERS: CDNServer[] = [
     location: 'Frankfurt Direct',
     badge: '0% Buffer HD',
     ping: 20,
-    hasHindi: true,
   },
   {
     id: 'vidsrc_pm',
@@ -55,19 +52,28 @@ const CDN_SERVERS: CDNServer[] = [
     location: 'Global Multi-Region',
     badge: '🌐 Global Backup',
     ping: 28,
-    hasHindi: false,
   },
+];
+
+const SUBTITLE_TRACKS = [
+  { id: 'off', name: 'Off', lang: 'None' },
+  { id: 'en', name: 'English [CC]', lang: 'English' },
+  { id: 'hi', name: 'Hindi (हिंदी)', lang: 'Hindi' },
+  { id: 'ja', name: 'Japanese (日本語)', lang: 'Japanese' },
+  { id: 'es', name: 'Spanish (Español)', lang: 'Spanish' },
+  { id: 'ko', name: 'Korean (한국어)', lang: 'Korean' },
 ];
 
 export const WatchPage: React.FC<WatchPageProps> = ({
   movie,
   onBack,
 }) => {
-  // 1. Decoupled Audio Language State (HLS EXT-X-MEDIA Track Selector, Hindi #1 Default)
+  // 1. Audio & Subtitles State (Decoupled HLS Multi-Audio Track Selector, Hindi #1 Default)
   const savedAudio = localStorage.getItem('cinevault_selected_audio_lang') || 'Hindi';
   const [selectedAudioLang, setSelectedAudioLang] = useState<string>(savedAudio);
+  const [selectedSubtitle, setSelectedSubtitle] = useState<string>('off');
   
-  // 2. Decoupled CDN Server Routing State
+  // 2. CDN Server Routing State (Decoupled from Language)
   const [isAutoRoute, setIsAutoRoute] = useState<boolean>(true);
   const [selectedCDN, setSelectedCDN] = useState<string>('vidlink');
   
@@ -78,9 +84,9 @@ export const WatchPage: React.FC<WatchPageProps> = ({
   const [playerKey, setPlayerKey] = useState<number>(0);
   const [isStreamLoading, setIsStreamLoading] = useState<boolean>(true);
 
-  // In-Player UI & Settings State
-  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
-  const [activeSettingsTab, setActiveSettingsTab] = useState<'audio' | 'network'>('audio');
+  // In-Player Dedicated Menus
+  const [isAudioMenuOpen, setIsAudioMenuOpen] = useState<boolean>(false);
+  const [isServerMenuOpen, setIsServerMenuOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Direct HLS Video & Container Refs
@@ -97,7 +103,6 @@ export const WatchPage: React.FC<WatchPageProps> = ({
   // Determine active CDN based on Auto-Route (lowest ping) or manual selection
   const activeCDNServer = useMemo(() => {
     if (isAutoRoute) {
-      // Auto-route chooses the lowest latency CDN
       return CDN_SERVERS.reduce((prev, curr) => (curr.ping < prev.ping ? curr : prev), CDN_SERVERS[0]);
     }
     return CDN_SERVERS.find((s) => s.id === selectedCDN) || CDN_SERVERS[0];
@@ -122,12 +127,17 @@ export const WatchPage: React.FC<WatchPageProps> = ({
       }
     }
 
-    // Refresh embed stream with audio preference
     setPlayerKey((prev) => prev + 1);
     setIsStreamLoading(true);
 
     const langObj = SUPPORTED_LANGUAGES.find((l) => l.id === langId);
     showToast(`🔊 Audio Track: ${langObj?.name || langId} ${langObj?.flag || ''}`);
+  };
+
+  const handleSelectSubtitle = (subId: string) => {
+    setSelectedSubtitle(subId);
+    const subObj = SUBTITLE_TRACKS.find((s) => s.id === subId);
+    showToast(subId === 'off' ? 'Subtitles Turned Off' : `💬 Subtitles: ${subObj?.name || subId}`);
   };
 
   // Seamless Server Switching (Preserving Current Timestamp)
@@ -144,7 +154,6 @@ export const WatchPage: React.FC<WatchPageProps> = ({
       setSavedTimestamp(currentPos);
     }
 
-    // Re-initialize stream at identical timestamp on new CDN
     setPlayerKey((prev) => prev + 1);
     setIsStreamLoading(true);
 
@@ -159,8 +168,10 @@ export const WatchPage: React.FC<WatchPageProps> = ({
 
       switch (e.key.toLowerCase()) {
         case 'escape':
-          if (isSettingsOpen) {
-            setIsSettingsOpen(false);
+          if (isAudioMenuOpen) {
+            setIsAudioMenuOpen(false);
+          } else if (isServerMenuOpen) {
+            setIsServerMenuOpen(false);
           } else if (document.fullscreenElement) {
             document.exitFullscreen?.().catch(() => {});
           } else {
@@ -170,15 +181,21 @@ export const WatchPage: React.FC<WatchPageProps> = ({
         case 'f':
           toggleFullscreen();
           break;
+        case 'c':
+        case 'l':
+          setIsAudioMenuOpen((prev) => !prev);
+          setIsServerMenuOpen(false);
+          break;
         case 's':
-          setIsSettingsOpen((prev) => !prev);
+          setIsServerMenuOpen((prev) => !prev);
+          setIsAudioMenuOpen(false);
           break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSettingsOpen, onBack]);
+  }, [isAudioMenuOpen, isServerMenuOpen, onBack]);
 
   const toggleFullscreen = () => {
     if (!playerContainerRef.current) return;
@@ -195,10 +212,9 @@ export const WatchPage: React.FC<WatchPageProps> = ({
     }
   };
 
-  // Resolve Embed or Stream Manifest URL
+  // Resolve Embed or Stream Manifest URL with Timestamp Preservation
   const embedUrl = useMemo(() => {
     const rawUrl = getEmbedUrl(activeCDNServer.id, movie, currentSeason, currentEpisode, selectedAudioLang);
-    // Append timestamp if resuming from a server switch
     if (savedTimestamp > 0 && !rawUrl.includes('#t=')) {
       return `${rawUrl}#t=${Math.floor(savedTimestamp)}`;
     }
@@ -208,7 +224,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pt-16 sm:pt-20 pb-24 px-3 sm:px-6 lg:px-12 max-w-[1720px] mx-auto select-none">
       
-      {/* Dynamic Toast Feedback */}
+      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#141414] border border-[#E50914] text-white text-xs font-bold shadow-2xl animate-fade-in">
           <Sparkles className="w-4 h-4 text-[#E50914]" />
@@ -227,12 +243,12 @@ export const WatchPage: React.FC<WatchPageProps> = ({
           <span>Back to Browse</span>
         </button>
 
-        {/* In-header Stream Status (Decoupled CDN + HLS Audio) */}
+        {/* In-header Stream Status (Decoupled HLS Multi-Audio Track + CDN Ping) */}
         <div className="flex items-center gap-2 text-xs font-semibold">
           <button
             onClick={() => {
-              setActiveSettingsTab('network');
-              setIsSettingsOpen(true);
+              setIsServerMenuOpen(true);
+              setIsAudioMenuOpen(false);
             }}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-[11px] cursor-pointer transition-colors"
             title="Configure CDN Routing"
@@ -243,8 +259,8 @@ export const WatchPage: React.FC<WatchPageProps> = ({
 
           <button
             onClick={() => {
-              setActiveSettingsTab('audio');
-              setIsSettingsOpen(true);
+              setIsAudioMenuOpen(true);
+              setIsServerMenuOpen(false);
             }}
             className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E50914]/15 hover:bg-[#E50914]/25 border border-[#E50914]/40 text-red-400 text-[11px] font-bold cursor-pointer transition-colors"
             title="Switch Audio Track (HLS)"
@@ -265,7 +281,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
           <div className="absolute inset-0 z-20 bg-black flex flex-col items-center justify-center space-y-3">
             <div className="w-10 h-10 border-3 border-zinc-700 border-t-[#E50914] rounded-full animate-spin" />
             <p className="text-xs sm:text-sm font-semibold text-zinc-300">
-              Connecting via <span className="text-[#E50914] font-bold">{activeCDNServer.name}</span>...
+              Streaming via <span className="text-[#E50914] font-bold">{activeCDNServer.name}</span>...
             </p>
             <span className="text-[11px] text-emerald-400 font-bold px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
               {activeCDNServer.badge} • HLS Multi-Audio Ready
@@ -273,7 +289,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
           </div>
         )}
 
-        {/* Video Embed / HLS Stream Canvas */}
+        {/* Video Embed */}
         <iframe
           key={`${playerKey}-${embedUrl}`}
           src={embedUrl}
@@ -286,7 +302,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
 
         {/* BOTTOM RIGHT FLOATING IN-PLAYER CONTROLS */}
         <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-30 flex items-center gap-2">
-          {/* Episode Selector Button for Series */}
+          {/* TV Series Episode Selector Button */}
           {movie.type === 'series' && (
             <button
               onClick={scrollToEpisodes}
@@ -298,18 +314,38 @@ export const WatchPage: React.FC<WatchPageProps> = ({
             </button>
           )}
 
-          {/* Unified Settings / Gear Icon */}
+          {/* DEDICATED PROMINENT AUDIO & SUBTITLES BUTTON (PRIMARY FOCUS) */}
           <button
-            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            onClick={() => {
+              setIsAudioMenuOpen(!isAudioMenuOpen);
+              setIsServerMenuOpen(false);
+            }}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all active:scale-95 shadow-xl cursor-pointer backdrop-blur-md ${
-              isSettingsOpen
+              isAudioMenuOpen
                 ? 'bg-[#E50914] border-[#E50914] text-white shadow-red-900/40'
                 : 'bg-black/80 hover:bg-black border-zinc-700/80 text-zinc-200 hover:text-white'
             }`}
-            title="Settings: Spoken Audio & CDN Routing (S)"
+            title="Audio Tracks & Subtitles (C or L)"
           >
-            <Settings className={`w-3.5 h-3.5 ${isSettingsOpen ? 'rotate-90' : ''} transition-transform duration-300`} />
-            <span className="hidden sm:inline">Settings</span>
+            <Captions className="w-3.5 h-3.5 text-white" />
+            <span>Audio & Subtitles</span>
+          </button>
+
+          {/* SEPARATE CDN / SERVER SETTINGS BUTTON (SECONDARY FOCUS) */}
+          <button
+            onClick={() => {
+              setIsServerMenuOpen(!isServerMenuOpen);
+              setIsAudioMenuOpen(false);
+            }}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border transition-all active:scale-95 shadow-xl cursor-pointer backdrop-blur-md ${
+              isServerMenuOpen
+                ? 'bg-[#E50914] border-[#E50914] text-white shadow-red-900/40'
+                : 'bg-black/80 hover:bg-black border-zinc-700/80 text-zinc-200 hover:text-white'
+            }`}
+            title="CDN Network & Routing Settings (S)"
+          >
+            <Settings className={`w-3.5 h-3.5 ${isServerMenuOpen ? 'rotate-90' : ''} transition-transform duration-300`} />
+            <span className="hidden sm:inline">CDN</span>
           </button>
 
           {/* Fullscreen Toggle */}
@@ -322,22 +358,22 @@ export const WatchPage: React.FC<WatchPageProps> = ({
           </button>
         </div>
 
-        {/* UNIFIED IN-PLAYER SETTINGS MODAL (Decoupled Audio & Server Tabs) */}
-        {isSettingsOpen && (
+        {/* 1. DEDICATED AUDIO & SUBTITLES IN-FRAME OVERLAY (PRIMARY FOCUS) */}
+        {isAudioMenuOpen && (
           <div className="absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in">
-            <div className="bg-[#121212] border border-zinc-800 rounded-2xl w-full max-w-md p-5 sm:p-6 space-y-4 shadow-2xl text-white relative">
+            <div className="bg-[#121212] border border-zinc-800 rounded-2xl w-full max-w-lg p-5 sm:p-6 space-y-4 shadow-2xl text-white relative">
               
               {/* Header */}
               <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
                 <div className="flex items-center gap-2">
-                  <Settings className="w-4 h-4 text-[#E50914]" />
+                  <Captions className="w-4 h-4 text-[#E50914]" />
                   <h3 className="text-sm sm:text-base font-bold text-white font-display">
-                    Player & Stream Architecture
+                    Audio & Subtitles
                   </h3>
                 </div>
 
                 <button
-                  onClick={() => setIsSettingsOpen(false)}
+                  onClick={() => setIsAudioMenuOpen(false)}
                   className="p-1 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors cursor-pointer"
                   title="Close (Esc)"
                 >
@@ -345,154 +381,198 @@ export const WatchPage: React.FC<WatchPageProps> = ({
                 </button>
               </div>
 
-              {/* Decoupled Sub-Tabs: 1. Audio & Subtitles | 2. Network CDN Routing */}
-              <div className="grid grid-cols-2 gap-2 p-1 bg-zinc-900/90 rounded-xl border border-zinc-800 text-xs font-bold">
-                <button
-                  onClick={() => setActiveSettingsTab('audio')}
-                  className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    activeSettingsTab === 'audio'
-                      ? 'bg-[#E50914] text-white shadow-md'
-                      : 'text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  <Languages className="w-3.5 h-3.5" />
-                  <span>Audio & Subtitles</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveSettingsTab('network')}
-                  className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    activeSettingsTab === 'network'
-                      ? 'bg-[#E50914] text-white shadow-md'
-                      : 'text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  <Server className="w-3.5 h-3.5" />
-                  <span>CDN Routing</span>
-                </button>
-              </div>
-
-              {/* SECTION 1: Audio & Subtitles (HLS EXT-X-MEDIA Multiplexed Track Switcher) */}
-              {activeSettingsTab === 'audio' && (
-                <div className="space-y-2 pt-1 animate-fade-in">
-                  <div className="text-[11px] font-semibold text-zinc-400 flex items-center justify-between px-1">
-                    <span>HLS MULTI-AUDIO TRACK</span>
-                    <span className="text-amber-400 font-bold">#1 HINDI DUAL-AUDIO</span>
+              {/* 2 DISTINCT INDEPENDENT LISTS: Audio/Dub (Left) & Subtitles (Right) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                {/* COLUMN 1: Audio / Dub Radio List */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-zinc-400 pb-1 border-b border-zinc-800">
+                    <span className="flex items-center gap-1.5">
+                      <Volume2 className="w-3.5 h-3.5 text-red-500" />
+                      <span>AUDIO / DUB</span>
+                    </span>
+                    <span className="text-amber-400 text-[10px]">#1 HINDI</span>
                   </div>
 
-                  <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
+                  <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1">
                     {SUPPORTED_LANGUAGES.map((lang) => {
                       const isSelected = selectedAudioLang === lang.id;
                       const isHindi = lang.id === 'Hindi';
                       return (
                         <button
                           key={lang.id}
-                          onClick={() => {
-                            handleSelectAudioLanguage(lang.id);
-                            setIsSettingsOpen(false);
-                          }}
+                          onClick={() => handleSelectAudioLanguage(lang.id)}
                           className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left border ${
                             isSelected
-                              ? 'bg-[#E50914]/20 border-[#E50914] text-white font-bold'
+                              ? 'bg-[#E50914]/20 border-[#E50914] text-white font-bold ring-1 ring-[#E50914]'
                               : 'bg-zinc-900/60 border-zinc-800 hover:bg-zinc-800 text-zinc-300'
                           }`}
                         >
-                          <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="flex items-center gap-2 min-w-0">
                             <span className="text-base">{lang.flag}</span>
                             <span className="truncate">{lang.name}</span>
                             {isHindi && (
-                              <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                              <span className="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
                                 DEFAULT
                               </span>
                             )}
                           </div>
-                          {isSelected && <Check className="w-4 h-4 text-[#E50914]" />}
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                            isSelected ? 'border-[#E50914] bg-[#E50914]' : 'border-zinc-600'
+                          }`}>
+                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
                         </button>
                       );
                     })}
                   </div>
                 </div>
-              )}
 
-              {/* SECTION 2: Network CDN Edge Routing with Latency & Auto-Route */}
-              {activeSettingsTab === 'network' && (
-                <div className="space-y-2 pt-1 animate-fade-in">
-                  <div className="text-[11px] font-semibold text-zinc-400 flex items-center justify-between px-1">
-                    <span>EDGE CDN SERVERS</span>
-                    <span className="text-emerald-400 font-bold">SEAMLESS RESUME</span>
+                {/* COLUMN 2: Subtitles Radio List (with explicit Off option) */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-zinc-400 pb-1 border-b border-zinc-800">
+                    <span className="flex items-center gap-1.5">
+                      <Subtitles className="w-3.5 h-3.5 text-zinc-400" />
+                      <span>SUBTITLES</span>
+                    </span>
+                    <span className="text-zinc-500 text-[10px]">HLS CC</span>
                   </div>
 
-                  <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
-                    {/* Auto-Route Button (Recommended Default) */}
+                  <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1">
+                    {SUBTITLE_TRACKS.map((sub) => {
+                      const isSelected = selectedSubtitle === sub.id;
+                      return (
+                        <button
+                          key={sub.id}
+                          onClick={() => handleSelectSubtitle(sub.id)}
+                          className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left border ${
+                            isSelected
+                              ? 'bg-[#E50914]/20 border-[#E50914] text-white font-bold ring-1 ring-[#E50914]'
+                              : 'bg-zinc-900/60 border-zinc-800 hover:bg-zinc-800 text-zinc-300'
+                          }`}
+                        >
+                          <span className="truncate">{sub.name}</span>
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                            isSelected ? 'border-[#E50914] bg-[#E50914]' : 'border-zinc-600'
+                          }`}>
+                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Close Footer */}
+              <div className="pt-2 text-center">
+                <button
+                  onClick={() => setIsAudioMenuOpen(false)}
+                  className="w-full py-2.5 rounded-xl bg-[#E50914] hover:bg-[#b80710] text-white text-xs font-bold transition-colors cursor-pointer shadow-lg active:scale-95"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 2. DEDICATED CDN / SERVER ROUTING OVERLAY (SECONDARY FOCUS) */}
+        {isServerMenuOpen && (
+          <div className="absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in">
+            <div className="bg-[#121212] border border-zinc-800 rounded-2xl w-full max-w-md p-5 sm:p-6 space-y-4 shadow-2xl text-white relative">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+                <div className="flex items-center gap-2">
+                  <Server className="w-4 h-4 text-[#E50914]" />
+                  <h3 className="text-sm sm:text-base font-bold text-white font-display">
+                    CDN Edge Network & Delivery
+                  </h3>
+                </div>
+
+                <button
+                  onClick={() => setIsServerMenuOpen(false)}
+                  className="p-1 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                  title="Close (Esc)"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                All audio tracks are globally available on every server. CDNs function purely for high-speed edge delivery.
+              </p>
+
+              <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
+                {/* Auto-Route Default Button */}
+                <button
+                  onClick={() => {
+                    handleSelectCDNServer(CDN_SERVERS[0].id, true);
+                    setIsServerMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left border ${
+                    isAutoRoute
+                      ? 'bg-[#E50914]/20 border-[#E50914] text-white font-bold ring-1 ring-[#E50914]'
+                      : 'bg-zinc-900/60 border-zinc-800 hover:bg-zinc-800 text-zinc-300'
+                  }`}
+                >
+                  <div className="min-w-0 pr-2">
+                    <div className="flex items-center gap-1.5">
+                      {isAutoRoute && <Check className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />}
+                      <Zap className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                      <span className="text-xs font-extrabold">Auto-Route (Lowest Latency)</span>
+                    </div>
+                    <span className="text-[10px] text-emerald-400 block mt-0.5 font-normal">
+                      Dynamically connects to lowest ping edge ({activeCDNServer.ping}ms)
+                    </span>
+                  </div>
+
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 flex-shrink-0">
+                    {activeCDNServer.ping}ms
+                  </span>
+                </button>
+
+                {/* Edge Servers List */}
+                {CDN_SERVERS.map((srv) => {
+                  const isSelected = !isAutoRoute && selectedCDN === srv.id;
+                  return (
                     <button
+                      key={srv.id}
                       onClick={() => {
-                        handleSelectCDNServer(CDN_SERVERS[0].id, true);
-                        setIsSettingsOpen(false);
+                        handleSelectCDNServer(srv.id, false);
+                        setIsServerMenuOpen(false);
                       }}
                       className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left border ${
-                        isAutoRoute
+                        isSelected
                           ? 'bg-[#E50914]/20 border-[#E50914] text-white font-bold ring-1 ring-[#E50914]'
                           : 'bg-zinc-900/60 border-zinc-800 hover:bg-zinc-800 text-zinc-300'
                       }`}
                     >
                       <div className="min-w-0 pr-2">
                         <div className="flex items-center gap-1.5">
-                          {isAutoRoute && <Check className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />}
-                          <Zap className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                          <span className="text-xs font-extrabold">Auto-Route (Lowest Latency)</span>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />}
+                          <span className="text-xs font-bold truncate">{srv.name}</span>
                         </div>
-                        <span className="text-[10px] text-emerald-400 block mt-0.5 font-normal">
-                          Dynamically routes to fastest edge server ({activeCDNServer.ping}ms)
+                        <span className="text-[10px] text-zinc-400 block mt-0.5 font-normal">
+                          {srv.location} • {srv.badge}
                         </span>
                       </div>
 
-                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 flex-shrink-0">
-                        {activeCDNServer.ping}ms
+                      <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${
+                        isSelected ? 'bg-[#E50914] text-white' : 'bg-zinc-800 text-emerald-400'
+                      }`}>
+                        {srv.ping}ms
                       </span>
                     </button>
-
-                    {/* Manual CDN Server List */}
-                    {CDN_SERVERS.map((srv) => {
-                      const isSelected = !isAutoRoute && selectedCDN === srv.id;
-                      return (
-                        <button
-                          key={srv.id}
-                          onClick={() => {
-                            handleSelectCDNServer(srv.id, false);
-                            setIsSettingsOpen(false);
-                          }}
-                          className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left border ${
-                            isSelected
-                              ? 'bg-[#E50914]/20 border-[#E50914] text-white font-bold'
-                              : 'bg-zinc-900/60 border-zinc-800 hover:bg-zinc-800 text-zinc-300'
-                          }`}
-                        >
-                          <div className="min-w-0 pr-2">
-                            <div className="flex items-center gap-1.5">
-                              {isSelected && <Check className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />}
-                              <span className="text-xs font-bold truncate">{srv.name}</span>
-                            </div>
-                            <span className="text-[10px] text-zinc-400 block mt-0.5 font-normal">
-                              {srv.location} • {srv.badge}
-                            </span>
-                          </div>
-
-                          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${
-                            isSelected ? 'bg-[#E50914] text-white' : 'bg-zinc-800 text-emerald-400'
-                          }`}>
-                            {srv.ping}ms
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                  );
+                })}
+              </div>
 
               {/* Close Footer */}
               <div className="pt-2 text-center">
                 <button
-                  onClick={() => setIsSettingsOpen(false)}
+                  onClick={() => setIsServerMenuOpen(false)}
                   className="w-full py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold transition-colors cursor-pointer"
                 >
                   Apply & Return to Stream
@@ -537,7 +617,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
             </span>
 
             <span className="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold">
-              {activeLangInfo.name} HLS Track Active
+              {activeLangInfo.name} Multi-Audio Active
             </span>
           </div>
         </div>
