@@ -30,9 +30,11 @@ filesToPatch.forEach(filePath => {
     content = content.replace(/testImplementation .*/g, '// removed test dep');
     content = content.replace(/testRuntimeOnly .*/g, '// removed test dep');
     content = content.replace(/androidTestImplementation .*/g, '// removed test dep');
-    content = content.replace(/useJUnitPlatform\(\)/g, '// useJUnitPlatform');
-    content = content.replace(/.*capacitor-cordova-android-plugins.*/g, '// cordova removed');
-    content = content.replace(/.*postBuildExtras.*/g, '// postBuildExtras removed');
+    content = content.replace(/if \(hasProperty\('postBuildExtras'\)\) \{[\s\S]*?\}/g, '// postBuildExtras removed');
+    content = content.replace(/apply from: [^\n]+/g, (match) => {
+      if (match.includes('cordova')) return '// cordova removed';
+      return match;
+    });
     content = content.replace(/: 36/g, ': 34');
     content = content.replace(/= 36/g, '= 34');
     fs.writeFileSync(filePath, content, 'utf8');

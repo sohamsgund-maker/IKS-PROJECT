@@ -7,13 +7,6 @@ android {
   }
 }
 
-// cordova variables removed
 dependencies {
     implementation project(':capacitor-community-admob')
-
-}
-
-
-// postBuildExtras removed
-// postBuildExtras removed
 }
