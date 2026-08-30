@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Bell, X, Settings, ChevronDown, Sparkles, Smartphone } from 'lucide-react';
+import { Search, Bell, X, Settings, ChevronDown, Sparkles } from 'lucide-react';
 import type { AuthUser } from '../types/movie';
 
 interface NetflixNavbarProps {
@@ -9,7 +9,6 @@ interface NetflixNavbarProps {
   setSearchQuery: (q: string) => void;
   currentUser?: AuthUser | null;
   onOpenSettings: () => void;
-  onOpenDownloadApk?: () => void;
   watchlistCount?: number;
 }
 
@@ -19,7 +18,6 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
   searchQuery,
   setSearchQuery,
   onOpenSettings,
-  onOpenDownloadApk,
   watchlistCount = 0,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -115,7 +113,7 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
           </nav>
         </div>
 
-        {/* Right Side: Search, Notifications, Profile Dropdown */}
+        {/* Right Side: Search, Notifications, Settings */}
         <div className="flex items-center gap-2 sm:gap-4 text-white">
           {/* Search Box (Expandable Netflix Style) */}
           <div className="relative flex items-center">
@@ -207,19 +205,6 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
             )}
           </div>
 
-          {/* Download Android APK Button */}
-          {onOpenDownloadApk && (
-            <button
-              onClick={onOpenDownloadApk}
-              className="flex items-center gap-1.5 py-1 px-2.5 sm:px-3 rounded-full bg-[#E50914] hover:bg-[#b80710] text-white text-[11px] sm:text-xs font-bold shadow-md shadow-[#E50914]/20 transition-transform active:scale-95 cursor-pointer"
-              title="Download CineVault Android App (APK)"
-            >
-              <Smartphone className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Get Android APK</span>
-              <span className="sm:hidden">App</span>
-            </button>
-          )}
-
           {/* Settings & Audio Preferences */}
           <button
             onClick={onOpenSettings}
@@ -282,26 +267,6 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
                 <X className="w-4 h-4" />
               </button>
             </div>
-
-            {/* Mobile App Download Button in Drawer */}
-            {onOpenDownloadApk && (
-              <button
-                onClick={() => {
-                  setIsCategoriesMenuOpen(false);
-                  onOpenDownloadApk();
-                }}
-                className="w-full p-3.5 rounded-xl bg-gradient-to-r from-[#E50914] to-[#b80710] text-white font-bold text-sm flex items-center justify-between shadow-lg shadow-[#E50914]/25 active:scale-98 cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Smartphone className="w-5 h-5 text-white" />
-                  <div className="text-left">
-                    <p className="font-extrabold text-white text-xs leading-none">Download Android App</p>
-                    <p className="text-[10px] text-white/80 font-normal mt-0.5">Free APK • 4K & Real Hindi</p>
-                  </div>
-                </div>
-                <span className="text-xs bg-black/30 px-2 py-0.5 rounded-full font-bold">Get APK</span>
-              </button>
-            )}
 
             <div className="grid grid-cols-1 gap-2 pt-1">
               {categories.map((cat) => (

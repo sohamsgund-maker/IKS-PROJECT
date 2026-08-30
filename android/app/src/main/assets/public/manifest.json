@@ -1,0 +1,16 @@
+{
+  "short_name": "CineVault",
+  "name": "CineVault - Stream HD Movies & Shows",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#141414",
+  "theme_color": "#E50914",
+  "display": "standalone",
+  "orientation": "portrait"
+}

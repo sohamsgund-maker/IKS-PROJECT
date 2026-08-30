@@ -9,7 +9,6 @@ import { NetflixFooter } from './components/NetflixFooter';
 import { NetflixMobileNav } from './components/NetflixMobileNav';
 import { SettingsModal } from './components/SettingsModal';
 import { CustomStreamModal } from './components/CustomStreamModal';
-import { DownloadApkModal } from './components/DownloadApkModal';
 import { GoogleAdBanner } from './components/GoogleAdBanner';
 import { WatchPage } from './pages/WatchPage';
 import { LiveTVPage } from './pages/LiveTVPage';
@@ -64,7 +63,6 @@ export const App: React.FC = () => {
   // Modals state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCustomStreamOpen, setIsCustomStreamOpen] = useState(false);
-  const [isDownloadApkOpen, setIsDownloadApkOpen] = useState(false);
   const [currentUser] = useState<AuthUser | null>(() => {
     try {
       const saved = localStorage.getItem('cinevault_user');
@@ -254,7 +252,6 @@ export const App: React.FC = () => {
         setSearchQuery={setSearchQuery}
         currentUser={currentUser}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenDownloadApk={() => setIsDownloadApkOpen(true)}
         watchlistCount={watchlist.length}
       />
 
@@ -684,13 +681,7 @@ export const App: React.FC = () => {
       <GoogleAdBanner className="my-6" />
 
       {/* Netflix Footer */}
-      <NetflixFooter onOpenDownloadApk={() => setIsDownloadApkOpen(true)} />
-
-      {/* Download Android APK Modal */}
-      <DownloadApkModal
-        isOpen={isDownloadApkOpen}
-        onClose={() => setIsDownloadApkOpen(false)}
-      />
+      <NetflixFooter />
 
       {/* Netflix More Info Detailed Modal */}
       {selectedMovieForInfo && (

@@ -1,0 +1,20 @@
+{
+	"appId": "com.aditya.cinevault",
+	"appName": "CineVault",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https",
+		"cleartext": true
+	},
+	"android": {
+		"allowMixedContent": true,
+		"captureInput": true,
+		"webContentsDebuggingEnabled": false
+	},
+	"plugins": {
+		"AdMob": {
+			"appId": "ca-app-pub-3940256099942544~3347511713",
+			"initializeForTesting": true
+		}
+	}
+}

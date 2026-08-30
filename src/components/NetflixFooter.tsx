@@ -1,39 +1,9 @@
 import React from 'react';
-import { Globe, Smartphone, Download, ShieldCheck } from 'lucide-react';
+import { Globe, ShieldCheck } from 'lucide-react';
 
-interface NetflixFooterProps {
-  onOpenDownloadApk?: () => void;
-}
-
-export const NetflixFooter: React.FC<NetflixFooterProps> = ({ onOpenDownloadApk }) => {
+export const NetflixFooter: React.FC = () => {
   return (
     <footer className="max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 py-16 text-zinc-500 text-xs select-none space-y-6">
-      
-      {/* Android App Promotion Card */}
-      {onOpenDownloadApk && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-zinc-950 border border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 text-left">
-            <div className="w-11 h-11 rounded-xl bg-[#E50914] flex items-center justify-center text-white shadow-lg shadow-[#E50914]/25 flex-shrink-0">
-              <Smartphone className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="text-white font-bold text-sm">Download CineVault for Android</h4>
-              <p className="text-zinc-400 text-xs mt-0.5">
-                Enjoy 1080p/4K bufferless streaming, real Hindi audio, and instant playback on mobile.
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={onOpenDownloadApk}
-            className="w-full sm:w-auto py-2.5 px-5 rounded-xl bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#E50914]/30 active:scale-95 transition-all cursor-pointer flex-shrink-0"
-          >
-            <Download className="w-4 h-4" />
-            <span>Download APK (Free)</span>
-          </button>
-        </div>
-      )}
-
       <div className="flex items-center gap-6">
         <span className="hover:underline cursor-pointer">Questions? Contact us.</span>
       </div>
@@ -77,7 +47,7 @@ export const NetflixFooter: React.FC<NetflixFooterProps> = ({ onOpenDownloadApk 
 
         <div className="flex items-center gap-2 text-[11px] text-zinc-400">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>Google AdMob & Play Protect Verified APK</span>
+          <span>High-Speed Cloud CDNs • Real Hindi Audio</span>
         </div>
       </div>
 
