@@ -53,7 +53,7 @@ jobs:
       - name: Build Android APK via Gradle
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace --info
+          ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tee gradle_build.log || (echo "=== GRADLE FAILURE LOG ===" && tail -n 100 gradle_build.log && exit 1)
 
       - name: Rename and Prepare APK
         run: |
