@@ -50,10 +50,8 @@ jobs:
           yes | sdkmanager --licenses || true
           sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
 
-      - name: Copy Web Production Assets to Android
-        run: |
-          mkdir -p android/app/src/main/assets/public
-          cp -r dist/* android/app/src/main/assets/public/
+      - name: Sync Web Assets with Capacitor Android
+        run: npx cap sync android
 
       - name: Patch Plugin Compatibility
         run: node scripts/patchAdmob.cjs
