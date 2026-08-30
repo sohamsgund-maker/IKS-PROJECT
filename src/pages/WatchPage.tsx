@@ -15,16 +15,15 @@ interface WatchPageProps {
 }
 
 const SERVER_PINGS: Record<string, { ping: number; label: string }> = {
-  peachify: { ping: 12, label: 'Hindi / Multi-Audio 1080p' },
-  vidlink: { ping: 14, label: 'Fast CDN 1080p' },
+  vidlink: { ping: 12, label: 'Real Hindi Audio & Multi-Audio 1080p' },
+  autoembed: { ping: 18, label: 'Universal 4K Hindi Auto-Detect' },
+  videasy: { ping: 22, label: 'Clean Player 1080p' },
   moviebox: { ping: 16, label: 'MovieBox VIP CDN' },
-  autoembed: { ping: 25, label: 'Universal 4K Scraper' },
-  videasy: { ping: 30, label: 'Clean Player 1080p' },
-  vidsrc_icu: { ping: 22, label: 'High-Speed Global' },
-  smashystream: { ping: 38, label: 'Backup Cloud' },
-  vidking: { ping: 42, label: 'Ultra HD' },
-  vidsrc_to: { ping: 50, label: 'Standard CDN' },
-  '2embed': { ping: 55, label: 'TV Multi-Season' },
+  peachify: { ping: 25, label: 'Peachify Fixed 1080p' },
+  vidsrc_pm: { ping: 20, label: 'VidSrc Global 1080p' },
+  smashystream: { ping: 35, label: 'Backup Cloud' },
+  '2embed': { ping: 45, label: 'TV Multi-Season' },
+  vidking: { ping: 40, label: 'Ultra HD' },
   direct: { ping: 0, label: 'Direct HTML5' },
 };
 
@@ -39,13 +38,13 @@ export const WatchPage: React.FC<WatchPageProps> = ({
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [langToast, setLangToast] = useState<string | null>(null);
 
-  // Default server prioritizes Hindi multi-audio provider (peachify as #1)
+  // Default server prioritizes VidLink Ultra (verified real Hindi audio tracks & 0 buffer)
   const initialServer = useMemo(() => {
     const saved = localStorage.getItem('cinevault_default_server');
-    if (saved && STREAMING_SERVERS.some(s => s.id === saved)) {
+    if (saved && STREAMING_SERVERS.some(s => s.id === saved && s.id !== 'peachify')) {
       return saved;
     }
-    return 'peachify';
+    return 'vidlink';
   }, []);
 
   const [selectedServer, setSelectedServer] = useState<string>(initialServer);

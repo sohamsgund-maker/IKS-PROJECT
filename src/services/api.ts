@@ -16,22 +16,31 @@ export interface StreamingServer {
 
 export const STREAMING_SERVERS: StreamingServer[] = [
   {
-    id: 'peachify',
-    name: 'Peachify VIP (Hindi Dub)',
-    badge: '1080p VIP',
+    id: 'vidlink',
+    name: 'VidLink Ultra (Multi-Audio & Hindi)',
+    badge: 'Primary VIP #1',
     hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Hindi Dubbed & Dual Audio',
-    description: 'Dedicated Hindi dubbed audio & dual-audio 1080p high bitrate stream',
+    hindiBadge: '🇮🇳 Real Hindi Audio Track',
+    description: 'Fast 1080p bufferless stream with native Hindi audio track switcher and subtitles',
     priority: 1
   },
   {
-    id: 'vidlink',
-    name: 'VidLink Ultra (Multi-Audio)',
-    badge: 'Bufferless',
+    id: 'autoembed',
+    name: 'AutoEmbed 4K (Hindi Auto-Detect)',
+    badge: '4K Multi',
     hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Hindi Audio Track Supported',
-    description: 'Fast bufferless 1080p CDN with Hindi audio track & auto-subtitles',
+    hindiBadge: '🇮🇳 Hindi Dub Auto-Detected',
+    description: 'Universal 4K multi-server scraper prioritizing Hindi audio streams',
     priority: 2
+  },
+  {
+    id: 'videasy',
+    name: 'Videasy HD Stream',
+    badge: 'Clean Player',
+    hasHindiAudio: true,
+    hindiBadge: '🇮🇳 Hindi Audio & Subtitles',
+    description: 'Direct multi-source stream with clean player and Hindi audio track support',
+    priority: 3
   },
   {
     id: 'moviebox',
@@ -40,33 +49,24 @@ export const STREAMING_SERVERS: StreamingServer[] = [
     hasHindiAudio: true,
     hindiBadge: '🇮🇳 Hindi Audio Stream',
     description: 'Direct high-speed stream from MovieBox VIP servers with Hindi audio',
-    priority: 3
-  },
-  {
-    id: 'autoembed',
-    name: 'AutoEmbed 4K Multi',
-    badge: 'Auto Scraper',
-    hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Hindi Auto-Detect',
-    description: 'Universal 4K multi-server scraper with Hindi language priority',
     priority: 4
   },
   {
-    id: 'videasy',
-    name: 'Videasy HD Stream',
-    badge: 'Clean Player',
+    id: 'peachify',
+    name: 'Peachify VIP Stream',
+    badge: 'Fixed 1080p',
     hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Hindi Audio & Sub',
-    description: 'Multi-source stream with clean player and Hindi audio support',
+    hindiBadge: '🇮🇳 Hindi Dual Audio Track',
+    description: 'Direct 1080p stream with Hindi audio track support',
     priority: 5
   },
   {
-    id: 'vidsrc_icu',
-    name: 'VidSrc Fast CDN',
+    id: 'vidsrc_pm',
+    name: 'VidSrc Global 1080p CDN',
     badge: 'Global 1080p',
     hasHindiAudio: false,
     hindiBadge: '🌐 Original + Hindi Subtitles',
-    description: 'Direct high-speed multi-source original audio stream with subtitles',
+    description: 'Direct high-speed multi-source original audio stream with multi-subtitles',
     priority: 6
   },
   {
@@ -79,31 +79,22 @@ export const STREAMING_SERVERS: StreamingServer[] = [
     priority: 7
   },
   {
-    id: 'vidking',
-    name: 'VidKing 4K Ultra',
-    badge: 'Ultra HD',
-    hasHindiAudio: false,
-    hindiBadge: '🌐 Original Audio',
-    description: 'High-bitrate server with auto-next episode and 4K capability',
-    priority: 8
-  },
-  {
-    id: 'vidsrc_to',
-    name: 'VidSrc Cloud VIP',
-    badge: 'Global Cloud',
-    hasHindiAudio: false,
-    hindiBadge: '🌐 Original Audio',
-    description: 'High reliability backup streaming server',
-    priority: 9
-  },
-  {
     id: '2embed',
     name: '2Embed Full TV',
     badge: 'Full Seasons',
     hasHindiAudio: false,
     hindiBadge: '🌐 Original Audio',
     description: 'Comprehensive TV shows and multi-season support',
-    priority: 10
+    priority: 8
+  },
+  {
+    id: 'vidking',
+    name: 'VidKing 4K Ultra',
+    badge: 'Ultra HD',
+    hasHindiAudio: false,
+    hindiBadge: '🌐 Original Audio',
+    description: 'High-bitrate server with auto-next episode and 4K capability',
+    priority: 9
   },
   {
     id: 'direct',
@@ -112,7 +103,7 @@ export const STREAMING_SERVERS: StreamingServer[] = [
     hasHindiAudio: false,
     hindiBadge: '🌐 Direct Video',
     description: 'Plays direct media stream with 100% bufferless uptime',
-    priority: 11
+    priority: 10
   },
 ];
 
@@ -154,63 +145,61 @@ export const getEmbedUrl = (
   const tmdbId = movie.tmdbId || movie.id || movie._id || '1213243';
   const isSeries = movie.type === 'series';
   const color = 'E50914';
-  const audio = audioLanguage || 'Hindi';
-  const dubParam = `&dub=${encodeURIComponent(audio)}`;
+  const lang = audioLanguage || 'Hindi';
 
   switch (server) {
-    case 'moviebox':
-      return isSeries
-        ? `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=${color}&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&overlay=true${dubParam}&cdn=moviebox`
-        : `https://player.videasy.net/movie/${tmdbId}?color=${color}&overlay=true${dubParam}&cdn=moviebox`;
-
-    case 'peachify':
-      return isSeries
-        ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}?accent=${color}${dubParam}&quality=1080&autoNext=true&showNextBtn=true`
-        : `https://peachify.top/embed/movie/${tmdbId}?accent=${color}${dubParam}&quality=1080`;
-
     case 'vidlink':
       return isSeries
-        ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&nextbutton=true&autoplay=true${dubParam}&multiAudio=true`
-        : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&nextbutton=true&autoplay=true${dubParam}&multiAudio=true`;
-
-    case 'vidsrc_icu':
-      return isSeries
-        ? `https://vidsrc.icu/embed/tv/${tmdbId}/${season}/${episode}`
-        : `https://vidsrc.icu/embed/movie/${tmdbId}`;
+        ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true&autoplay=true&nextbutton=true`
+        : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true&autoplay=true&nextbutton=true`;
 
     case 'autoembed':
       return isSeries
-        ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}?lang=${encodeURIComponent(audio)}`
-        : `https://autoembed.co/movie/tmdb/${tmdbId}?lang=${encodeURIComponent(audio)}`;
+        ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}?lang=${encodeURIComponent(lang)}`
+        : `https://autoembed.co/movie/tmdb/${tmdbId}?lang=${encodeURIComponent(lang)}`;
 
     case 'videasy':
       return isSeries
-        ? `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=${color}&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&overlay=true${dubParam}`
-        : `https://player.videasy.net/movie/${tmdbId}?color=${color}&overlay=true${dubParam}`;
+        ? `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=${color}&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true`
+        : `https://player.videasy.net/movie/${tmdbId}?color=${color}`;
+
+    case 'moviebox':
+      return isSeries
+        ? `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=${color}&nextEpisode=true&autoplayNextEpisode=true&cdn=moviebox`
+        : `https://player.videasy.net/movie/${tmdbId}?color=${color}&cdn=moviebox`;
+
+    case 'peachify':
+      // Clean URL without breaking query params
+      return isSeries
+        ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}`
+        : `https://peachify.top/embed/movie/${tmdbId}`;
+
+    case 'vidsrc_pm':
+    case 'vidsrc_icu':
+    case 'vidsrc':
+      return isSeries
+        ? `https://vidsrc.pm/embed/tv/${tmdbId}/${season}/${episode}`
+        : `https://vidsrc.pm/embed/movie/${tmdbId}`;
 
     case 'smashystream':
       return isSeries
         ? `https://player.smashystream.com/tv/${tmdbId}?s=${season}&e=${episode}`
         : `https://player.smashystream.com/movie/${tmdbId}`;
 
+    case '2embed':
+      return isSeries
+        ? `https://www.2embed.skin/embedtv/${tmdbId}&s=${season}&e=${episode}`
+        : `https://www.2embed.skin/embed/${tmdbId}`;
+
     case 'vidking':
       return isSeries
         ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=${color}&autoPlay=true&nextEpisode=true&episodeSelector=true`
         : `https://www.vidking.net/embed/movie/${tmdbId}?color=${color}&autoPlay=true`;
 
-    case 'vidsrc_to':
-    case 'vidsrc':
-      return isSeries
-        ? `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}`
-        : `https://vidsrc.to/embed/movie/${tmdbId}`;
-
-    case '2embed':
-      return isSeries
-        ? `https://www.2embed.cc/embedtv/${tmdbId}&s=${season}&e=${episode}`
-        : `https://www.2embed.cc/embed/${tmdbId}`;
-
     default:
-      return movie.videoUrl || `https://vidlink.pro/movie/${tmdbId}`;
+      return isSeries
+        ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true`
+        : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true`;
   }
 };
 
