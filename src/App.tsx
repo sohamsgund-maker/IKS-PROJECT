@@ -9,6 +9,9 @@ import { NetflixFooter } from './components/NetflixFooter';
 import { NetflixMobileNav } from './components/NetflixMobileNav';
 import { SettingsModal } from './components/SettingsModal';
 import { CustomStreamModal } from './components/CustomStreamModal';
+import { DownloadApkModal } from './components/DownloadApkModal';
+import { GoogleAdBanner } from './components/GoogleAdBanner';
+import { admobService } from './services/admobService';
 import { WatchPage } from './pages/WatchPage';
 import { LiveTVPage } from './pages/LiveTVPage';
 import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles } from 'lucide-react';
@@ -62,6 +65,7 @@ export const App: React.FC = () => {
   // Modals state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCustomStreamOpen, setIsCustomStreamOpen] = useState(false);
+  const [isDownloadApkOpen, setIsDownloadApkOpen] = useState(false);
   const [currentUser] = useState<AuthUser | null>(() => {
     try {
       const saved = localStorage.getItem('cinevault_user');
@@ -81,6 +85,7 @@ export const App: React.FC = () => {
       localStorage.removeItem('cinevault_scraped_cache');
     } catch {}
     fetchAllMovies();
+    admobService.initialize();
   }, []);
 
   const handleToggleWatchlist = (movie: Movie) => {
@@ -251,6 +256,7 @@ export const App: React.FC = () => {
         setSearchQuery={setSearchQuery}
         currentUser={currentUser}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenDownloadApk={() => setIsDownloadApkOpen(true)}
         watchlistCount={watchlist.length}
       />
 
@@ -676,8 +682,17 @@ export const App: React.FC = () => {
         </div>
       )}
 
+      {/* Google Ads & AdMob In-App Banner */}
+      <GoogleAdBanner className="my-6" />
+
       {/* Netflix Footer */}
-      <NetflixFooter />
+      <NetflixFooter onOpenDownloadApk={() => setIsDownloadApkOpen(true)} />
+
+      {/* Download Android APK Modal */}
+      <DownloadApkModal
+        isOpen={isDownloadApkOpen}
+        onClose={() => setIsDownloadApkOpen(false)}
+      />
 
       {/* Netflix More Info Detailed Modal */}
       {selectedMovieForInfo && (
