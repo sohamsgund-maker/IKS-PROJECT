@@ -4,8 +4,7 @@ const path = require('path');
 const filesToPatch = [
   path.resolve('android/app/capacitor.build.gradle'),
   path.resolve('node_modules/@capacitor/android/capacitor/build.gradle'),
-  path.resolve('node_modules/@capacitor-community/admob/android/build.gradle'),
-  path.resolve('android/capacitor-cordova-android-plugins/build.gradle')
+  path.resolve('node_modules/@capacitor-community/admob/android/build.gradle')
 ];
 
 filesToPatch.forEach(filePath => {
@@ -22,6 +21,7 @@ filesToPatch.forEach(filePath => {
     content = content.replace(/testImplementation .*/g, '// removed test dep');
     content = content.replace(/testRuntimeOnly .*/g, '// removed test dep');
     content = content.replace(/androidTestImplementation .*/g, '// removed test dep');
+    content = content.replace(/apply from: "\.\.\/capacitor-cordova-android-plugins\/cordova\.variables\.gradle"/g, '// cordova variables removed');
     content = content.replace(/: 36/g, ': 34');
     content = content.replace(/= 36/g, '= 34');
     fs.writeFileSync(filePath, content, 'utf8');

@@ -7,7 +7,7 @@ android {
   }
 }
 
-apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
+// cordova variables removed
 dependencies {
     implementation project(':capacitor-community-admob')
 
