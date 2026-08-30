@@ -1,14 +1,10 @@
-async function checkAssets() {
-  const res = await fetch('https://github.com/aditys4444/cinevault/releases/tag/v1.0.0');
+async function checkAllReleases() {
+  const res = await fetch('https://github.com/aditys4444/cinevault/releases');
   const html = await res.text();
-  const regex = /href="([^"]+)"/g;
-  let m;
-  const links = [];
-  while ((m = regex.exec(html)) !== null) {
-    if (m[1].includes('download') || m[1].includes('apk') || m[1].includes('releases')) {
-      links.push(m[1]);
-    }
-  }
-  console.log('Found release download links:', [...new Set(links)]);
+  console.log('Releases page length:', html.length);
+  const titles = html.match(/<h2[^>]*>([\s\S]*?)<\/h2>/g);
+  console.log('Titles:', titles);
+  const links = html.match(/href="\/aditys4444\/cinevault\/releases\/[^"]+"/g);
+  console.log('Release Links:', links);
 }
-checkAssets();
+checkAllReleases();
