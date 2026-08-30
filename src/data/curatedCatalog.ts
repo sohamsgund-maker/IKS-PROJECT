@@ -2,13 +2,13 @@ import type { Movie } from '../types/movie';
 
 export const CURATED_MOVIES_CATALOG: Movie[] = [
   {
-    "id": "1125510",
-    "tmdbId": 1125510,
+    "id": "857598",
+    "tmdbId": 857598,
     "title": "Pushpa 2: The Rule",
-    "slug": "pushpa-2-the-rule-1125510",
-    "description": "Pushpa Raj expands his red sandalwood smuggling empire while Bhanwar Singh Shekhawat seeks ultimate vengeance across national borders.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/tvIpBg12IIA5Dr9Sjn38ygS1vQp.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/3m0j3hCS8kMAaP9El6Vy5Lqnyft.jpg",
+    "slug": "pushpa-2-the-rule-857598",
+    "description": "As his smuggling empire grows, a brazen Pushpa longs for power and respect on his vengeful journey, while facing old rivals and new.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/bhxZj3y59cK7JtGdV285dhDRaMe.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/5nEyyLkElpD7zkqh41aSkTCchcc.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Pushpa+2+The+Rule+trailer",
     "releaseYear": 2024,
     "language": "Telugu / Hindi",
@@ -19,7 +19,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Crime"
     ],
     "duration": "3h 20m",
-    "rating": 8.9,
+    "rating": 6.2,
     "director": "Sukumar",
     "cast": [
       "Allu Arjun",
@@ -29,7 +29,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "1125510",
+    "_id": "857598",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -54,13 +54,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "829557",
-    "tmdbId": 829557,
+    "id": "801688",
+    "tmdbId": 801688,
     "title": "Kalki 2898 AD",
-    "slug": "kalki-2898-ad-829557",
-    "description": "In the dystopian city of Kasi in 2898 AD, Ashwatthama gears up for his final battle of redemption at the arrival of Supreme Lord Vishnu's 10th avatar.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/7qU0SOVcQ8BTJLodcAlulUAG16C.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/zBG5Mg29NH9xxpWMMG7BIvKwYhL.jpg",
+    "slug": "kalki-2898-ad-801688",
+    "description": "In the year 2898 AD, around 6000 years after Kurukshetra war, Ashwatthama gears up for his final battle of redemption at the sign of hope in a dystopian world and Bhairava, a wisecracking and self-interested bounty hunter, tired of the perilous life becomes the hurdle in the process.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/rstcAnBeCkxNQjNp3YXrF6IP1tW.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/o8XSR1SONnjcsv84NRu6Mwsl5io.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Kalki+2898+AD+trailer",
     "releaseYear": 2024,
     "language": "Telugu / Hindi",
@@ -71,7 +71,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Mythology"
     ],
     "duration": "3h 01m",
-    "rating": 8.4,
+    "rating": 6.4,
     "director": "Nag Ashwin",
     "cast": [
       "Prabhas",
@@ -82,7 +82,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "829557",
+    "_id": "801688",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -107,13 +107,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "978436",
-    "tmdbId": 978436,
+    "id": "811941",
+    "tmdbId": 811941,
     "title": "Devara: Part 1",
-    "slug": "devara-part-1-978436",
-    "description": "An epic coastal saga of fear, betrayal, and valor where Devara defends his land and bloodline against ruthless seafaring smugglers.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/1G5mt3uGUW5OWUcxcBUtHm5Zdd9.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/1h0NFa8irKpyQEvGlH87Ej5yPAH.jpg",
+    "slug": "devara-part-1-811941",
+    "description": "Devara, a fearless man from a coastal region, embarks on a perilous journey into the treacherous world of the sea to safeguard the lives of his people. Unbeknownst to him, his brother Bhaira is plotting a conspiracy against him. As events unfold, Devara passes on his legacy to his mild-mannered and timid son, Varada.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/lQfuaXjANoTsdx5iS0gCXlK9D2L.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/hAQnXxOwCjgYcKRgTdYPRC8neqL.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Devara+trailer",
     "releaseYear": 2024,
     "language": "Telugu / Hindi",
@@ -124,7 +124,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Thriller"
     ],
     "duration": "2h 58m",
-    "rating": 7.9,
+    "rating": 6.9,
     "director": "Koratala Siva",
     "cast": [
       "Jr. NTR",
@@ -134,7 +134,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "978436",
+    "_id": "811941",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -159,13 +159,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1072790",
-    "tmdbId": 1072790,
+    "id": "927342",
+    "tmdbId": 927342,
     "title": "Amaran",
-    "slug": "amaran-1072790",
-    "description": "The inspiring true story of Major Mukund Varadarajan AC, an Indian Army officer who led counter-terrorism operations in Kashmir.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/5qHoazZiaLe7oFBok7XlUhg96f2.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/j9eOeLlTGoHoM8BNUJVNyWmIvCi.jpg",
+    "slug": "amaran-927342",
+    "description": "A heroic true story of Major Mukund Varadarajan, an Indian Army officer who displayed extraordinary bravery during a counterterrorism mission in Kashmir’s Shopian district. The film captures his courage in protecting his nation and the devotion of his wife Indhu Rebecaa Varghese.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/eCB06m1KUGilEOlIzb40nkQhVY0.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/7cNE2qydew1c8fqnlhWjkE3DHc2.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Amaran+trailer",
     "releaseYear": 2024,
     "language": "Tamil / Hindi",
@@ -176,7 +176,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Drama"
     ],
     "duration": "2h 47m",
-    "rating": 8.8,
+    "rating": 7.4,
     "director": "Rajkumar Periasamy",
     "cast": [
       "Sivakarthikeyan",
@@ -186,7 +186,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": false,
     "trending": true,
-    "_id": "1072790",
+    "_id": "927342",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -211,35 +211,34 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1144943",
-    "tmdbId": 1297842,
-    "title": "GOAT - The Greatest of All Time",
-    "slug": "goat-the-greatest-of-all-time-1144943",
-    "description": "An elite anti-terrorist field agent faces his most formidable adversary when shadows from his covert espionage past return to haunt his family.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/wfuqMlaExcoYiUEvKfVpUTt1v4u.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/tq3h43fZy0H80vzf47MAY7R9Mxo.jpg",
+    "id": "1129608",
+    "tmdbId": 1129608,
+    "title": "The Greatest of All Time (GOAT)",
+    "slug": "the-greatest-of-all-time-goat-1129608",
+    "description": "A once decorated member of the Special Anti-Terrorism Squad (SATS) is called back into action by his former colleagues for an important mission, setting him on a dangerous collision course with his own past.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/kk9SmNt6QcP5thvSYELWvO0NWuC.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/wuHD3SiccbQvHUT1LE9o8j9dJlU.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=GOAT+Thalapathy+Vijay+trailer",
     "releaseYear": 2024,
     "language": "Tamil / Hindi",
     "genres": [
-      "South Indian",
       "Action",
-      "Sci-Fi",
-      "Thriller"
+      "Thriller",
+      "Sci-Fi"
     ],
     "duration": "3h 03m",
-    "rating": 7.7,
+    "rating": 8.4,
     "director": "Venkat Prabhu",
     "cast": [
       "Thalapathy Vijay",
       "Prashanth",
       "Prabhu Deva",
-      "Sneha"
+      "Mohan"
     ],
     "type": "movie",
     "featured": false,
     "trending": true,
-    "_id": "1144943",
+    "_id": "1129608",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -264,13 +263,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1184918",
-    "tmdbId": 1184918,
+    "id": "1239511",
+    "tmdbId": 1239511,
     "title": "Lucky Baskhar",
-    "slug": "lucky-baskhar-1184918",
-    "description": "A frustrated, ordinary bank cashier in 1980s-90s Bombay dives headfirst into the high-stakes world of stock market scams and financial money laundering.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/wTnV3PCVW5O92JMrFvvrRcV39RU.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/1pmXyN3sKeYoUhu5VBZiDU4BX21.jpg",
+    "slug": "lucky-baskhar-1239511",
+    "description": "A middle-class bank clerk who longs to trade stability for adventure gets more than he bargained for when he unexpectedly becomes a wealthy man.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/a47JQFl9L7VDa79tEvnTOJe0rPa.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/q8UyN4XhpmChtneZXdZ8fktQka6.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Lucky+Baskhar+trailer",
     "releaseYear": 2024,
     "language": "Telugu / Hindi",
@@ -281,7 +280,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Thriller"
     ],
     "duration": "2h 30m",
-    "rating": 8.5,
+    "rating": 7.7,
     "director": "Venky Atluri",
     "cast": [
       "Dulquer Salmaan",
@@ -291,7 +290,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "1184918",
+    "_id": "1239511",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -316,11 +315,11 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1182390",
+    "id": "1194915",
     "tmdbId": 1194915,
     "title": "Saripodhaa Sanivaaram",
-    "slug": "saripodhaa-sanivaaram-1182390",
-    "description": "Surya promises his mother he will channel his intense anger only on Saturdays, eventually clashing with a notoriously corrupt and brutal police inspector.",
+    "slug": "saripodhaa-sanivaaram-1194915",
+    "description": "Set in Sokulapalem, bound by a promise to his mother, Surya, an LIC agent leads a normal life on six days, maintains a careful ledger of everyone made him angry,unleashing his anger only on Saturdays, solely for justifiable reasons. A tragic incident pits him on a collision course with the ruthless and borderline-manic cop Daya.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/e2yVhbMkpi4JvvdIhvRpS0Muge7.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/yxQACC8pPE5RpRU8nFVU830LL6u.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Saripodhaa+Sanivaaram+trailer",
@@ -333,7 +332,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Drama"
     ],
     "duration": "2h 55m",
-    "rating": 8.2,
+    "rating": 6.6,
     "director": "Vivek Athreya",
     "cast": [
       "Nani",
@@ -343,7 +342,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": false,
     "trending": true,
-    "_id": "1182390",
+    "_id": "1194915",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -368,15 +367,15 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1094556",
-    "tmdbId": 1094556,
+    "id": "80938",
+    "tmdbId": 80938,
     "title": "Aavesham",
-    "slug": "aavesham-1094556",
+    "slug": "aavesham-80938",
     "description": "Three college students in Bangalore befriend an eccentric, local gangster named Ranga to get back at their senior bullies, unleashing absolute chaotic fun.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/2J5eeroLDY0d45mVjpuGhcLZs3W.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/6SLyu9ygASsrOqkCpjAwtyG9PWW.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Aavesham+trailer",
-    "releaseYear": 2024,
+    "releaseYear": 1994,
     "language": "Malayalam / Hindi",
     "genres": [
       "South Indian",
@@ -384,7 +383,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Comedy"
     ],
     "duration": "2h 38m",
-    "rating": 8.7,
+    "rating": 3.5,
     "director": "Jithu Madhavan",
     "cast": [
       "Fahadh Faasil",
@@ -394,7 +393,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "1094556",
+    "_id": "80938",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -419,11 +418,11 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1111974",
+    "id": "1069945",
     "tmdbId": 1069945,
     "title": "Manjummel Boys",
-    "slug": "manjummel-boys-1111974",
-    "description": "A group of friends from Kochi embark on a trip to Kodaikanal where one slips into the infamous Guna Cave, leading to an extraordinary real-life rescue mission.",
+    "slug": "manjummel-boys-1069945",
+    "description": "A carefree vacation turns into a desperate race against time when a group of lifelong friends must unite to save one of their own from a notoriously perilous, uncharted abyss deep within the Guna Caves.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/bswrtewwthpsh6nABiqKevU4UBI.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/zGsHpuMN412VyzJZZnQeq4lMdjF.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Manjummel+Boys+trailer",
@@ -436,7 +435,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Thriller"
     ],
     "duration": "2h 15m",
-    "rating": 8.6,
+    "rating": 7.8,
     "director": "Chidambaram",
     "cast": [
       "Soubin Shahir",
@@ -446,7 +445,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "1111974",
+    "_id": "1069945",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -471,13 +470,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1113278",
-    "tmdbId": 1113278,
+    "id": "1118224",
+    "tmdbId": 1118224,
     "title": "Maharaja",
-    "slug": "maharaja-1113278",
-    "description": "A humble barber approaches the police to report that his dustbin 'Lakshmi' has been stolen, masking an intricate, jaw-dropping story of righteous revenge.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/bnm5NntrQBcG3P7DbO00v2FmXm8.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/fCkjXQw2KQr1rKrZXLcC5JE2dwt.jpg",
+    "slug": "maharaja-1118224",
+    "description": "A barber seeks vengeance after his home is burglarized, cryptically telling police his \"Lakshmi\" has been taken, leaving them uncertain if it's a person or object, jeer at his request until they learn what they're really looking for.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/s0m4TM1XRAftQStgKpw024RvkJo.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/if61bpqSXngkGoGNjMdHZt02wZS.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Maharaja+Vijay+Sethupathi+trailer",
     "releaseYear": 2024,
     "language": "Tamil / Hindi",
@@ -489,7 +488,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Thriller"
     ],
     "duration": "2h 21m",
-    "rating": 8.9,
+    "rating": 7.7,
     "director": "Nithilan Saminathan",
     "cast": [
       "Vijay Sethupathi",
@@ -499,7 +498,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "1113278",
+    "_id": "1118224",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -528,7 +527,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "tmdbId": 1022789,
     "title": "Inside Out 2",
     "slug": "inside-out-2-1022789",
-    "description": "Teenager Riley's mind headquarters undergoes a sudden demolition to make room for brand-new emotions: Anxiety, Envy, Ennui, and Embarrassment.",
+    "description": "Teenager Riley's mind headquarters is undergoing a sudden demolition to make room for something entirely unexpected: new Emotions! Joy, Sadness, Anger, Fear and Disgust, who’ve long been running a successful operation by all accounts, aren’t sure how to feel when Anxiety shows up. And it looks like she’s not alone.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/p5ozvmdgsmbWe0H8Xk7Rc8SCwAB.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Inside+Out+2+trailer",
@@ -541,7 +540,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Comedy"
     ],
     "duration": "1h 36m",
-    "rating": 8.1,
+    "rating": 7.5,
     "director": "Kelsey Mann",
     "cast": [
       "Amy Poehler",
@@ -576,13 +575,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1156593",
-    "tmdbId": 1156593,
+    "id": "980599",
+    "tmdbId": 980599,
     "title": "Bhool Bhulaiyaa 3",
-    "slug": "bhool-bhulaiyaa-3-1156593",
-    "description": "Ruhaan alias Rooh Baba visits a royal palace in Bengal where two Manjulikas re-emerge from the sealed chamber, sparking laughter and supernatural chaos.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/1sQA7lfcF9yUyoLYC0e6Zo3jmxE.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/k24eZq5I3jyz4htPkZCRpnUmBzE.jpg",
+    "slug": "bhool-bhulaiyaa-3-980599",
+    "description": "Rooh Baba ventures into a haunted mansion in the kingdom of Raktaghat in West Bengal, where he confronts two vengeful spirits, both asserting to be Manjulika.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/3AfHD1HoaQpQwKH8kxRdBKVmzeU.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/1TdCtQaAqZhKRSOSbPi1EPToJxN.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Bhool+Bhulaiyaa+3+trailer",
     "releaseYear": 2024,
     "language": "Hindi",
@@ -592,7 +591,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Horror"
     ],
     "duration": "2h 38m",
-    "rating": 7.8,
+    "rating": 5.5,
     "director": "Anees Bazmee",
     "cast": [
       "Kartik Aaryan",
@@ -603,7 +602,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "1156593",
+    "_id": "980599",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -628,13 +627,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1159311",
-    "tmdbId": 1159311,
+    "id": "1014214",
+    "tmdbId": 1014214,
     "title": "Singham Again",
-    "slug": "singham-again-1159311",
-    "description": "DCP Bajirao Singham leads the Cop Universe army alongside Sooryavanshi, Simmba, Satya, and Shiva on a daring rescue mission inspired by the Ramayana.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/tTrI6PwqzxkgO3dvQ7BEKXM7SYR.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/tUbwMOYP4cuGL1sQ0edz5943rBY.jpg",
+    "slug": "singham-again-1014214",
+    "description": "The cop universe expands with newer additions while the old ones return led by Bajirao Singham. Singham Again interweaves the mythological epic Ramayana's good vs evil narrative when his wife Avni Kamath gets abducted by Danger Lanka setting Bajirao and his gang of Sangram Bhalerao and Veer Sooryavanshi along with Satya and Shakti Shetty on a mission to rescue her.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/2JbNkHg8m7LaBy61LyrnnlenaxY.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/lexEx0B4WDOXGfqPTj4R8FCrE7H.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Singham+Again+trailer",
     "releaseYear": 2024,
     "language": "Hindi",
@@ -644,7 +643,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Drama"
     ],
     "duration": "2h 45m",
-    "rating": 7.4,
+    "rating": 5,
     "director": "Rohit Shetty",
     "cast": [
       "Ajay Devgn",
@@ -658,7 +657,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "1159311",
+    "_id": "1014214",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -683,15 +682,15 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1154341",
+    "id": "949536",
     "tmdbId": 949536,
     "title": "Kill",
-    "slug": "kill-1154341",
-    "description": "When a passenger train to New Delhi is hijacked by 40 armed bandits, an NSG commando transforms the speeding coaches into a brutal, claustrophobic warzone.",
+    "slug": "kill-949536",
+    "description": "North America has been divided into four main quadrants. A power-hungry corporation has taken over the conventional prison system and made criminals the new law enforcers.  The owner of that corporation, nanoscientist Eion Prescott, created a nano-virus called Onyx. Which is distributed through deadly watches to criminals. First, infecting them. Then, forcing them into eliminating each other for freedom. Who can topple the corporation's entire system from within?",
     "posterUrl": "https://image.tmdb.org/t/p/w780/bXvSKLCillha6wxY0yxoRCM2WQl.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/zyqAhNJqwiop5yUOJ8SHV27labY.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Kill+movie+trailer",
-    "releaseYear": 2024,
+    "releaseYear": 2026,
     "language": "Hindi",
     "genres": [
       "Bollywood",
@@ -700,7 +699,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Crime"
     ],
     "duration": "1h 45m",
-    "rating": 8.2,
+    "rating": 5,
     "director": "Nikhil Nagesh Bhat",
     "cast": [
       "Lakshya",
@@ -710,7 +709,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "1154341",
+    "_id": "949536",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -735,13 +734,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1155089",
-    "tmdbId": 1155089,
+    "id": "1187058",
+    "tmdbId": 1187058,
     "title": "Munjya",
-    "slug": "munjya-1155089",
-    "description": "A young man visits his ancestral village in the Konkan only to awaken the restless spirit of Munjya, a mischievous ghost seeking marriage.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/mcRVsjMbhFstRK9z2oGRHiIvulr.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/rVJfabCz1ViynQCEz54MRqdZig1.jpg",
+    "slug": "munjya-1187058",
+    "description": "A young man's visit to his native village unveils a family secret and a vengeful spirit, Munjya, who wants to get married. Now the young man must fight to protect himself and his love from Munjya's clutches leading to a humorously chaotic and terrifying adventure.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/ylYdXu0SM79Qs7vOz6q7mBxanVD.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/4Yr1efAiQ55YdV9R7N4WOntpmZ5.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Munjya+trailer",
     "releaseYear": 2024,
     "language": "Hindi",
@@ -752,7 +751,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Fantasy"
     ],
     "duration": "2h 03m",
-    "rating": 8,
+    "rating": 6.2,
     "director": "Aditya Sarpotdar",
     "cast": [
       "Abhay Verma",
@@ -762,7 +761,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": false,
     "trending": true,
-    "_id": "1155089",
+    "_id": "1187058",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -787,13 +786,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1084199",
-    "tmdbId": 1084199,
+    "id": "1020951",
+    "tmdbId": 1020951,
     "title": "Chandu Champion",
-    "slug": "chandu-champion-1084199",
-    "description": "The incredible biographical tale of Murlikant Petkar, who survived multiple bullet wounds in the 1965 war and became India's first Paralympic gold medalist.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/oCoTgC3UyWGfyQ9thE10ulWR7bn.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/cZnJ3ABPvsWGqwPcu06Eda493F9.jpg",
+    "slug": "chandu-champion-1020951",
+    "description": "9 bullet wounds (one still in the body), three different sports and an unshakable determination to fulfill the dream of an Olympic Gold later, Muralikant Petkar, India's first Paralympian to finish at the top of the podium, got the recognition by his own country 45 years after he achieved what no athlete from his country could.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/AprEYzaWgMuSQtJXMxz1P5Z3e3P.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/b21xN1TVcFeuEKdSGxEjGKfOYhE.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Chandu+Champion+trailer",
     "releaseYear": 2024,
     "language": "Hindi",
@@ -804,7 +803,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Sport"
     ],
     "duration": "2h 23m",
-    "rating": 8.6,
+    "rating": 7.2,
     "director": "Kabir Khan",
     "cast": [
       "Kartik Aaryan",
@@ -814,7 +813,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": false,
     "trending": true,
-    "_id": "1084199",
+    "_id": "1020951",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -839,11 +838,11 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1118249",
+    "id": "1187619",
     "tmdbId": 1187619,
     "title": "Shaitaan",
-    "slug": "shaitaan-1118249",
-    "description": "A secluded family vacation turns into a terrifying nightmare when an enigmatic stranger uses black magic to seize total control over their teenage daughter.",
+    "slug": "shaitaan-1187619",
+    "description": "Kabir and his family's fun weekend retreat takes terrifying turn when an intruder takes over the control of the  body of his teenage daughter, putting her at the mercy of his increasingly sinister orders.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/oRvFzcagAcC6Q317xtV7QXzwBnj.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/yNGAfRd0VZwtSAZiC1WXWqCbvIb.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Shaitaan+trailer",
@@ -856,7 +855,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Mystery"
     ],
     "duration": "2h 12m",
-    "rating": 7.9,
+    "rating": 6.3,
     "director": "Vikas Bahl",
     "cast": [
       "Ajay Devgn",
@@ -867,7 +866,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "1118249",
+    "_id": "1187619",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -892,15 +891,15 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "1022796",
-    "tmdbId": 1022796,
+    "id": "11667",
+    "tmdbId": 11667,
     "title": "Fighter",
-    "slug": "fighter-1022796",
-    "description": "Top Air Force aviators come together to form the elite Air Dragons unit, defending the country from aerial threats and cross-border terrorism.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/nesuSdJakNkf0zs7OfoasB6Clxf.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/ehumsuIBbgAe1hg343oszCLrAfI.jpg",
+    "slug": "fighter-11667",
+    "description": "Colonel Guile and various other martial arts heroes fight against the tyranny of dictator M. Bison and his cohorts.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/6yh95dD2Y6uWAlPfWCZZygBM1ec.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/vmXRiIs6alZFDtlHlUT3Tx5rHww.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Fighter+trailer",
-    "releaseYear": 2024,
+    "releaseYear": 1994,
     "language": "Hindi",
     "genres": [
       "Bollywood",
@@ -908,7 +907,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Thriller"
     ],
     "duration": "2h 46m",
-    "rating": 7.8,
+    "rating": 4.7,
     "director": "Siddharth Anand",
     "cast": [
       "Hrithik Roshan",
@@ -918,7 +917,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "1022796",
+    "_id": "11667",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -947,7 +946,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "tmdbId": 693134,
     "title": "Dune: Part Two",
     "slug": "dune-part-two-693134",
-    "description": "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family on the desert planet Arrakis.",
+    "description": "Follow the mythic journey of Paul Atreides as he unites with Chani and the Fremen while on a path of revenge against the conspirators who destroyed his family. Facing a choice between the love of his life and the fate of the known universe, Paul endeavors to prevent a terrible future only he can foresee.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/6izwz7rsy95ARzTR3poZ8H6c5pp.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/eZ239CUp1d6OryZEBPnO2n87gMG.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Dune+Part+Two+trailer",
@@ -959,7 +958,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Adventure"
     ],
     "duration": "2h 46m",
-    "rating": 8.6,
+    "rating": 8.1,
     "director": "Denis Villeneuve",
     "cast": [
       "Timothée Chalamet",
@@ -999,7 +998,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "tmdbId": 558449,
     "title": "Gladiator II",
     "slug": "gladiator-ii-558449",
-    "description": "Years after witnessing the death of Maximus, Lucius must enter the Colosseum after his home is conquered by the tyrannical Emperors of Rome.",
+    "description": "Years after witnessing the death of the revered hero Maximus at the hands of his uncle, Lucius is forced to enter the Colosseum after his home is conquered by the tyrannical Emperors who now lead Rome with an iron fist. With rage in his heart and the future of the Empire at stake, Lucius must look to his past to find strength and honor to return the glory of Rome to its people.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/2cxhvwyEwRlysAmRH4iodkvo0z5.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/tOqIwliWMovSIZ9DyvHcHI7p2im.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Gladiator+II+trailer",
@@ -1012,7 +1011,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Drama"
     ],
     "duration": "2h 28m",
-    "rating": 7.8,
+    "rating": 6.6,
     "director": "Ridley Scott",
     "cast": [
       "Paul Mescal",
@@ -1064,7 +1063,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Sci-Fi"
     ],
     "duration": "1h 59m",
-    "rating": 7.9,
+    "rating": 7.2,
     "director": "Fede Álvarez",
     "cast": [
       "Cailee Spaeny",
@@ -1103,7 +1102,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "tmdbId": 823464,
     "title": "Godzilla x Kong: The New Empire",
     "slug": "godzilla-x-kong-the-new-empire-823464",
-    "description": "An all-new adventure pits the almighty Kong and the fearsome Godzilla against a colossal undiscovered threat hidden deep within our world.",
+    "description": "Following their explosive showdown, Godzilla and Kong must reunite against a colossal undiscovered threat hidden within our world, challenging their very existence – and our own.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/z1p34vh7dEOnLDmyCrlUVLuoDzd.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/gvLG3Fnznkxl4SmYfcK8gUuqxM8.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Godzilla+x+Kong+trailer",
@@ -1116,7 +1115,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Adventure"
     ],
     "duration": "1h 55m",
-    "rating": 7.6,
+    "rating": 7,
     "director": "Adam Wingard",
     "cast": [
       "Rebecca Hall",
@@ -1155,7 +1154,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "tmdbId": 872585,
     "title": "Oppenheimer",
     "slug": "oppenheimer-872585",
-    "description": "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb during World War II.",
+    "description": "The story of J. Robert Oppenheimer's role in the development of the atomic bomb during World War II.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/neeNHeXjMF5fXoCJRsOmkNGC7q.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Oppenheimer+trailer",
@@ -1168,7 +1167,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "History"
     ],
     "duration": "3h 00m",
-    "rating": 8.9,
+    "rating": 8,
     "director": "Christopher Nolan",
     "cast": [
       "Cillian Murphy",
@@ -1208,7 +1207,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "tmdbId": 569094,
     "title": "Spider-Man: Across the Spider-Verse",
     "slug": "spider-man-across-the-spider-verse-569094",
-    "description": "Miles Morales catapults across the Multiverse, where he encounters a team of Spider-People charged with protecting its very existence.",
+    "description": "After reuniting with Gwen Stacy, Brooklyn’s full-time, friendly neighborhood Spider-Man is catapulted across the Multiverse, where he encounters the Spider Society, a team of Spider-People charged with protecting the Multiverse's very existence. But when the heroes clash on how to handle a new threat, Miles finds himself pitted against the other Spiders and must set out on his own to save those he loves most.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/kVd3a9YeLGkoeR50jGEXM6EqseS.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Spider-Man+Across+the+Spider-Verse+trailer",
@@ -1221,7 +1220,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Sci-Fi"
     ],
     "duration": "2h 20m",
-    "rating": 8.8,
+    "rating": 8.3,
     "director": "Joaquim Dos Santos",
     "cast": [
       "Shameik Moore",
@@ -1259,12 +1258,12 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "id": "93405",
     "tmdbId": 93405,
     "title": "Squid Game (Season 2 & 1)",
-    "slug": "squid-game-93405",
-    "description": "Hundreds of cash-strapped players accept a strange invitation to compete in children's games. Inside awaits a tempting prize with deadly high stakes.",
+    "slug": "squid-game-season-2-1--93405",
+    "description": "Hundreds of cash-strapped players accept a strange invitation to compete in children's games. Inside, a tempting prize awaits — with deadly high stakes.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/1QdXdRYfktUSONkl1oD5gc6Be0s.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/2meX1nMdScFOoV4370rqHWKmXhY.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Squid+Game+Season+2+trailer",
-    "releaseYear": 2024,
+    "releaseYear": 2021,
     "language": "Korean / Hindi",
     "genres": [
       "K-Drama",
@@ -1274,7 +1273,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Drama"
     ],
     "duration": "2 Seasons",
-    "rating": 8.7,
+    "rating": 7.9,
     "director": "Hwang Dong-hyuk",
     "cast": [
       "Lee Jung-jae",
@@ -1310,13 +1309,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "219747",
-    "tmdbId": 219747,
+    "id": "215720",
+    "tmdbId": 215720,
     "title": "Queen of Tears",
-    "slug": "queen-of-tears-219747",
-    "description": "The queen of department stores and the prince of supermarkets weather a marital crisis until love miraculously begins to bloom again.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/Ax1RU0vvbiQ5jL1cwi2WQFrBw2.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/xTzILmLtNe5cktgBRjEAKf2wCTi.jpg",
+    "slug": "queen-of-tears-215720",
+    "description": "The queen of department stores and the prince of supermarkets weather a marital crisis—until love miraculously begins to bloom again.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/7ZXLZ3KYL3IVvsSHBZaHjcNQzNU.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/wcP3FsRLog4GNEs9PFrDKKQdcof.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Queen+of+Tears+trailer",
     "releaseYear": 2024,
     "language": "Korean / Hindi",
@@ -1328,7 +1327,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Drama"
     ],
     "duration": "16 Episodes",
-    "rating": 8.9,
+    "rating": 8.4,
     "director": "Jang Young-woo",
     "cast": [
       "Kim Soo-hyun",
@@ -1338,7 +1337,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "series",
     "featured": true,
     "trending": true,
-    "_id": "219747",
+    "_id": "215720",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -1367,7 +1366,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "tmdbId": 99966,
     "title": "All of Us Are Dead",
     "slug": "all-of-us-are-dead-99966",
-    "description": "A high school becomes ground zero for a zombie virus outbreak. Trapped students must fight their way out or turn into one of the rabid infected.",
+    "description": "A high school becomes ground zero for a zombie virus outbreak. Trapped students must fight their way out — or turn into one of the rabid infected.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/pTEFqAjLd5YTsMD6NSUxV6Dq7A6.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/8hp2CuGnw1iP5dLBVMAPUv23swx.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=All+of+Us+Are+Dead+trailer",
@@ -1381,7 +1380,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Sci-Fi"
     ],
     "duration": "12 Episodes",
-    "rating": 8.6,
+    "rating": 8.3,
     "director": "Lee Jae-kyoo",
     "cast": [
       "Park Ji-hu",
@@ -1421,11 +1420,11 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "tmdbId": 96648,
     "title": "Sweet Home",
     "slug": "sweet-home-96648",
-    "description": "As humans turn into savage monsters and wreak terror, one troubled teen and his apartment neighbors fight to hold onto their humanity.",
+    "description": "As humans turn into savage monsters and the world plunges into terror, a handful of survivors fight for their lives — and to hold on to their humanity.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/zcugNxDg59YwIf3dUHsrHmO7pc1.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/mceCXNTny6a5F3rQgShLoyARw4l.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Sweet+Home+trailer",
-    "releaseYear": 2024,
+    "releaseYear": 2020,
     "language": "Korean / Hindi",
     "genres": [
       "K-Drama",
@@ -1435,7 +1434,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Drama"
     ],
     "duration": "3 Seasons",
-    "rating": 8.4,
+    "rating": 8.2,
     "director": "Lee Eung-bok",
     "cast": [
       "Song Kang",
@@ -1470,13 +1469,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "242876",
-    "tmdbId": 242876,
+    "id": "221851",
+    "tmdbId": 221851,
     "title": "Marry My Husband",
-    "slug": "marry-my-husband-242876",
-    "description": "A terminally ill woman killed after witnessing her husband's affair wakes up ten years in the past with a second chance at life and sweet revenge.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/lCU77Jp0iWN2e1WuSJvR7M35ebN.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/ieiq46OoeTrLkjtclmhii6iRyzP.jpg",
+    "slug": "marry-my-husband-221851",
+    "description": "Kang Ji-won, a terminally ill cancer patient, is killed by her husband and best friend after she witnesses them having an affair. She wakes up 10 years before the incident and decides to seek revenge with the help of Yu Ji-hyuk, a director at the company where she works. Now, she must reclaim her fate and eliminate the trash from her life.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/899KcBqooj8nEyPcAEU3h7AdfUo.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/qHCXeAM13OYvcmjXeOhtvXfc8uo.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Marry+My+Husband+trailer",
     "releaseYear": 2024,
     "language": "Korean / Hindi",
@@ -1488,7 +1487,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Romance"
     ],
     "duration": "16 Episodes",
-    "rating": 8.8,
+    "rating": 8.5,
     "director": "Park Won-guk",
     "cast": [
       "Park Min-young",
@@ -1499,7 +1498,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "series",
     "featured": true,
     "trending": true,
-    "_id": "242876",
+    "_id": "221851",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -1524,13 +1523,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "110316",
-    "tmdbId": 110316,
+    "id": "117376",
+    "tmdbId": 117376,
     "title": "Vincenzo",
-    "slug": "vincenzo-110316",
-    "description": "During a visit to his motherland, a Korean-Italian mafia lawyer gives a sprawling conglomerate a taste of its own medicine with a side of justice.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/Ac8ruycRXzgcsndTZFK6ouGA0FA.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/QZaPkNUvhdcKONuO2fXuqtcQRo.jpg",
+    "slug": "vincenzo-117376",
+    "description": "During a visit to his motherland, a Korean-Italian Mafia lawyer gives an unrivaled conglomerate a taste of its own medicine  with a side of justice.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/qbkSS1cTjT4DzIwD44bdhTuYgdT.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/sf7NCqyVUNoyjYuwW5oJke1T1lH.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Vincenzo+trailer",
     "releaseYear": 2021,
     "language": "Korean / Hindi",
@@ -1542,7 +1541,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Drama"
     ],
     "duration": "20 Episodes",
-    "rating": 8.9,
+    "rating": 8.5,
     "director": "Kim Hee-won",
     "cast": [
       "Song Joong-ki",
@@ -1552,7 +1551,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "series",
     "featured": true,
     "trending": true,
-    "_id": "110316",
+    "_id": "117376",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -1577,15 +1576,15 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "114479",
-    "tmdbId": 114479,
+    "id": "136283",
+    "tmdbId": 136283,
     "title": "The Glory",
-    "slug": "the-glory-114479",
+    "slug": "the-glory-136283",
     "description": "Years after surviving horrific abuse in high school, a woman puts an elaborate revenge scheme in motion to make the perpetrators pay for their crimes.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/mztdt3y6GBsJR69zHtszFezTCLT.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/kwronSXO1ogMqHHFvY2eBxfFLdn.jpg",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/uUM4LVlPgIrww07OoEKrGWlS1Ej.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/AjwoDj77HLlqcpwEGqsnvMXm5my.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=The+Glory+trailer",
-    "releaseYear": 2023,
+    "releaseYear": 2022,
     "language": "Korean / Hindi",
     "genres": [
       "K-Drama",
@@ -1594,7 +1593,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Thriller"
     ],
     "duration": "16 Episodes",
-    "rating": 8.8,
+    "rating": 8.5,
     "director": "Ahn Gil-ho",
     "cast": [
       "Song Hye-kyo",
@@ -1604,7 +1603,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "series",
     "featured": false,
     "trending": true,
-    "_id": "114479",
+    "_id": "136283",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -1629,15 +1628,15 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "95557",
-    "tmdbId": 95557,
+    "id": "94796",
+    "tmdbId": 94796,
     "title": "Crash Landing on You",
-    "slug": "crash-landing-on-you-95557",
-    "description": "A paragliding mishap drops a South Korean heiress into North Korea - and into the life of an army officer who decides to help her hide.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/4tblBrslcKSifMVZ3TmtT2ukMor.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/9qrroces8C6R9aKr08hACNPVXdZ.jpg",
+    "slug": "crash-landing-on-you-94796",
+    "description": "A paragliding mishap drops a South Korean heiress in North Korea -- and into the life of an army officer, who decides he will help her hide.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/fgBNLPr6mC8pxuR79ENAJY4nBmj.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/3yEHM2HT2vrUtO93YzTJNgEfiZG.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Crash+Landing+on+You+trailer",
-    "releaseYear": 2020,
+    "releaseYear": 2019,
     "language": "Korean / Hindi",
     "genres": [
       "K-Drama",
@@ -1647,7 +1646,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Drama"
     ],
     "duration": "16 Episodes",
-    "rating": 9,
+    "rating": 8.5,
     "director": "Lee Jeong-hyo",
     "cast": [
       "Hyun Bin",
@@ -1658,7 +1657,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "series",
     "featured": true,
     "trending": true,
-    "_id": "95557",
+    "_id": "94796",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -1683,13 +1682,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "209867",
-    "tmdbId": 209867,
+    "id": "127532",
+    "tmdbId": 127532,
     "title": "Solo Leveling (Ore dake Level Up na Ken)",
-    "slug": "solo-leveling-209867",
-    "description": "In a world where hunters battle deadly monsters, the weakest hunter Sung Jinwoo receives a mysterious quest window that allows only him to level up infinitely.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/cHhJzdUGcEBq6av4wr9jsIvUITH.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/rBOnrVlck7BIlGeWVlzYiZeg4l2.jpg",
+    "slug": "solo-leveling-ore-dake-level-up-na-ken--127532",
+    "description": "They say whatever doesn’t kill you makes you stronger, but that’s not the case for the world’s weakest hunter Sung Jinwoo. After being brutally slaughtered by monsters in a high-ranking dungeon, Jinwoo came back with the System, a program only he could see, that’s leveling him up in every way. Now, he’s inspired to discover the secrets behind his powers and the dungeon that spawned them.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/geCRueV3ElhRTr0xtJuEWJt6dJ1.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/xMNH87maNLt9n2bMDYeI6db5VFm.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Solo+Leveling+anime+trailer",
     "releaseYear": 2024,
     "language": "Japanese / Hindi",
@@ -1700,7 +1699,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Series"
     ],
     "duration": "12 Episodes",
-    "rating": 9.1,
+    "rating": 8.7,
     "director": "Shunsuke Nakashige",
     "cast": [
       "Taito Ban",
@@ -1710,7 +1709,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "series",
     "featured": true,
     "trending": true,
-    "_id": "209867",
+    "_id": "127532",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -1738,12 +1737,12 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "id": "95479",
     "tmdbId": 95479,
     "title": "Jujutsu Kaisen (Season 2 & 1)",
-    "slug": "jujutsu-kaisen-95479",
-    "description": "Yuji Itadori swallows a cursed talisman - the finger of Ryomen Sukuna - and enters the Tokyo Jujutsu High School to master cursed energy.",
+    "slug": "jujutsu-kaisen-season-2-1--95479",
+    "description": "Yuji Itadori is a boy with tremendous physical strength, though he lives a completely ordinary high school life. One day, to save a classmate who has been attacked by curses, he eats the finger of Ryomen Sukuna, taking the curse into his own soul. From then on, he shares one body with Ryomen Sukuna. Guided by the most powerful of sorcerers, Satoru Gojo, Itadori is admitted to Tokyo Jujutsu High School, an organization that fights the curses... and thus begins the heroic tale of a boy who became a curse to exorcise a curse, a life from which he could never turn back.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/fHpKWq9ayzSk8nSwqRuaAUemRKh.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/qpin8cASXEVtwhzNsprHYFiOAGk.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Jujutsu+Kaisen+trailer",
-    "releaseYear": 2023,
+    "releaseYear": 2020,
     "language": "Japanese / Hindi",
     "genres": [
       "Anime",
@@ -1752,7 +1751,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Series"
     ],
     "duration": "47 Episodes",
-    "rating": 9,
+    "rating": 8.6,
     "director": "Sunghoo Park / Shota Goshozono",
     "cast": [
       "Junya Enoki",
@@ -1791,12 +1790,12 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "id": "85937",
     "tmdbId": 85937,
     "title": "Demon Slayer: Kimetsu no Yaiba - Hashira Training Arc",
-    "slug": "demon-slayer-kimetsu-no-yaiba-85937",
-    "description": "Tanjiro visits Stone Hashira Himejima to undergo grueling training in preparation for the impending final war against Muzan Kibutsuji.",
+    "slug": "demon-slayer-kimetsu-no-yaiba-hashira-training-arc-85937",
+    "description": "After a demon attack leaves his family slain and his sister cursed, Tanjiro embarks upon a perilous journey to find a cure and avenge those he's lost.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/xUfRZu2mi8jH6SzQEJGP6tjBuYj.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/3GQKYh6Trm8pxd2AypovoYQf4Ay.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Demon+Slayer+Hashira+Training+Arc+trailer",
-    "releaseYear": 2024,
+    "releaseYear": 2019,
     "language": "Japanese / Hindi",
     "genres": [
       "Anime",
@@ -1805,7 +1804,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Series"
     ],
     "duration": "4 Seasons",
-    "rating": 9.2,
+    "rating": 8.6,
     "director": "Haruo Sotozaki",
     "cast": [
       "Natsuki Hanae",
@@ -1844,12 +1843,12 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "id": "1429",
     "tmdbId": 1429,
     "title": "Attack on Titan (Shingeki no Kyojin)",
-    "slug": "attack-on-titan-1429",
-    "description": "After his hometown is destroyed and his mother killed by man-eating giant Titans, Eren Jaeger vows to cleanse the earth of all Titans.",
+    "slug": "attack-on-titan-shingeki-no-kyojin--1429",
+    "description": "100 years ago, the last remnants of humanity were forced to retreat behind the towering walls of a fortified city to escape the massive, man-eating Titans that roamed the land outside their fortress. Only the members of the Scouting Legion dared to stray beyond the safety of the walls – but even those brave warriors seldom returned alive. Those within the city clung to the illusion of a peaceful existence until the day that dream was shattered, and their slim chance at survival was reduced to one horrifying choice: kill – or be devoured!",
     "posterUrl": "https://image.tmdb.org/t/p/w780/hTP1DtLGFamjfu8WqjnuQdP1n4i.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/rqbCbjB19amtOtFQbb3K2lgm2zv.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Attack+on+Titan+Final+Season+trailer",
-    "releaseYear": 2023,
+    "releaseYear": 2013,
     "language": "Japanese / Hindi",
     "genres": [
       "Anime",
@@ -1858,7 +1857,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Series"
     ],
     "duration": "4 Seasons",
-    "rating": 9.3,
+    "rating": 8.7,
     "director": "Tetsuro Araki / Yuichiro Hayashi",
     "cast": [
       "Yuki Kaji",
@@ -1894,15 +1893,15 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "37854",
-    "tmdbId": 37854,
+    "id": "111110",
+    "tmdbId": 111110,
     "title": "One Piece",
-    "slug": "one-piece-37854",
-    "description": "Monkey D. Luffy and his pirate crew sail the Grand Line in search of the world's ultimate treasure known as One Piece to become the next Pirate King.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/dB4EDhre2dsC2kxYDavyKWqLQwi.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/2rmK7mnchw9Xr3XdiTFSxTTLXqv.jpg",
+    "slug": "one-piece-111110",
+    "description": "With his straw hat and ragtag crew, young pirate Monkey D. Luffy goes on an epic voyage for treasure.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/blWCPEqDGLBuLB9u89CxP9ORQP4.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/qD211Hb5XwFxrszzBBe5EUYJerh.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=One+Piece+Egghead+Arc+trailer",
-    "releaseYear": 2024,
+    "releaseYear": 2023,
     "language": "Japanese / Hindi",
     "genres": [
       "Anime",
@@ -1912,7 +1911,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Series"
     ],
     "duration": "1100+ Episodes",
-    "rating": 9.1,
+    "rating": 8.1,
     "director": "Konosuke Uda",
     "cast": [
       "Mayumi Tanaka",
@@ -1922,7 +1921,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "series",
     "featured": true,
     "trending": true,
-    "_id": "37854",
+    "_id": "111110",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -1947,13 +1946,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "210855",
-    "tmdbId": 210855,
+    "id": "240411",
+    "tmdbId": 240411,
     "title": "Dandadan",
-    "slug": "dandadan-210855",
-    "description": "A high school girl who believes in ghosts and an occult nerd boy who believes in aliens make a bet that thrusts them into bizarre supernatural battles.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/89kiLK0S7Rbfjorvhm0vxTAgAH3.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/cl8NLaoztP877hTSYSy6YIUkChF.jpg",
+    "slug": "dandadan-240411",
+    "description": "In a bet to prove whether ghosts or aliens exist, two high schoolers face terrifying paranormal threats, gain superpowers and maybe even fall in love?!",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/6qfZAOEUFIrbUH3JvePclx1nXzz.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/uNTrRKIOyKYISthoeizghtXPEOK.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Dandadan+anime+trailer",
     "releaseYear": 2024,
     "language": "Japanese / Hindi",
@@ -1965,7 +1964,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Series"
     ],
     "duration": "12 Episodes",
-    "rating": 8.8,
+    "rating": 8.5,
     "director": "Fuga Yamashiro",
     "cast": [
       "Shion Wakayama",
@@ -1975,7 +1974,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "series",
     "featured": true,
     "trending": true,
-    "_id": "210855",
+    "_id": "240411",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -2000,13 +1999,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "207390",
-    "tmdbId": 207390,
+    "id": "207468",
+    "tmdbId": 207468,
     "title": "Kaiju No. 8",
-    "slug": "kaiju-no-8-207390",
-    "description": "In a monster-ravaged Japan, a 32-year-old monster corpse cleaner gains the ability to transform into a powerful Kaiju and joins the Defense Force.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/iRtvwjDUuSjjKPsplspWM3u7Xqh.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/3zeMdavUMqMlLNYX6IGp2zwLTXo.jpg",
+    "slug": "kaiju-no-8-207468",
+    "description": "In a world plagued by creatures known as Kaiju, Kafka Hibino aspired to enlist in The Defense Force. He makes a promise to enlist with his childhood friend, Mina Ashiro. Soon, life takes them in separate ways. While employed cleaning up after Kaiju battles, Kafka meets Reno Ichikawa. Reno's determination to join The Defense Force reawakens Kafka's promise to join Mina and protect humanity.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/bJxGs0w5RAhaX4fIUQu511rvm0S.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/htGeuCcNhlBe8GTx3izKOsd8frw.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Kaiju+No+8+trailer",
     "releaseYear": 2024,
     "language": "Japanese / Hindi",
@@ -2017,7 +2016,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Series"
     ],
     "duration": "12 Episodes",
-    "rating": 8.6,
+    "rating": 8.4,
     "director": "Shigeyuki Miya",
     "cast": [
       "Masaya Fukunishi",
@@ -2027,7 +2026,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "series",
     "featured": true,
     "trending": true,
-    "_id": "207390",
+    "_id": "207468",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -2052,13 +2051,13 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "id": "667538",
-    "tmdbId": 667538,
+    "id": "916224",
+    "tmdbId": 916224,
     "title": "Suzume",
-    "slug": "suzume-667538",
-    "description": "A 17-year-old girl meets a mysterious young man who closes doors that are releasing catastrophic disasters across Japan.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/gPbM0MK8CP8A174rmUwGsADNYKD.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/2vFuG6bWGyQUzYS9d69E5l85nIz.jpg",
+    "slug": "suzume-916224",
+    "description": "Suzume, 17, lost her mother as a little girl. On her way to school, she meets a mysterious young man. But her curiosity unleashes a calamity that endangers the entire population of Japan, and so Suzume embarks on a journey to set things right.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/yStW1TXF5s7Tbtu9KjIZEaWl6HL.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/4tdV5AeojEdbvn6VpeQrbuDlmzs.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Suzume+trailer",
     "releaseYear": 2022,
     "language": "Japanese / Hindi",
@@ -2069,7 +2068,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Drama"
     ],
     "duration": "2h 02m",
-    "rating": 8.7,
+    "rating": 7.9,
     "director": "Makoto Shinkai",
     "cast": [
       "Nanoka Hara",
@@ -2079,7 +2078,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "type": "movie",
     "featured": true,
     "trending": true,
-    "_id": "667538",
+    "_id": "916224",
     "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "downloadUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     "qualities": [
@@ -2109,7 +2108,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "tmdbId": 1303331,
     "title": "Dhamaal 4",
     "slug": "dhamaal-4-1303331",
-    "description": "The Dhamaal boys are back for another madcap treasure hunt, facing hilarious challenges and wild adventures in their quest for the Treasure of Life.",
+    "description": "The Dhamaal boys are back for another treasure hunt, facing hilarious challenges in their quest for the Treasure of Life.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/oVij5aEEE6iI4PxB4i0CgKp8h0m.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/38hG7f5YJIo7oHr68PpYFVXdjYP.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Dhamaal+4+official+trailer",
@@ -2121,7 +2120,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Adventure"
     ],
     "duration": "2h 20m",
-    "rating": 8.6,
+    "rating": 3,
     "director": "Indra Kumar",
     "cast": [
       "Ajay Devgn",
@@ -2175,7 +2174,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Drama"
     ],
     "duration": "3h 15m",
-    "rating": 6.2,
+    "rating": 6.8,
     "director": "Geetu Mohandas",
     "cast": [
       "Yash",
@@ -5538,7 +5537,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     "id": "372058",
     "tmdbId": 372058,
     "title": "Your Name.",
-    "slug": "your-name-372058",
+    "slug": "your-name--372058",
     "description": "High schoolers Mitsuha and Taki are complete strangers living separate lives. But one night, they suddenly switch places. Mitsuha wakes up in Taki’s body, and he in hers. This bizarre occurrence continues to happen randomly, and the two must adjust their lives around each other.",
     "posterUrl": "https://image.tmdb.org/t/p/w780/vfJFJPepRKapMd5G2ro7klIRysq.jpg",
     "backdropUrl": "https://image.tmdb.org/t/p/original/8x9iKH8kWA0zdkgNdpAew7OstYe.jpg",
@@ -5816,7 +5815,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Thriller"
     ],
     "duration": "1h 31m",
-    "rating": 8.7,
+    "rating": 8.8,
     "director": "Chava Cartas",
     "cast": [
       "Alfonso Herrera",
@@ -5868,7 +5867,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "1h 47m",
-    "rating": 7.2,
+    "rating": 7.1,
     "director": "Carlson Young",
     "cast": [
       "Maia Reficco",
@@ -5921,7 +5920,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "1h 46m",
-    "rating": 5.7,
+    "rating": 5.5,
     "director": "Łukasz Róg",
     "cast": [
       "Andrea Tivadar",
@@ -6136,7 +6135,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "1h 30m",
-    "rating": 7.5,
+    "rating": 7.6,
     "director": "Pierre Coffin",
     "cast": [
       "Pierre Coffin",
@@ -6326,23 +6325,23 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "52720",
-    "id": "52720",
-    "tmdbId": 52720,
+    "_id": "355506",
+    "id": "355506",
+    "tmdbId": 355506,
     "title": "Siren",
-    "slug": "siren-52720",
-    "description": "When a crew of bank robbers believes that an alluring young woman has blown their cover, they kidnap the girl. Back at their hideout they develop sinister plans to rape and then kill her. When one of the crooks mysteriously turns up dead however, they begin to realize that their intended victim may be a powerful, vindictive, supernatural force.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/q7CzzcTuYNQHQgoubf1FjPVo7id.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/sHLDucxRYKTL73tzd922Eynudxb.jpg",
+    "slug": "siren-355506",
+    "description": "A bachelor party becomes a savage fight for survival when the groomsmen unwittingly unleash a fabled predator upon the festivities.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/dAEodQQODOtOlhiQQTW7n1eS9ft.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/xywle3yMnKbbuUaFhDMtGo1n6aw.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Siren%20trailer",
-    "releaseYear": 2004,
+    "releaseYear": 2016,
     "language": "Japanese (Anime)",
     "genres": [
       "Horror",
       "Anime"
     ],
     "duration": "1h 16m",
-    "rating": 4.8,
+    "rating": 5.9,
     "director": "Satoshi Torao",
     "cast": [
       "Sora Aoi",
@@ -6921,7 +6920,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "1h 44m",
-    "rating": 6.8,
+    "rating": 6.6,
     "director": "Potsy Ponciroli",
     "cast": [
       "Alan Ritchson",
@@ -7128,7 +7127,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Thriller"
     ],
     "duration": "1h 46m",
-    "rating": 7.1,
+    "rating": 7,
     "director": "Joko Anwar",
     "cast": [
       "Abimana Aryasatya",
@@ -7180,7 +7179,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "0h 27m",
-    "rating": 8.9,
+    "rating": 9,
     "director": "Renowned Filmmaker",
     "cast": [
       "Star Cast"
@@ -7230,7 +7229,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "1h 39m",
-    "rating": 6.4,
+    "rating": 6.3,
     "director": "David Robert Mitchell",
     "cast": [
       "Anne Hathaway",
@@ -7440,7 +7439,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "1h 42m",
-    "rating": 7.2,
+    "rating": 7,
     "director": "Rod Lurie",
     "cast": [
       "Scott Eastwood",
@@ -7527,14 +7526,14 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "1698863",
-    "id": "1698863",
-    "tmdbId": 1698863,
+    "_id": "1368337",
+    "id": "1368337",
+    "tmdbId": 1368337,
     "title": "The Odyssey",
-    "slug": "the-odyssey-1698863",
-    "description": "Based on the Ancient Greek epic. After ten years of war, King Odysseus sets sail for Ithaca, eager to reunite with his beloved. But his journey home is far more treacherous than the battlefield, as he must face deadly monsters and vengeful gods to survive.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/uEFU8pd2lVWpnHOUqhQE0WdPKEt.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/mPy1xSASQ9NYWJdAGx2C2sOsnNw.jpg",
+    "slug": "the-odyssey-1368337",
+    "description": "Odysseus, the legendary King of Ithaca, embarks on a long and perilous journey home following the Trojan War. Throughout his voyage, he is forced to confront the whims of gods, mythological monsters, and trials that stretch both his cunning and his humanity to the breaking point.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/5rhTDKUhPYvpdQIijFIs5VoWsON.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/RMXG8myu1aGlNUsRjtxzmpdMK0.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=The%20Odyssey%20trailer",
     "releaseYear": 2026,
     "language": "English (Hollywood)",
@@ -7545,7 +7544,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "1h 26m",
-    "rating": 4.1,
+    "rating": 8,
     "director": "Marcel Walz",
     "cast": [
       "Myrom Kingery",
@@ -7598,7 +7597,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "1h 59m",
-    "rating": 7.1,
+    "rating": 7,
     "director": "Ridley Scott",
     "cast": [
       "Jacob Elordi",
@@ -8122,7 +8121,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Horror"
     ],
     "duration": "1h 32m",
-    "rating": 6.1,
+    "rating": 6,
     "director": "Hanna Bergholm",
     "cast": [
       "Rupert Grint",
@@ -8365,16 +8364,16 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "557",
-    "id": "557",
-    "tmdbId": 557,
+    "_id": "969681",
+    "id": "969681",
+    "tmdbId": 969681,
     "title": "Spider-Man",
-    "slug": "spider-man-557",
-    "description": "After being bitten by a genetically altered spider at Oscorp, nerdy but endearing high school student Peter Parker is endowed with amazing powers to become the superhero known as Spider-Man.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/or6XJBVpcEbIkma0V9zshnbEtx4.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/zQ8AxTPiCiS5nnwXpwTBPBHSaa5.jpg",
+    "slug": "spider-man-969681",
+    "description": "Fighting crime full-time as Spider-Man in a world that doesn't remember him—and the pressure of seeing his old friends move on without him—sparks a change in Peter Parker he may not have the power to control. But that transformation might also be the only thing that can stop a shocking new threat to the city and those he loves - a powerful villain no one can even see.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/bjiS5ipwxb9JFy3XRRN4OAilSeX.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/pq1Mhdt9LbkQM5TOjuVZpcczbf.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Spider-Man%20trailer",
-    "releaseYear": 2002,
+    "releaseYear": 2026,
     "language": "English (Hollywood)",
     "genres": [
       "Action",
@@ -8382,7 +8381,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "2h 1m",
-    "rating": 7.3,
+    "rating": 7.9,
     "director": "Sam Raimi",
     "cast": [
       "Tobey Maguire",
@@ -8736,23 +8735,23 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "1599993",
-    "id": "1599993",
-    "tmdbId": 1599993,
+    "_id": "1285965",
+    "id": "1285965",
+    "tmdbId": 1285965,
     "title": "Animals",
-    "slug": "animals-1599993",
-    "description": "Four couples sail the thin line between desire and search for authenticity, in a world where truth is as fragile as their relationships.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/9fbZdiOI9fRinl44mNm3CYgEtYR.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/3jgATRIFenOrgNKEC9bFv5QqKGf.jpg",
+    "slug": "animals-1285965",
+    "description": "A savvy and free-spirited surfer is abducted by a shark-obsessed serial killer. Held captive on his boat, she must figure out how to escape before he carries out a ritualistic feeding to the sharks below.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/9tk3Si960hg4E49eMt81dS7Qe9Z.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/i5kvIf73Vrxu4lYF6rby0yw4FX2.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Animals%20trailer",
-    "releaseYear": 2026,
+    "releaseYear": 2025,
     "language": "English",
     "genres": [
       "Comedy",
       "Thriller"
     ],
     "duration": "2h 15m",
-    "rating": 6.1,
+    "rating": 6.5,
     "director": "José Ramón Alama",
     "cast": [
       "Nashla Bogaert",
@@ -9013,7 +9012,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "1h 46m",
-    "rating": 6.6,
+    "rating": 6.5,
     "director": "Jeff Wadlow",
     "cast": [
       "Kathryn Newton",
@@ -9469,16 +9468,16 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
     ]
   },
   {
-    "_id": "1140233",
-    "id": "1140233",
-    "tmdbId": 1140233,
+    "_id": "792489",
+    "id": "792489",
+    "tmdbId": 792489,
     "title": "Wife Swap",
-    "slug": "wife-swap-1140233",
-    "description": "A man has an accident at work, and his boss asks his wife to have sex with him in order to free him from responsibility. One day, the man witnesses a scene where his wife has sex with his boss and decides to take revenge by doing the same to his boss' wife.",
-    "posterUrl": "https://image.tmdb.org/t/p/w780/lmfpb4QHehVAaLm6IEbgM0VhQuD.jpg",
-    "backdropUrl": "https://image.tmdb.org/t/p/original/jLeMKUHRYcrrEuvolfzfIxc1mOL.jpg",
+    "slug": "wife-swap-792489",
+    "description": "Under the leadership of one of the directors, five successful young people agree to have a night of wife swapping to make their business relationship more intimate. One of them, Zhiyong, is reluctant to the idea. First, because he knows his wife will not agree to it, and second, because he's already fucking the leader's wife and doesn't want anybody else from the group getting his hand on her.",
+    "posterUrl": "https://image.tmdb.org/t/p/w780/nWGino1WPIGuwFpNOE12MG3zKCF.jpg",
+    "backdropUrl": "https://image.tmdb.org/t/p/original/nWGino1WPIGuwFpNOE12MG3zKCF.jpg",
     "trailerUrl": "https://www.youtube.com/results?search_query=Wife%20Swap%20trailer",
-    "releaseYear": 2022,
+    "releaseYear": 1989,
     "language": "English",
     "genres": [
       "Drama"
@@ -9590,7 +9589,7 @@ export const CURATED_MOVIES_CATALOG: Movie[] = [
       "Hollywood"
     ],
     "duration": "1h 43m",
-    "rating": 7.8,
+    "rating": 8.1,
     "director": "Dave Green",
     "cast": [
       "Will Forte",
