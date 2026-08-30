@@ -45,6 +45,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Accept Android SDK Licenses & Install Platform 34
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
+
       - name: Copy Web Production Assets to Android
         run: |
           mkdir -p android/app/src/main/assets/public
