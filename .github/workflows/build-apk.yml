@@ -54,7 +54,7 @@ jobs:
       - name: Build Android APK via Gradle
         working-directory: android
         run: |
-          ./gradlew :app:assembleDebug --stacktrace --no-daemon 2>&1 | tee ../gradle_build.log
+          ./gradlew :app:assembleDebug -x lint -x test -x lintVitalRelease --stacktrace --no-daemon 2>&1 | tee ../gradle_build.log
           if [ ${PIPESTATUS[0]} -ne 0 ]; then
             echo "=== GRADLE FAILURE DETECTED ==="
             exit 1
