@@ -55,13 +55,20 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Cinematic Edge-to-Edge Backdrop Banner */}
-      <div className="absolute inset-0 bg-black">
+      <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-950">
         <img
           key={activeMovie.id || activeMovie.tmdbId}
           src={activeMovie.backdropUrl || activeMovie.posterUrl}
           alt={activeMovie.title}
           fetchPriority="high"
           decoding="async"
+          onError={(e) => {
+            // Fallback to posterUrl if backdrop fails
+            const target = e.currentTarget;
+            if (activeMovie.posterUrl && target.src !== activeMovie.posterUrl) {
+              target.src = activeMovie.posterUrl;
+            }
+          }}
           className="w-full h-full object-cover object-top sm:object-center transform scale-105 transition-all duration-1000 animate-fade-in img-smooth"
         />
         {/* Netflix Signature Multi-layered Dark Gradients */}
