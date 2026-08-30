@@ -1,5 +1,6 @@
 import type { Movie, AuthUser, MovieQuality } from '../types/movie';
 import { CURATED_MOVIES_CATALOG } from '../data/curatedCatalog';
+import { movieboxService } from './movieboxService';
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -13,6 +14,7 @@ export interface StreamingServer {
 
 export const STREAMING_SERVERS: StreamingServer[] = [
   { id: 'vidlink', name: 'VidLink 1080p (Primary)', badge: 'Bufferless', description: 'Fast bufferless 1080p stream with subtitle support' },
+  { id: 'moviebox', name: 'MovieBox / ShortTV VIP', badge: 'High Speed CDN', description: 'Ultra-fast direct stream from MovieBox CDN with subtitles' },
   { id: 'vidsrc_icu', name: 'VidSrc Fast CDN', badge: 'High Speed', description: 'Direct high-speed multi-source stream' },
   { id: 'peachify', name: 'Peachify (Hindi Dub)', badge: 'Hindi / Dual Audio', isHindi: true, description: 'Direct Hindi dubbed and dual audio streams' },
   { id: 'autoembed', name: 'AutoEmbed 4K', badge: 'Auto Scraper', description: 'Universal multi-server failover' },
@@ -66,6 +68,11 @@ export const getEmbedUrl = (
   const dubParam = `&dub=${encodeURIComponent(audio)}`;
 
   switch (server) {
+    case 'moviebox':
+      return isSeries
+        ? `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=${color}&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&overlay=true${dubParam}&cdn=moviebox`
+        : `https://player.videasy.net/movie/${tmdbId}?color=${color}&overlay=true${dubParam}&cdn=moviebox`;
+
     case 'peachify':
       return isSeries
         ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}?accent=${color}${dubParam}&quality=1080&autoNext=true&showNextBtn=true`
@@ -322,6 +329,48 @@ export const api = {
           });
           return Array.from(map.values());
         }
+      }
+    } catch {}
+
+    // MovieBox / ShortTV API Search integration
+    try {
+      const mbData = await movieboxService.searchMovie(q);
+      const items = mbData?.data?.list || mbData?.data?.items || [];
+      if (Array.isArray(items) && items.length > 0) {
+        const mbMovies: Movie[] = items.map((item: any) => {
+          const id = item.subjectId || item.id || String(Math.floor(Math.random() * 900000) + 100000);
+          return {
+            _id: String(id),
+            id: String(id),
+            tmdbId: item.tmdbId || id,
+            title: item.title || item.subjectName || 'MovieBox Stream',
+            slug: `${(item.title || 'movie').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${id}`,
+            description: item.description || item.subTitle || 'Stream in 1080p Full HD directly from MovieBox VIP servers on CineVault.',
+            posterUrl: item.cover?.url || item.coverUrl || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80',
+            backdropUrl: item.cover?.url || item.coverUrl || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1920&q=80',
+            trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent((item.title || '') + ' trailer')}`,
+            releaseYear: parseInt(item.releaseYear || item.year || '2024', 10) || 2024,
+            language: 'Hindi / Multi',
+            genres: ['Featured', 'MovieBox VIP'],
+            duration: item.duration || '2h 05m',
+            rating: typeof item.score === 'number' ? item.score : 8.5,
+            director: 'MovieBox Cinema',
+            cast: ['Verified Cast'],
+            type: item.category === 'tv' ? 'series' : 'movie',
+            featured: false,
+            trending: true,
+            videoUrl: DEFAULT_SAMPLE_VIDEO,
+            downloadUrl: DEFAULT_SAMPLE_VIDEO,
+            qualities: createDefaultQualities(DEFAULT_SAMPLE_VIDEO)
+          };
+        });
+
+        const map = new Map();
+        [...localMatches, ...mbMovies].forEach(m => {
+          const key = m.tmdbId || m.id;
+          if (key && !map.has(key)) map.set(key, m);
+        });
+        return Array.from(map.values());
       }
     } catch {}
 

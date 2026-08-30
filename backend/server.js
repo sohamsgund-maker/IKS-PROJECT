@@ -6,6 +6,7 @@ import movieRoutes from './routes/movieRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import scraperRoutes from './routes/scraperRoutes.js';
+import movieboxRoutes from './routes/movieboxRoutes.js';
 import { initAutoScraperSchedule } from './services/movieScraper.js';
 
 dotenv.config();
@@ -22,6 +23,7 @@ app.use('/api/movies', movieRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/scraper', scraperRoutes);
+app.use('/api/moviebox', movieboxRoutes);
 
 // Health route
 app.get('/api/health', (req, res) => {
