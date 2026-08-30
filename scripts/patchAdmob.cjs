@@ -24,7 +24,8 @@ filesToPatch.forEach(filePath => {
     content = content.replace(/testRuntimeOnly .*/g, '// removed test dep');
     content = content.replace(/androidTestImplementation .*/g, '// removed test dep');
     content = content.replace(/useJUnitPlatform\(\)/g, '// useJUnitPlatform');
-    content = content.replace(/apply from: "\.\.\/capacitor-cordova-android-plugins\/cordova\.variables\.gradle"/g, '// cordova variables removed');
+    content = content.replace(/.*capacitor-cordova-android-plugins.*/g, '// cordova removed');
+    content = content.replace(/.*postBuildExtras.*/g, '// postBuildExtras removed');
     content = content.replace(/: 36/g, ': 34');
     content = content.replace(/= 36/g, '= 34');
     fs.writeFileSync(filePath, content, 'utf8');

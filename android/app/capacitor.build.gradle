@@ -14,6 +14,6 @@ dependencies {
 }
 
 
-if (hasProperty('postBuildExtras')) {
-  postBuildExtras()
+// postBuildExtras removed
+// postBuildExtras removed
 }
