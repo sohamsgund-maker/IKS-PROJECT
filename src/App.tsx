@@ -11,7 +11,6 @@ import { SettingsModal } from './components/SettingsModal';
 import { CustomStreamModal } from './components/CustomStreamModal';
 import { DownloadApkModal } from './components/DownloadApkModal';
 import { GoogleAdBanner } from './components/GoogleAdBanner';
-import { admobService } from './services/admobService';
 import { WatchPage } from './pages/WatchPage';
 import { LiveTVPage } from './pages/LiveTVPage';
 import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles } from 'lucide-react';
@@ -85,7 +84,6 @@ export const App: React.FC = () => {
       localStorage.removeItem('cinevault_scraped_cache');
     } catch {}
     fetchAllMovies();
-    admobService.initialize();
   }, []);
 
   const handleToggleWatchlist = (movie: Movie) => {
@@ -629,7 +627,7 @@ export const App: React.FC = () => {
               watchlistIds={watchlistIds}
             />
 
-            {/* 5. 🇮🇳 Bollywood Hits (Hindi) */}
+            {/* 5. 🇮🇳 Bollywood Hits (Hindi Cinema) */}
             <NetflixRow
               title="🇮🇳 Bollywood Hits (Hindi Cinema)"
               movies={bollywoodMovies}
@@ -682,7 +680,7 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* Google Ads & AdMob In-App Banner */}
+      {/* Google Ads Web Banner */}
       <GoogleAdBanner className="my-6" />
 
       {/* Netflix Footer */}

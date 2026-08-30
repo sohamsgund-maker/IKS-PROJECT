@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
-import { admobService } from '../services/admobService';
 
 interface GoogleAdBannerProps {
   slotId?: string;
@@ -13,9 +12,6 @@ export const GoogleAdBanner: React.FC<GoogleAdBannerProps> = ({
   className = ''
 }) => {
   useEffect(() => {
-    // Show AdMob banner if running inside native Android app
-    admobService.showBottomBanner();
-
     // Push AdSense ad if on web browser
     try {
       if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
@@ -34,23 +30,23 @@ export const GoogleAdBanner: React.FC<GoogleAdBannerProps> = ({
           <span>Advertisement • Google Ads</span>
         </div>
 
-        {/* Google AdSense / In-App Responsive Ad Block */}
+        {/* Google AdSense Responsive Ad Block */}
         <ins
           className="adsbygoogle block w-full text-center"
           style={{ display: 'block' }}
-          data-ad-client="ca-pub-3940256099942544" // Google Official Demo Publisher ID
+          data-ad-client="ca-pub-3940256099942544"
           data-ad-slot="6300978111"
           data-ad-format={format}
           data-full-width-responsive="true"
         />
 
-        {/* Fallback Display Placeholder for Instant Preview */}
+        {/* Display Placeholder */}
         <div className="py-2 flex flex-col items-center justify-center gap-1">
           <p className="text-xs font-semibold text-zinc-300">
             🎬 Stream All Movies & Web Series in 1080p Full HD Free
           </p>
           <p className="text-[10px] text-zinc-500">
-            Google AdMob & AdSense Monetization Enabled
+            High-Speed Cloud Streaming
           </p>
         </div>
       </div>
