@@ -23,8 +23,8 @@ filesToPatch.forEach(filePath => {
     content = content.replace(/1\.7\.1/g, '1.7.0');
     content = content.replace(/1\.3\.0/g, '1.2.0');
     content = content.replace(/3\.7\.0/g, '3.6.1');
-    content = content.replace(/VERSION_21/g, 'VERSION_17');
-    content = content.replace(/jvmTarget = .*/g, "jvmTarget = '17'");
+    content = content.replace(/VERSION_17/g, 'VERSION_21');
+    content = content.replace(/jvmTarget = .*/g, "jvmTarget = '21'");
     content = content.replace(/abortOnError = true/g, 'abortOnError = false');
     content = content.replace(/warningsAsErrors = true/g, 'warningsAsErrors = false');
     content = content.replace(/testImplementation .*/g, '// removed test dep');
