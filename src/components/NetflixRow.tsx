@@ -1,5 +1,5 @@
 import React, { useRef, useState, memo } from 'react';
-import { ChevronLeft, ChevronRight, Play, Plus, Check, Info, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Plus, Check, Info, Star, ChevronRight as ChevronIcon } from 'lucide-react';
 import type { Movie } from '../types/movie';
 
 interface NetflixRowProps {
@@ -10,6 +10,7 @@ interface NetflixRowProps {
   onPlayMovie: (movie: Movie) => void;
   onToggleWatchlist?: (movie: Movie) => void;
   watchlistIds?: Set<string | number>;
+  onExploreAll?: () => void;
 }
 
 export const NetflixRow: React.FC<NetflixRowProps> = memo(({
@@ -20,6 +21,7 @@ export const NetflixRow: React.FC<NetflixRowProps> = memo(({
   onPlayMovie,
   onToggleWatchlist,
   watchlistIds = new Set(),
+  onExploreAll,
 }) => {
   const rowRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -36,18 +38,40 @@ export const NetflixRow: React.FC<NetflixRowProps> = memo(({
     }
   };
 
+  const handleHeaderClick = () => {
+    if (onExploreAll) {
+      onExploreAll();
+    } else {
+      handleScroll('right');
+    }
+  };
+
   return (
-    <section className="space-y-1.5 relative px-3 sm:px-8 lg:px-12 my-3 sm:my-6 select-none">
-      {/* Row Header Title */}
-      <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-[#e5e5e5] hover:text-white transition-colors tracking-tight flex items-center justify-between font-display cursor-pointer px-1">
-        <span className="truncate">{title}</span>
-        <span className="text-[11px] text-[#54b9c5] font-normal opacity-80 sm:opacity-0 sm:group-hover/row:opacity-100 transition-opacity flex-shrink-0 ml-2">
-          Explore All ›
-        </span>
-      </h2>
+    <section className="space-y-1.5 relative px-3 sm:px-8 lg:px-12 my-3 sm:my-6 select-none group/row">
+      {/* Row Header Title & Working Explore All Button */}
+      <div 
+        onClick={handleHeaderClick}
+        className="flex items-center justify-between cursor-pointer px-1 py-1 group/header"
+      >
+        <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-[#e5e5e5] group-hover/header:text-white transition-colors tracking-tight font-display truncate">
+          {title}
+        </h2>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleHeaderClick();
+          }}
+          className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-[#54b9c5] hover:text-[#7ee2ee] transition-all flex-shrink-0 ml-2 py-0.5 px-2 rounded-full bg-[#54b9c5]/10 hover:bg-[#54b9c5]/20 border border-[#54b9c5]/30 cursor-pointer active:scale-95 group/btn"
+          title="Explore All Titles"
+        >
+          <span>Explore All</span>
+          <ChevronIcon className="w-3.5 h-3.5 transform group-hover/btn:translate-x-0.5 transition-transform" />
+        </button>
+      </div>
 
       {/* Slider Container */}
-      <div className="relative group/row">
+      <div className="relative">
         {/* Left Arrow Button (Desktop Only) */}
         {showLeftArrow && (
           <button
@@ -59,7 +83,7 @@ export const NetflixRow: React.FC<NetflixRowProps> = memo(({
           </button>
         )}
 
-        {/* Horizontal Card Track (Fluid touch scrollable in all directions) */}
+        {/* Horizontal Card Track */}
         <div
           ref={rowRef}
           className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none py-2 px-1"

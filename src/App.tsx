@@ -600,6 +600,10 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
+              onExploreAll={() => {
+                setActiveTab('south');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
 
             {/* 3. Continue Watching */}
@@ -611,6 +615,10 @@ export const App: React.FC = () => {
                 onPlayMovie={handlePlayMovie}
                 onToggleWatchlist={handleToggleWatchlist}
                 watchlistIds={watchlistIds}
+                onExploreAll={() => {
+                  setActiveTab('watchlist');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
               />
             )}
 
@@ -622,6 +630,10 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
+              onExploreAll={() => {
+                setActiveTab('south');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
 
             {/* 5. 🇮🇳 Bollywood Hits (Hindi Cinema) */}
@@ -632,6 +644,10 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
+              onExploreAll={() => {
+                setActiveTab('bollywood');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
 
             {/* 6. 🌍 Hollywood Action & Sci-Fi Blockbusters */}
@@ -642,6 +658,10 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
+              onExploreAll={() => {
+                setActiveTab('movies');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
 
             {/* 7. 🇰🇷 K-Dramas & Korean Cinema */}
@@ -652,6 +672,10 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
+              onExploreAll={() => {
+                setActiveTab('kdrama');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
 
             {/* 8. ⚔️ Anime Spotlight */}
@@ -662,6 +686,10 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
+              onExploreAll={() => {
+                setActiveTab('anime');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
 
             {/* 9. 📺 Binge-Worthy TV Shows */}
@@ -672,6 +700,10 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
+              onExploreAll={() => {
+                setActiveTab('series');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
           </div>
         </div>
