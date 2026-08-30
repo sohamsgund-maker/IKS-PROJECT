@@ -8,10 +8,8 @@ import { NetflixInfoModal } from './components/NetflixInfoModal';
 import { NetflixFooter } from './components/NetflixFooter';
 import { NetflixMobileNav } from './components/NetflixMobileNav';
 import { SettingsModal } from './components/SettingsModal';
-import { CustomStreamModal } from './components/CustomStreamModal';
 import { GoogleAdBanner } from './components/GoogleAdBanner';
 import { WatchPage } from './pages/WatchPage';
-import { LiveTVPage } from './pages/LiveTVPage';
 import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -62,7 +60,6 @@ export const App: React.FC = () => {
 
   // Modals state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isCustomStreamOpen, setIsCustomStreamOpen] = useState(false);
   const [currentUser] = useState<AuthUser | null>(() => {
     try {
       const saved = localStorage.getItem('cinevault_user');
@@ -102,6 +99,7 @@ export const App: React.FC = () => {
     const defaultQuality = quality || movie.qualities?.[0] || { quality: '1080p', videoUrl: movie.videoUrl };
     setWatchMovie({ movie, quality: defaultQuality });
     setSelectedMovieForInfo(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Save to History
     setHistory((prev) => {
@@ -257,19 +255,14 @@ export const App: React.FC = () => {
 
       {/* Main Streaming View */}
       {watchMovie ? (
-        /* Dedicated Netflix Player Page */
-        <div className="pt-16 sm:pt-20 px-4 sm:px-8 max-w-7xl mx-auto">
+        /* Dedicated Simple & Clean Video Player Page */
+        <div className="pt-16 sm:pt-20 px-3 sm:px-8 max-w-7xl mx-auto">
           <WatchPage
             movie={watchMovie.movie}
             selectedQuality={watchMovie.quality}
             onBack={() => setWatchMovie(null)}
             onQualityChange={(q) => setWatchMovie({ movie: watchMovie.movie, quality: q })}
           />
-        </div>
-      ) : activeTab === 'live' ? (
-        /* Live TV Broadcasts */
-        <div className="pt-24 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto">
-          <LiveTVPage />
         </div>
       ) : searchQuery.trim().length > 0 ? (
         /* Netflix Global Search Results Grid */
@@ -705,15 +698,6 @@ export const App: React.FC = () => {
           showToast('All local storage & history reset');
           setIsSettingsOpen(false);
           window.location.reload();
-        }}
-      />
-
-      {/* Custom Stream & Scraping Modal */}
-      <CustomStreamModal
-        isOpen={isCustomStreamOpen}
-        onClose={() => setIsCustomStreamOpen(false)}
-        onStreamReady={(m) => {
-          handlePlayMovie(m);
         }}
       />
 

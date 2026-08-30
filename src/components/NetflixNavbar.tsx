@@ -42,14 +42,13 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
 
   const navLinks = [
     { id: 'home', label: 'Home' },
-    { id: 'series', label: 'TV Shows' },
-    { id: 'movies', label: 'Movies' },
     { id: 'south', label: 'South Indian' },
     { id: 'bollywood', label: 'Bollywood' },
-    { id: 'kdrama', label: 'K-Dramas' },
+    { id: 'movies', label: 'Movies' },
+    { id: 'series', label: 'TV Shows' },
     { id: 'anime', label: 'Anime' },
+    { id: 'kdrama', label: 'K-Dramas' },
     { id: 'watchlist', label: `My List ${watchlistCount > 0 ? `(${watchlistCount})` : ''}` },
-    { id: 'live', label: 'Live TV' },
   ];
 
   const categories = [
@@ -57,11 +56,10 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
     { id: 'south', label: '🏹 South Indian Blockbusters' },
     { id: 'bollywood', label: '🇮🇳 Bollywood (Hindi Cinema)' },
     { id: 'movies', label: '🌍 Hollywood & Global Hits' },
-    { id: 'kdrama', label: '🇰🇷 K-Dramas & Korean Cinema' },
-    { id: 'anime', label: '⚔️ Anime Spotlight' },
     { id: 'series', label: '📺 TV Shows & Web Series' },
+    { id: 'anime', label: '⚔️ Anime Spotlight' },
+    { id: 'kdrama', label: '🇰🇷 K-Dramas & Korean Cinema' },
     { id: 'watchlist', label: `❤️ My List (${watchlistCount})` },
-    { id: 'live', label: '📡 Live TV Broadcasts' },
   ];
 
   return (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Search, Flame, Bookmark, Tv } from 'lucide-react';
+import { Home, Film, Sparkles, Bookmark, Search } from 'lucide-react';
 
 interface NetflixMobileNavProps {
   activeTab: string;
@@ -16,10 +16,10 @@ export const NetflixMobileNav: React.FC<NetflixMobileNavProps> = ({
 }) => {
   const tabs = [
     { id: 'home', label: 'Home', icon: Home },
-    { id: 'trending', label: 'New & Hot', icon: Flame },
+    { id: 'south', label: 'South', icon: Sparkles },
+    { id: 'bollywood', label: 'Bollywood', icon: Film },
     { id: 'search', label: 'Search', icon: Search, isAction: true },
     { id: 'watchlist', label: 'My List', icon: Bookmark, badge: watchlistCount },
-    { id: 'live', label: 'Live TV', icon: Tv },
   ];
 
   return (
