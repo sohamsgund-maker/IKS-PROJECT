@@ -15,7 +15,14 @@ filesToPatch.forEach(filePath => {
     content = content.replace(/2\.2\.20/g, '1.9.24');
     content = content.replace(/14\.0\.1/g, '10.1.1');
     content = content.replace(/4\.0\.0/g, '3.0.0');
+    content = content.replace(/1\.11\.0/g, '1.9.3');
     content = content.replace(/1\.15\.0/g, '1.13.1');
+    content = content.replace(/1\.17\.0/g, '1.13.1');
+    content = content.replace(/1\.8\.9/g, '1.8.5');
+    content = content.replace(/1\.14\.0/g, '1.12.1');
+    content = content.replace(/1\.7\.1/g, '1.7.0');
+    content = content.replace(/1\.3\.0/g, '1.2.0');
+    content = content.replace(/3\.7\.0/g, '3.6.1');
     content = content.replace(/VERSION_21/g, 'VERSION_17');
     content = content.replace(/jvmTarget = .*/g, "jvmTarget = '17'");
     content = content.replace(/abortOnError = true/g, 'abortOnError = false');
