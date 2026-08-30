@@ -25,13 +25,19 @@ export const NetflixInfoModal: React.FC<NetflixInfoModalProps> = ({
   const [isLiked, setIsLiked] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState(1);
 
-  // Close on Escape key
+  // Close on Escape key & Lock body scroll
   useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [onClose]);
 
   if (!movie) return null;
@@ -60,7 +66,8 @@ export const NetflixInfoModal: React.FC<NetflixInfoModalProps> = ({
           <img
             src={movie.backdropUrl || movie.posterUrl}
             alt={movie.title}
-            className="w-full h-full object-cover"
+            decoding="async"
+            className="w-full h-full object-cover img-smooth"
           />
           {/* Netflix Gradients */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#181818] via-transparent to-black/30" />

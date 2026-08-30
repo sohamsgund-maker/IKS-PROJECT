@@ -24,11 +24,13 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = ({
   return (
     <div className="relative w-full h-[65vh] sm:h-[78vh] lg:h-[88vh] bg-black select-none overflow-hidden">
       {/* Cinematic Edge-to-Edge Backdrop */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 bg-black">
         <img
           src={movie.backdropUrl || movie.posterUrl}
           alt={movie.title}
-          className="w-full h-full object-cover object-top sm:object-center transform scale-105 transition-transform duration-1000"
+          fetchPriority="high"
+          decoding="async"
+          className="w-full h-full object-cover object-top sm:object-center transform scale-105 transition-transform duration-1000 img-smooth"
         />
         {/* Netflix Signature Multi-layered Dark Gradients */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent w-full sm:w-2/3 hidden sm:block" />

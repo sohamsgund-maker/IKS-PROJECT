@@ -166,15 +166,41 @@ export const App: React.FC = () => {
     return movies.filter((m) => m.genres?.includes('Anime') || m.language?.toLowerCase().includes('japanese'));
   }, [movies]);
 
-  // Search Results
+  // Instant & Debounced Search Results
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
   useEffect(() => {
-    if (searchQuery.trim()) {
-      api.search(searchQuery).then(setSearchResults);
-    } else {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) {
       setSearchResults([]);
+      return;
     }
-  }, [searchQuery]);
+
+    // 1. Instant 0ms Local Matching (No latency)
+    const localMatches = movies.filter(
+      (m) =>
+        m.title.toLowerCase().includes(q) ||
+        m.genres?.some((g) => g.toLowerCase().includes(q)) ||
+        m.language?.toLowerCase().includes(q)
+    );
+    setSearchResults(localMatches);
+
+    // 2. Debounced 180ms background scraper search for fresh netplay/TMDB results
+    const debounceTimer = setTimeout(async () => {
+      try {
+        const onlineResults = await api.search(q);
+        if (onlineResults && onlineResults.length > 0) {
+          const map = new Map<string | number, Movie>();
+          [...localMatches, ...onlineResults].forEach((m) => {
+            const key = m.tmdbId || m.id || m._id || m.title;
+            if (key && !map.has(key)) map.set(key, m);
+          });
+          setSearchResults(Array.from(map.values()));
+        }
+      } catch {}
+    }, 180);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, movies]);
 
   return (
     <div className="min-h-screen bg-[#141414] text-white font-sans selection:bg-[#E50914] selection:text-white antialiased relative pb-16 lg:pb-0">

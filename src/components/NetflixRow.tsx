@@ -45,7 +45,7 @@ export const NetflixRow: React.FC<NetflixRowProps> = ({
   };
 
   return (
-    <section className="space-y-2 group/row relative px-3 sm:px-8 lg:px-12 my-4 sm:my-8 select-none">
+    <section className="space-y-2 group/row relative px-3 sm:px-8 lg:px-12 my-4 sm:my-8 select-none netflix-row-container">
       {/* Row Header Title */}
       <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-[#e5e5e5] hover:text-white transition-colors tracking-tight flex items-center justify-between font-display cursor-pointer px-1">
         <span className="truncate">{title}</span>
@@ -99,8 +99,9 @@ export const NetflixRow: React.FC<NetflixRowProps> = ({
                     <img
                       src={movie.posterUrl}
                       alt={movie.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover img-smooth"
                       loading="lazy"
+                      decoding="async"
                     />
 
                     {/* Hover Overlay Actions (Laptop/Desktop) */}
@@ -150,8 +151,9 @@ export const NetflixRow: React.FC<NetflixRowProps> = ({
                   <img
                     src={movie.backdropUrl || movie.posterUrl}
                     alt={movie.title}
-                    className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500 img-smooth"
                     loading="lazy"
+                    decoding="async"
                   />
                   {/* Subtle shadow overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
