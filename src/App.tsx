@@ -11,7 +11,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { GoogleAdBanner } from './components/GoogleAdBanner';
 import { WatchPage } from './pages/WatchPage';
 import { syncCloudWatchlist, syncCloudHistory } from './services/supabaseClient';
-import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles } from 'lucide-react';
+import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles, ArrowLeft, Star, Film } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -21,6 +21,7 @@ export const App: React.FC = () => {
   // Navigation / View State
   const [selectedMovieForInfo, setSelectedMovieForInfo] = useState<Movie | null>(null);
   const [watchMovie, setWatchMovie] = useState<{ movie: Movie; quality: MovieQuality } | null>(null);
+  const [exploredCategory, setExploredCategory] = useState<{ title: string; movies: Movie[] } | null>(null);
 
   // Toast feedback state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -127,19 +128,17 @@ export const App: React.FC = () => {
     );
   }, [movies]);
 
-  // Categorized Rows
-  const top10Trending = useMemo(() => {
-    return movies.filter((m) => m.trending || m.featured).slice(0, 10);
-  }, [movies]);
-
-  const bollywoodMovies = useMemo(() => {
+  // Full Unfiltered Category Arrays for Explore All
+  const allTrendingMovies = useMemo(() => movies.filter((m) => m.trending || m.featured), [movies]);
+  
+  const allBollywoodMovies = useMemo(() => {
     return movies.filter((m) => 
       m.genres?.includes('Bollywood') || 
       m.language?.toLowerCase().includes('hindi')
-    ).slice(0, 16);
+    );
   }, [movies]);
 
-  const southIndianMovies = useMemo(() => {
+  const allSouthIndianMovies = useMemo(() => {
     return movies.filter(
       (m) =>
         m.genres?.includes('South Indian') ||
@@ -148,10 +147,10 @@ export const App: React.FC = () => {
         m.language?.toLowerCase().includes('kannada') ||
         m.language?.toLowerCase().includes('malayalam') ||
         m.language?.toLowerCase().includes('south')
-    ).slice(0, 16);
+    );
   }, [movies]);
 
-  const hollywoodMovies = useMemo(() => {
+  const allHollywoodMovies = useMemo(() => {
     return movies.filter(
       (m) =>
         m.genres?.includes('Hollywood') ||
@@ -160,10 +159,10 @@ export const App: React.FC = () => {
           !m.genres?.includes('Anime') &&
           !m.genres?.includes('K-Drama') &&
           m.type === 'movie')
-    ).slice(0, 16);
+    );
   }, [movies]);
 
-  const kdramaList = useMemo(() => {
+  const allKdramaMovies = useMemo(() => {
     return movies.filter(
       (m) =>
         m.genres?.includes('K-Drama') ||
@@ -174,22 +173,37 @@ export const App: React.FC = () => {
         m.title.toLowerCase().includes('glory') ||
         m.title.toLowerCase().includes('sweet home') ||
         m.title.toLowerCase().includes('all of us are dead')
-    ).slice(0, 16);
+    );
   }, [movies]);
 
-  const animeList = useMemo(() => {
+  const allAnimeMovies = useMemo(() => {
     return movies.filter(
       (m) => 
         m.genres?.includes('Anime') || 
         m.language?.toLowerCase().includes('japanese')
-    ).slice(0, 16);
+    );
   }, [movies]);
 
-  const webSeries = useMemo(() => {
+  const allWebSeries = useMemo(() => {
     return movies.filter(
       (m) => m.type === 'series' && !m.genres?.includes('Anime')
-    ).slice(0, 16);
+    );
   }, [movies]);
+
+  // Sliced Preview Arrays for Lightweight Horizontal Homepage Rows
+  const top10Trending = useMemo(() => allTrendingMovies.slice(0, 10), [allTrendingMovies]);
+  const bollywoodMovies = useMemo(() => allBollywoodMovies.slice(0, 16), [allBollywoodMovies]);
+  const southIndianMovies = useMemo(() => allSouthIndianMovies.slice(0, 16), [allSouthIndianMovies]);
+  const hollywoodMovies = useMemo(() => allHollywoodMovies.slice(0, 16), [allHollywoodMovies]);
+  const kdramaList = useMemo(() => allKdramaMovies.slice(0, 16), [allKdramaMovies]);
+  const animeList = useMemo(() => allAnimeMovies.slice(0, 16), [allAnimeMovies]);
+  const webSeries = useMemo(() => allWebSeries.slice(0, 16), [allWebSeries]);
+
+  const handleOpenExploreCategory = (title: string, categoryMovies: Movie[]) => {
+    setExploredCategory({ title, movies: categoryMovies });
+    setWatchMovie(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Instant & Debounced Search Results
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
@@ -252,6 +266,7 @@ export const App: React.FC = () => {
           setActiveTab(tab);
           setWatchMovie(null);
           setSelectedMovieForInfo(null);
+          setExploredCategory(null);
         }}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -318,7 +333,7 @@ export const App: React.FC = () => {
 
                     {/* Top Quality Badge */}
                     <div className="absolute top-1.5 left-1.5 z-10 pointer-events-none">
-                      <span className="px-1.5 py-0.2 rounded bg-black/80 backdrop-blur-sm text-[8px] sm:text-[9px] font-black text-white border border-white/20">
+                      <span className="px-1.5 py-0.2 rounded bg-black/80 text-[8px] sm:text-[9px] font-black text-white border border-white/20">
                         4K UHD
                       </span>
                     </div>
@@ -370,7 +385,7 @@ export const App: React.FC = () => {
           ) : (
             /* User Requested: "Sorry for inconvenience" Friendly Empty State */
             <div className="space-y-10 py-6">
-              <div className="py-12 px-6 max-w-xl mx-auto text-center space-y-5 bg-[#181818]/70 border border-zinc-800 rounded-2xl shadow-2xl backdrop-blur-md animate-fade-in">
+              <div className="py-12 px-6 max-w-xl mx-auto text-center space-y-5 bg-[#181818]/70 border border-zinc-800 rounded-2xl shadow-2xl animate-fade-in">
                 <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center mx-auto text-[#E50914] shadow-inner">
                   <Search className="w-8 h-8" />
                 </div>
@@ -419,6 +434,109 @@ export const App: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+      ) : exploredCategory ? (
+        /* DEDICATED FULL CATEGORY EXPLORE GRID VIEW (Showing Number of Movies) */
+        <div className="pt-24 sm:pt-28 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto space-y-6 animate-fade-in">
+          {/* Header Strip with Back Button, Category Title, and Total Movie Count */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-zinc-800">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <button
+                onClick={() => setExploredCategory(null)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 hover:text-white text-xs font-bold transition-all active:scale-95 cursor-pointer flex-shrink-0"
+              >
+                <ArrowLeft className="w-4 h-4 text-[#E50914]" />
+                <span>Back to Home</span>
+              </button>
+
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-3xl font-black text-white font-display truncate">
+                  {exploredCategory.title}
+                </h1>
+                <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5 font-semibold">
+                  <span className="text-[#46d369] font-bold">Verified HD/4K Streams</span>
+                  <span>•</span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30 text-[11px] flex items-center gap-1">
+                    <Film className="w-3 h-3" />
+                    <span>{exploredCategory.movies.length} Movies & Shows Available</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setExploredCategory(null)}
+              className="px-4 py-2 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white text-xs font-bold transition-colors cursor-pointer"
+            >
+              Browse All Categories
+            </button>
+          </div>
+
+          {/* Responsive Full Grid of All Movies in Category */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            {exploredCategory.movies.map((m) => (
+              <div
+                key={m.id || m.tmdbId}
+                onClick={() => setSelectedMovieForInfo(m)}
+                className="bg-[#202020] rounded-md overflow-hidden netflix-card-hover cursor-pointer shadow-md group relative flex flex-col justify-between"
+              >
+                <div className="aspect-[2/3] relative overflow-hidden bg-zinc-900">
+                  <img
+                    src={m.posterUrl || m.backdropUrl}
+                    alt={m.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 img-smooth"
+                    loading="lazy"
+                    decoding="async"
+                  />
+
+                  {/* Top Badges */}
+                  <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between z-10 pointer-events-none">
+                    <span className="px-1.5 py-0.2 rounded bg-black/85 text-[8px] sm:text-[9px] font-black text-white border border-white/20">
+                      4K UHD
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded bg-black/85 text-[8px] sm:text-[9px] font-black text-amber-400 border border-amber-500/30 flex items-center gap-0.5">
+                      <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                      {m.rating ? m.rating.toFixed(1) : '8.5'}
+                    </span>
+                  </div>
+
+                  {/* Hover Overlay Actions */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlayMovie(m);
+                      }}
+                      className="p-3 rounded-full bg-white text-black hover:scale-110 transition-transform shadow-lg cursor-pointer"
+                      title="Play Now"
+                    >
+                      <Play className="w-4 h-4 fill-current ml-0.5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedMovieForInfo(m);
+                      }}
+                      className="p-3 rounded-full bg-black/60 border border-white/70 text-white hover:scale-110 transition-transform cursor-pointer"
+                      title="Details"
+                    >
+                      <Info className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-2 sm:p-2.5 space-y-1 bg-[#181818]">
+                  <h4 className="text-xs font-bold text-white truncate font-display">{m.title}</h4>
+                  <div className="flex items-center justify-between text-[10px] text-zinc-400 font-semibold">
+                    <span className="text-[#46d369] font-bold">
+                      {m.rating ? `${(m.rating * 10).toFixed(0)}% Match` : '98% Match'}
+                    </span>
+                    <span>{m.releaseYear || '2024'}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : activeTab === 'watchlist' ? (
         /* My List View */
@@ -487,94 +605,94 @@ export const App: React.FC = () => {
         /* South Indian View with Dedicated Hero Banner */
         <div className="space-y-4">
           <NetflixBillboard
-            movies={southIndianMovies.slice(0, 6)}
+            movies={allSouthIndianMovies.slice(0, 6)}
             onPlay={handlePlayMovie}
             onMoreInfo={(m) => setSelectedMovieForInfo(m)}
             onToggleWatchlist={handleToggleWatchlist}
           />
           <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Trending South Indian Pan-India Hits" movies={southIndianMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="⚡ High-Octane Action & Mass Masala" movies={southIndianMovies.filter(m => m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="🏹 Epic Fantasy, Sci-Fi & Mythological" movies={southIndianMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Fantasy') || m.genres?.includes('Mythology'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="🕵️ Crime, Mystery & Suspense Thrillers" movies={southIndianMovies.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Thriller') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🔥 Trending South Indian Pan-India Hits" movies={allSouthIndianMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Trending South Indian Pan-India Hits", allSouthIndianMovies)} />
+            <NetflixRow title="⚡ High-Octane Action & Mass Masala" movies={allSouthIndianMovies.filter(m => m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("⚡ High-Octane Action & Mass Masala", allSouthIndianMovies.filter(m => m.genres?.includes('Action')))} />
+            <NetflixRow title="🏹 Epic Fantasy, Sci-Fi & Mythological" movies={allSouthIndianMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Fantasy') || m.genres?.includes('Mythology'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🏹 Epic Fantasy, Sci-Fi & Mythological", allSouthIndianMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Fantasy') || m.genres?.includes('Mythology')))} />
+            <NetflixRow title="🕵️ Crime, Mystery & Suspense Thrillers" movies={allSouthIndianMovies.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Thriller') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🕵️ Crime, Mystery & Suspense Thrillers", allSouthIndianMovies.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Thriller') || m.genres?.includes('Mystery')))} />
           </div>
         </div>
       ) : activeTab === 'bollywood' ? (
         /* Bollywood View with Dedicated Hero Banner */
         <div className="space-y-4">
           <NetflixBillboard
-            movies={bollywoodMovies.slice(0, 6)}
+            movies={allBollywoodMovies.slice(0, 6)}
             onPlay={handlePlayMovie}
             onMoreInfo={(m) => setSelectedMovieForInfo(m)}
             onToggleWatchlist={handleToggleWatchlist}
           />
           <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Trending Bollywood Blockbusters" movies={bollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="😂 Non-Stop Comedy & Family Entertainers" movies={bollywoodMovies.filter(m => m.genres?.includes('Comedy'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="🎭 Drama, Romance & Emotional Superhits" movies={bollywoodMovies.filter(m => m.genres?.includes('Drama') || m.genres?.includes('Romance'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="🩸 Dark Thrillers, Action & Crime" movies={bollywoodMovies.filter(m => m.genres?.includes('Action') || m.genres?.includes('Horror') || m.genres?.includes('Thriller'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🔥 Trending Bollywood Blockbusters" movies={allBollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Trending Bollywood Blockbusters", allBollywoodMovies)} />
+            <NetflixRow title="😂 Non-Stop Comedy & Family Entertainers" movies={allBollywoodMovies.filter(m => m.genres?.includes('Comedy'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("😂 Non-Stop Comedy & Family Entertainers", allBollywoodMovies.filter(m => m.genres?.includes('Comedy')))} />
+            <NetflixRow title="🎭 Drama, Romance & Emotional Superhits" movies={allBollywoodMovies.filter(m => m.genres?.includes('Drama') || m.genres?.includes('Romance'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🎭 Drama, Romance & Emotional Superhits", allBollywoodMovies.filter(m => m.genres?.includes('Drama') || m.genres?.includes('Romance')))} />
+            <NetflixRow title="🩸 Dark Thrillers, Action & Crime" movies={allBollywoodMovies.filter(m => m.genres?.includes('Action') || m.genres?.includes('Horror') || m.genres?.includes('Thriller'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🩸 Dark Thrillers, Action & Crime", allBollywoodMovies.filter(m => m.genres?.includes('Action') || m.genres?.includes('Horror') || m.genres?.includes('Thriller')))} />
           </div>
         </div>
       ) : activeTab === 'movies' ? (
         /* Hollywood & Global Movies View with Dedicated Hero Banner */
         <div className="space-y-4">
           <NetflixBillboard
-            movies={hollywoodMovies.slice(0, 6)}
+            movies={allHollywoodMovies.slice(0, 6)}
             onPlay={handlePlayMovie}
             onMoreInfo={(m) => setSelectedMovieForInfo(m)}
             onToggleWatchlist={handleToggleWatchlist}
           />
           <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Hollywood Mega Blockbusters" movies={hollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="🚀 Sci-Fi, Marvel & Multiverse Spectaculars" movies={hollywoodMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="🎨 Animated & Family Hits" movies={hollywoodMovies.filter(m => m.genres?.includes('Animation') || m.genres?.includes('Family'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="🏆 Award-Winning & Critically Acclaimed" movies={hollywoodMovies.filter(m => m.rating >= 8.0)} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🔥 Hollywood Mega Blockbusters" movies={allHollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Hollywood Mega Blockbusters", allHollywoodMovies)} />
+            <NetflixRow title="🚀 Sci-Fi, Marvel & Multiverse Spectaculars" movies={allHollywoodMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🚀 Sci-Fi, Marvel & Multiverse Spectaculars", allHollywoodMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Action')))} />
+            <NetflixRow title="🎨 Animated & Family Hits" movies={allHollywoodMovies.filter(m => m.genres?.includes('Animation') || m.genres?.includes('Family'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🎨 Animated & Family Hits", allHollywoodMovies.filter(m => m.genres?.includes('Animation') || m.genres?.includes('Family')))} />
+            <NetflixRow title="🏆 Award-Winning & Critically Acclaimed" movies={allHollywoodMovies.filter(m => m.rating >= 8.0)} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🏆 Award-Winning & Critically Acclaimed", allHollywoodMovies.filter(m => m.rating >= 8.0))} />
           </div>
         </div>
       ) : activeTab === 'kdrama' ? (
         /* K-Dramas & Korean Cinema View with Dedicated Hero Banner */
         <div className="space-y-4">
           <NetflixBillboard
-            movies={kdramaList.slice(0, 6)}
+            movies={allKdramaMovies.slice(0, 6)}
             onPlay={handlePlayMovie}
             onMoreInfo={(m) => setSelectedMovieForInfo(m)}
             onToggleWatchlist={handleToggleWatchlist}
           />
           <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Top Trending K-Dramas" movies={kdramaList} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="❤️ Romantic & Heartwarming K-Dramas" movies={kdramaList.filter(m => m.genres?.includes('Romance') || m.genres?.includes('Comedy'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="🧟 Thriller, Zombie & Dark Fantasy K-Dramas" movies={kdramaList.filter(m => m.genres?.includes('Thriller') || m.genres?.includes('Horror') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🔥 Top Trending K-Dramas" movies={allKdramaMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Top Trending K-Dramas", allKdramaMovies)} />
+            <NetflixRow title="❤️ Romantic & Heartwarming K-Dramas" movies={allKdramaMovies.filter(m => m.genres?.includes('Romance') || m.genres?.includes('Comedy'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("❤️ Romantic & Heartwarming K-Dramas", allKdramaMovies.filter(m => m.genres?.includes('Romance') || m.genres?.includes('Comedy')))} />
+            <NetflixRow title="🧟 Thriller, Zombie & Dark Fantasy K-Dramas" movies={allKdramaMovies.filter(m => m.genres?.includes('Thriller') || m.genres?.includes('Horror') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🧟 Thriller, Zombie & Dark Fantasy K-Dramas", allKdramaMovies.filter(m => m.genres?.includes('Thriller') || m.genres?.includes('Horror') || m.genres?.includes('Mystery')))} />
           </div>
         </div>
       ) : activeTab === 'anime' ? (
         /* Anime View with Dedicated Hero Banner */
         <div className="space-y-4">
           <NetflixBillboard
-            movies={animeList.slice(0, 6)}
+            movies={allAnimeMovies.slice(0, 6)}
             onPlay={handlePlayMovie}
             onMoreInfo={(m) => setSelectedMovieForInfo(m)}
             onToggleWatchlist={handleToggleWatchlist}
           />
           <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Trending Shonen & Dark Fantasy Anime" movies={animeList} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="⚡ Action, Superpowers & Battles" movies={animeList.filter(m => m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="🌸 Supernatural, Isekai & Adventure" movies={animeList.filter(m => m.genres?.includes('Supernatural') || m.genres?.includes('Fantasy') || m.genres?.includes('Adventure'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="🎬 Masterpiece Anime Movies" movies={animeList.filter(m => m.type === 'movie')} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🔥 Trending Shonen & Dark Fantasy Anime" movies={allAnimeMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Trending Shonen & Dark Fantasy Anime", allAnimeMovies)} />
+            <NetflixRow title="⚡ Action, Superpowers & Battles" movies={allAnimeMovies.filter(m => m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("⚡ Action, Superpowers & Battles", allAnimeMovies.filter(m => m.genres?.includes('Action')))} />
+            <NetflixRow title="🌸 Supernatural, Isekai & Adventure" movies={allAnimeMovies.filter(m => m.genres?.includes('Supernatural') || m.genres?.includes('Fantasy') || m.genres?.includes('Adventure'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🌸 Supernatural, Isekai & Adventure", allAnimeMovies.filter(m => m.genres?.includes('Supernatural') || m.genres?.includes('Fantasy') || m.genres?.includes('Adventure')))} />
+            <NetflixRow title="🎬 Masterpiece Anime Movies" movies={allAnimeMovies.filter(m => m.type === 'movie')} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🎬 Masterpiece Anime Movies", allAnimeMovies.filter(m => m.type === 'movie'))} />
           </div>
         </div>
       ) : activeTab === 'series' ? (
         /* TV Series View with Dedicated Hero Banner */
         <div className="space-y-4">
           <NetflixBillboard
-            movies={webSeries.slice(0, 6)}
+            movies={allWebSeries.slice(0, 6)}
             onPlay={handlePlayMovie}
             onMoreInfo={(m) => setSelectedMovieForInfo(m)}
             onToggleWatchlist={handleToggleWatchlist}
           />
           <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Binge-Worthy TV Shows" movies={webSeries} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="🚀 Sci-Fi, Mystery & Supernatural Series" movies={webSeries.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
-            <NetflixRow title="💥 Crime, Thrillers & Drama Series" movies={webSeries.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Drama'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} />
+            <NetflixRow title="🔥 Binge-Worthy TV Shows" movies={allWebSeries} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Binge-Worthy TV Shows", allWebSeries)} />
+            <NetflixRow title="🚀 Sci-Fi, Mystery & Supernatural Series" movies={allWebSeries.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🚀 Sci-Fi, Mystery & Supernatural Series", allWebSeries.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Mystery')))} />
+            <NetflixRow title="💥 Crime, Thrillers & Drama Series" movies={allWebSeries.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Drama'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("💥 Crime, Thrillers & Drama Series", allWebSeries.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Drama')))} />
           </div>
         </div>
       ) : (
@@ -600,10 +718,7 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
-              onExploreAll={() => {
-                setActiveTab('south');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onExploreAll={() => handleOpenExploreCategory("Top 10 in India Today", allTrendingMovies)}
             />
 
             {/* 3. Continue Watching */}
@@ -630,10 +745,7 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
-              onExploreAll={() => {
-                setActiveTab('south');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onExploreAll={() => handleOpenExploreCategory("🏹 South Indian Pan-India Blockbusters", allSouthIndianMovies)}
             />
 
             {/* 5. 🇮🇳 Bollywood Hits (Hindi Cinema) */}
@@ -644,10 +756,7 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
-              onExploreAll={() => {
-                setActiveTab('bollywood');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onExploreAll={() => handleOpenExploreCategory("🇮🇳 Bollywood Hits (Hindi Cinema)", allBollywoodMovies)}
             />
 
             {/* 6. 🌍 Hollywood Action & Sci-Fi Blockbusters */}
@@ -658,10 +767,7 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
-              onExploreAll={() => {
-                setActiveTab('movies');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onExploreAll={() => handleOpenExploreCategory("🌍 Hollywood Blockbusters & Marvel Hits", allHollywoodMovies)}
             />
 
             {/* 7. 🇰🇷 K-Dramas & Korean Cinema */}
@@ -672,10 +778,7 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
-              onExploreAll={() => {
-                setActiveTab('kdrama');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onExploreAll={() => handleOpenExploreCategory("🇰🇷 Trending K-Dramas & Korean Cinema", allKdramaMovies)}
             />
 
             {/* 8. ⚔️ Anime Spotlight */}
@@ -686,10 +789,7 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
-              onExploreAll={() => {
-                setActiveTab('anime');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onExploreAll={() => handleOpenExploreCategory("⚔️ Popular Anime Series & Movies", allAnimeMovies)}
             />
 
             {/* 9. 📺 Binge-Worthy TV Shows */}
@@ -700,10 +800,7 @@ export const App: React.FC = () => {
               onPlayMovie={handlePlayMovie}
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
-              onExploreAll={() => {
-                setActiveTab('series');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onExploreAll={() => handleOpenExploreCategory("📺 Binge-Worthy TV Series & Web Shows", allWebSeries)}
             />
           </div>
         </div>
@@ -748,6 +845,7 @@ export const App: React.FC = () => {
           setWatchMovie(null);
           setSelectedMovieForInfo(null);
           setSearchQuery('');
+          setExploredCategory(null);
         }}
         watchlistCount={watchlist.length}
         onOpenSearch={() => {
