@@ -57,18 +57,16 @@ jobs:
         run: chmod +x android/gradlew
 
       - name: Build Android APK via Gradle
-        run: |
-          cd android
-          ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tee gradle_build.log || (echo "=== GRADLE FAILURE LOG ===" && tail -n 100 gradle_build.log && exit 1)
+        working-directory: android
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Rename and Prepare APK
         run: |
           mkdir -p build_output
-          find . -name "*.apk" -type f -exec cp -v {} build_output/CineVault-v1.0.apk \;
+          find android/ -name "*.apk" -type f -exec cp -v {} build_output/CineVault-v1.0.apk \;
           ls -la build_output/
           if [ ! -f build_output/CineVault-v1.0.apk ]; then
-            echo "No APK found, listing all android build files:"
-            find android/ -type f || true
+            echo "Error: APK not found after gradle build!"
             exit 1
           fi
 

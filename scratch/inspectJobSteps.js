@@ -1,19 +1,11 @@
 async function inspectJob() {
-  const res = await fetch('https://github.com/aditys4444/cinevault/actions/runs/33302358200');
-  const html = await res.text();
-  const jobLinks = html.match(/href="\/aditys4444\/cinevault\/actions\/runs\/33302358200\/job\/\d+"/g);
-  console.log('Job Links:', jobLinks);
-  if (jobLinks && jobLinks[0]) {
-    const jobUrl = 'https://github.com' + jobLinks[0].replace('href="', '').replace('"', '');
-    console.log('Fetching job:', jobUrl);
-    const jobRes = await fetch(jobUrl);
-    const jobHtml = await jobRes.text();
-    const isCompleted = jobHtml.includes('completed');
-    const isFailed = jobHtml.includes('failed');
-    const isInProgress = jobHtml.includes('in progress');
-    console.log('Job status:', { isCompleted, isFailed, isInProgress });
-    const artifacts = jobHtml.match(/href="\/aditys4444\/cinevault\/actions\/runs\/\d+\/artifacts\/\d+"/g);
-    console.log('Artifacts:', artifacts);
-  }
+  const jobUrl = 'https://github.com/aditys4444/cinevault/actions/runs/33302860252/job/99234091376';
+  const jobRes = await fetch(jobUrl);
+  const jobHtml = await jobRes.text();
+  const failedSteps = jobHtml.match(/class="[^"]*step[^"]*"[^>]*>[\s\S]*?<\/div>/g);
+  console.log('Failed steps length:', failedSteps ? failedSteps.length : 0);
+  const lines = jobHtml.split('\n');
+  const errorLines = lines.filter(l => l.includes('Error:') || l.includes('failed') || l.includes('exit code'));
+  console.log('Error lines:', errorLines.slice(0, 10));
 }
 inspectJob();
