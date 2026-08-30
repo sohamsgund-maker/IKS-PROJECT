@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const filesToPatch = [
+  path.resolve('android/app/capacitor.build.gradle'),
   path.resolve('node_modules/@capacitor/android/capacitor/build.gradle'),
   path.resolve('node_modules/@capacitor-community/admob/android/build.gradle'),
   path.resolve('android/capacitor-cordova-android-plugins/build.gradle')
