@@ -53,7 +53,20 @@ jobs:
 
       - name: Build Android APK via Gradle
         working-directory: android
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          ./gradlew :app:assembleDebug --stacktrace --no-daemon 2>&1 | tee ../gradle_build.log
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "=== GRADLE FAILURE DETECTED ==="
+            exit 1
+          fi
+
+      - name: Upload Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle_build_log
+          path: gradle_build.log
+          if-no-files-found: ignore
 
       - name: Rename and Prepare APK
         run: |
