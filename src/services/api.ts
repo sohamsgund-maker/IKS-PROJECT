@@ -1,6 +1,7 @@
 import type { Movie, AuthUser, MovieQuality } from '../types/movie';
 import { CURATED_MOVIES_CATALOG } from '../data/curatedCatalog';
 import { movieboxService } from './movieboxService';
+import { getCloudMovies } from './supabaseClient';
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -248,12 +249,11 @@ export const api = {
   getMovies: async (params?: { type?: string; genre?: string; sort?: string; language?: string; year?: string }): Promise<Movie[]> => {
     let list = [...FALLBACK_MOVIES];
 
+    // 1. Check Supabase Cloud Database First
     try {
-      const query = new URLSearchParams(params as any).toString();
-      const res = await fetch(`${API_BASE}/movies?${query}`, { signal: AbortSignal.timeout(1500) });
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) list = data;
+      const cloudMovies = await getCloudMovies();
+      if (cloudMovies && cloudMovies.length > 0) {
+        list = cloudMovies;
       }
     } catch {}
 

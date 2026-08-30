@@ -10,6 +10,7 @@ import { NetflixMobileNav } from './components/NetflixMobileNav';
 import { SettingsModal } from './components/SettingsModal';
 import { GoogleAdBanner } from './components/GoogleAdBanner';
 import { WatchPage } from './pages/WatchPage';
+import { syncCloudWatchlist, syncCloudHistory } from './services/supabaseClient';
 import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -89,6 +90,9 @@ export const App: React.FC = () => {
         : [...prev, movie];
       try {
         localStorage.setItem('cinevault_watchlist', JSON.stringify(updated));
+        if (currentUser?.id) {
+          syncCloudWatchlist(currentUser.id, movie, !exists);
+        }
       } catch (e) {}
       showToast(exists ? `Removed "${movie.title}" from My List` : `Added "${movie.title}" to My List!`);
       return updated;
@@ -101,12 +105,15 @@ export const App: React.FC = () => {
     setSelectedMovieForInfo(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Save to History
+    // Save to History (Local & Cloud)
     setHistory((prev) => {
       const filtered = prev.filter((m) => m.id !== movie.id && m.tmdbId !== movie.tmdbId);
       const updated = [movie, ...filtered].slice(0, 20);
       try {
         localStorage.setItem('cinevault_history', JSON.stringify(updated));
+        if (currentUser?.id) {
+          syncCloudHistory(currentUser.id, movie, 0);
+        }
       } catch (e) {}
       return updated;
     });
