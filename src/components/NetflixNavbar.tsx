@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Bell, X, Shield, Settings, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, Bell, X, Settings, ChevronDown, Sparkles } from 'lucide-react';
 import type { AuthUser } from '../types/movie';
 
 interface NetflixNavbarProps {
@@ -8,7 +8,6 @@ interface NetflixNavbarProps {
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   currentUser?: AuthUser | null;
-  onOpenAdmin: () => void;
   onOpenSettings: () => void;
   watchlistCount?: number;
 }
@@ -18,7 +17,6 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
   setActiveTab,
   searchQuery,
   setSearchQuery,
-  onOpenAdmin,
   onOpenSettings,
   watchlistCount = 0,
 }) => {
@@ -206,21 +204,13 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = ({
             )}
           </div>
 
-          {/* Direct Settings & Admin Actions (No Login / Sign-In Avatar) */}
+          {/* Settings & Audio Preferences */}
           <button
             onClick={onOpenSettings}
             className="p-1.5 sm:p-2 text-zinc-300 hover:text-white transition-colors cursor-pointer"
             title="Settings & Audio Preferences"
           >
             <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-
-          <button
-            onClick={onOpenAdmin}
-            className="p-1.5 sm:p-2 text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
-            title="Admin Scraper & Movies"
-          >
-            <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>

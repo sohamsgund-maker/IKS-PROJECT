@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { 
   Search, ChevronLeft, ChevronRight, Radio, Bell, 
-  ShieldCheck, PlusCircle, RefreshCw, Zap 
+  PlusCircle, RefreshCw, Zap 
 } from 'lucide-react';
 import type { AuthUser } from '../types/movie';
 
@@ -11,7 +11,6 @@ interface HeaderProps {
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   currentUser: AuthUser | null;
-  onOpenAdmin: () => void;
   onOpenCustomStream?: () => void;
   onAutoSync?: () => void;
   isSyncing?: boolean;
@@ -24,7 +23,6 @@ export const Header: React.FC<HeaderProps> = ({
   searchQuery,
   setSearchQuery,
   currentUser,
-  onOpenAdmin,
   onOpenCustomStream,
   onAutoSync,
   isSyncing,
@@ -152,17 +150,6 @@ export const Header: React.FC<HeaderProps> = ({
                 {currentUser ? currentUser.username : 'VIP 4K'}
               </span>
             </div>
-
-            {onOpenAdmin && (
-              <button
-                onClick={onOpenAdmin}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#E50914] hover:bg-[#b81d24] text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
-                title="Admin Dashboard"
-              >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Admin</span>
-              </button>
-            )}
           </div>
         </div>
       </div>

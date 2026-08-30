@@ -11,7 +11,6 @@ import { SettingsModal } from './components/SettingsModal';
 import { CustomStreamModal } from './components/CustomStreamModal';
 import { WatchPage } from './pages/WatchPage';
 import { LiveTVPage } from './pages/LiveTVPage';
-import { AdminDashboard } from './pages/AdminDashboard';
 import { CheckCircle2, Bookmark, Play, Check } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -71,8 +70,6 @@ export const App: React.FC = () => {
       return null;
     }
   });
-  const [token] = useState<string | null>(() => localStorage.getItem('cinevault_token'));
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
 
   const fetchAllMovies = async () => {
     const data = await api.getMovies();
@@ -200,7 +197,6 @@ export const App: React.FC = () => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         currentUser={currentUser}
-        onOpenAdmin={() => setIsAdminOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         watchlistCount={watchlist.length}
       />
@@ -483,16 +479,6 @@ export const App: React.FC = () => {
           handlePlayMovie(m);
         }}
       />
-
-      {/* Admin Dashboard Modal */}
-      {isAdminOpen && (
-        <AdminDashboard
-          movies={movies}
-          token={token}
-          onClose={() => setIsAdminOpen(false)}
-          onRefreshMovies={fetchAllMovies}
-        />
-      )}
 
       {/* Netflix Mobile Native Bottom Navigation Bar */}
       <NetflixMobileNav
