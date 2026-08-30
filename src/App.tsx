@@ -11,7 +11,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { CustomStreamModal } from './components/CustomStreamModal';
 import { WatchPage } from './pages/WatchPage';
 import { LiveTVPage } from './pages/LiveTVPage';
-import { CheckCircle2, Bookmark, Play, Check } from 'lucide-react';
+import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -193,10 +193,13 @@ export const App: React.FC = () => {
 
   // Instant & Debounced Search Results
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+
   useEffect(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) {
       setSearchResults([]);
+      setIsSearching(false);
       return;
     }
 
@@ -208,8 +211,9 @@ export const App: React.FC = () => {
         m.language?.toLowerCase().includes(q)
     );
     setSearchResults(localMatches);
+    setIsSearching(true);
 
-    // 2. Debounced 180ms background scraper search for fresh netplay/TMDB results
+    // 2. Debounced 150ms background global search across TMDB & MovieBox
     const debounceTimer = setTimeout(async () => {
       try {
         const onlineResults = await api.search(q);
@@ -221,8 +225,12 @@ export const App: React.FC = () => {
           });
           setSearchResults(Array.from(map.values()));
         }
-      } catch {}
-    }, 180);
+      } catch (err) {
+        console.error('Search error:', err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 150);
 
     return () => clearTimeout(debounceTimer);
   }, [searchQuery, movies]);
@@ -269,49 +277,153 @@ export const App: React.FC = () => {
           <LiveTVPage />
         </div>
       ) : searchQuery.trim().length > 0 ? (
-        /* Netflix Search Results Grid */
+        /* Netflix Global Search Results Grid */
         <div className="pt-28 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto space-y-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-zinc-300">
-            Explore titles related to: <span className="text-white font-extrabold font-display">"{searchQuery}"</span>
-          </h1>
+          <div className="flex items-center justify-between flex-wrap gap-3 pb-2 border-b border-zinc-800">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-zinc-300">
+                Explore titles related to: <span className="text-white font-extrabold font-display">"{searchQuery}"</span>
+              </h1>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                {isSearching
+                  ? 'Searching entire catalog & global servers...'
+                  : `Found ${searchResults.length} matching titles`}
+              </p>
+            </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {searchResults.map((m) => (
-              <div
-                key={m.id || m.tmdbId}
-                onClick={() => setSelectedMovieForInfo(m)}
-                className="bg-[#202020] rounded overflow-hidden netflix-card-hover cursor-pointer shadow-md group"
-              >
-                <div className="aspect-[2/3] relative overflow-hidden bg-zinc-900">
-                  <img
-                    src={m.posterUrl}
-                    alt={m.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePlayMovie(m);
-                      }}
-                      className="p-3 rounded-full bg-white text-black hover:scale-110 transition-transform shadow-lg cursor-pointer"
-                    >
-                      <Play className="w-5 h-5 fill-current ml-0.5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-2.5 space-y-1 bg-[#181818]">
-                  <h4 className="text-xs font-bold text-white truncate">{m.title}</h4>
-                  <div className="flex items-center justify-between text-[10px] text-zinc-400">
-                    <span className="text-[#46d369] font-bold">98% Match</span>
-                    <span>{m.releaseYear}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+            <button
+              onClick={() => setSearchQuery('')}
+              className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors cursor-pointer border border-zinc-700"
+            >
+              Clear Search
+            </button>
           </div>
+
+          {searchResults.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+              {searchResults.map((m) => (
+                <div
+                  key={m.id || m.tmdbId}
+                  onClick={() => setSelectedMovieForInfo(m)}
+                  className="bg-[#202020] rounded-md overflow-hidden netflix-card-hover cursor-pointer shadow-md group relative"
+                >
+                  <div className="aspect-[2/3] relative overflow-hidden bg-zinc-900">
+                    <img
+                      src={m.posterUrl || m.backdropUrl}
+                      alt={m.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 img-smooth"
+                      loading="lazy"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (m.backdropUrl && target.src !== m.backdropUrl) {
+                          target.src = m.backdropUrl;
+                        }
+                      }}
+                    />
+
+                    {/* Top Quality Badge */}
+                    <div className="absolute top-1.5 left-1.5 z-10 pointer-events-none">
+                      <span className="px-1.5 py-0.2 rounded bg-black/80 backdrop-blur-sm text-[8px] sm:text-[9px] font-black text-white border border-white/20">
+                        4K UHD
+                      </span>
+                    </div>
+
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlayMovie(m);
+                        }}
+                        className="p-3 rounded-full bg-white text-black hover:scale-110 transition-transform shadow-lg cursor-pointer"
+                        title="Play"
+                      >
+                        <Play className="w-4 h-4 fill-current ml-0.5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedMovieForInfo(m);
+                        }}
+                        className="p-3 rounded-full bg-black/60 border border-white/70 text-white hover:scale-110 transition-transform cursor-pointer"
+                        title="More Info"
+                      >
+                        <Info className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="p-2 sm:p-2.5 space-y-1 bg-[#181818]">
+                    <h4 className="text-xs font-bold text-white truncate font-display">{m.title}</h4>
+                    <div className="flex items-center justify-between text-[10px] text-zinc-400 font-semibold">
+                      <span className="text-[#46d369] font-bold">
+                        {m.rating ? `${(m.rating * 10).toFixed(0)}% Match` : '98% Match'}
+                      </span>
+                      <span>{m.releaseYear || '2024'}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : isSearching ? (
+            /* Pulsating Search Loading State */
+            <div className="py-20 text-center space-y-4">
+              <div className="w-10 h-10 border-3 border-zinc-700 border-t-[#E50914] rounded-full animate-spin mx-auto" />
+              <p className="text-sm font-semibold text-zinc-300">
+                Searching global database and servers for "{searchQuery}"...
+              </p>
+            </div>
+          ) : (
+            /* User Requested: "Sorry for inconvenience" Friendly Empty State */
+            <div className="space-y-10 py-6">
+              <div className="py-12 px-6 max-w-xl mx-auto text-center space-y-5 bg-[#181818]/70 border border-zinc-800 rounded-2xl shadow-2xl backdrop-blur-md animate-fade-in">
+                <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center mx-auto text-[#E50914] shadow-inner">
+                  <Search className="w-8 h-8" />
+                </div>
+                
+                <div className="space-y-2">
+                  <h2 className="text-2xl sm:text-3xl font-black text-white font-display">
+                    Sorry for the Inconvenience!
+                  </h2>
+                  <p className="text-sm text-zinc-300 max-w-md mx-auto leading-relaxed">
+                    We couldn't find any movie, anime, or series matching "<span className="text-[#E50914] font-bold">{searchQuery}</span>" across the entire catalog or global servers.
+                  </p>
+                </div>
+
+                <div className="bg-[#121212] border border-zinc-800/90 rounded-xl p-4 text-xs text-zinc-400 text-left space-y-2 max-w-md mx-auto">
+                  <p className="font-bold text-zinc-200 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <span>Helpful Suggestions:</span>
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 text-zinc-400">
+                    <li>Check your spelling or try different keywords</li>
+                    <li>Try searching with a shorter title (e.g. "KGF", "Pushpa", "Spider")</li>
+                    <li>Search by main actor, director, or original language title</li>
+                    <li>Browse our categorized tabs above (South Indian, Bollywood, Hollywood, Anime, K-Dramas)</li>
+                  </ul>
+                </div>
+
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="px-6 py-2.5 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-sm transition-all cursor-pointer shadow-lg active:scale-95 inline-flex items-center gap-2"
+                >
+                  <span>Explore Trending Titles</span>
+                  <span>›</span>
+                </button>
+              </div>
+
+              {/* Recommended Top Blockbusters so user is never stuck */}
+              <div className="pt-2">
+                <NetflixRow
+                  title="🔥 Trending Blockbusters You Might Like"
+                  movies={top10Trending}
+                  onSelectMovie={setSelectedMovieForInfo}
+                  onPlayMovie={handlePlayMovie}
+                  onToggleWatchlist={handleToggleWatchlist}
+                  watchlistIds={watchlistIds}
+                />
+              </div>
+            </div>
+          )}
         </div>
       ) : activeTab === 'watchlist' ? (
         /* My List View */

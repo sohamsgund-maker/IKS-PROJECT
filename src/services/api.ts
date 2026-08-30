@@ -275,83 +275,102 @@ export const api = {
       m.tmdbId?.toString() === q.trim()
     );
 
-    // Live Netplay Search API fetch
+    const resultMap = new Map<string | number, Movie>();
+    localMatches.forEach(m => {
+      const key = m.tmdbId || m.id || m._id || m.title;
+      if (key) resultMap.set(key, m);
+    });
+
+    const TMDB_API_KEY = '844dba0bfd8f3a4f3799f6130ef9e335';
+    const GENRE_MAP: Record<number, string> = {
+      28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
+      99: 'Documentary', 18: 'Drama', 10751: 'Family', 14: 'Fantasy', 36: 'History',
+      27: 'Horror', 10402: 'Music', 9648: 'Mystery', 10749: 'Romance', 878: 'Sci-Fi',
+      10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western',
+      10759: 'Action & Adventure', 10765: 'Sci-Fi & Fantasy', 10768: 'War & Politics'
+    };
+
+    // 1. Live TMDB Multi-Search (Over 1,000,000+ Global Movies, Anime & Series)
     try {
-      const netplayRes = await fetch(`https://netplay-one.vercel.app/api/search?q=${encodeURIComponent(q)}&page=1`, { signal: AbortSignal.timeout(3500) });
-      if (netplayRes.ok) {
-        const json = await netplayRes.json();
-        const results = json?.data?.results || [];
+      const tmdbRes = await fetch(
+        `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&include_adult=false&page=1`,
+        { signal: AbortSignal.timeout(4000) }
+      );
+      if (tmdbRes.ok) {
+        const data = await tmdbRes.json();
+        const results = data?.results || [];
         if (Array.isArray(results) && results.length > 0) {
-          const netplayMovies: Movie[] = results.map((item: any) => ({
-            _id: String(item.id),
-            id: String(item.id),
-            tmdbId: item.id,
-            title: item.title || item.name || 'Untitled',
-            slug: `${(item.title || item.name || 'movie').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${item.id}`,
-            description: item.overview || 'Stream in 1080p Full HD with multi-audio and subtitle support on CineVault.',
-            posterUrl: item.poster?.startsWith('http') ? item.poster : (item.poster ? `https://image.tmdb.org/t/p/w780${item.poster}` : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80'),
-            backdropUrl: item.backdrop?.startsWith('http') ? item.backdrop : (item.backdrop ? `https://image.tmdb.org/t/p/original${item.backdrop}` : 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1920&q=80'),
-            trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent((item.title || item.name) + ' trailer')}`,
-            releaseYear: parseInt(item.year || (item.date ? item.date.slice(0, 4) : '2024'), 10) || 2024,
-            language: item.lang === 'kn' ? 'Kannada / Hindi' : (item.lang === 'hi' ? 'Hindi' : (item.lang === 'te' ? 'Telugu' : 'English / Multi')),
-            genres: item.type === 'tv' ? ['Series', 'Drama'] : ['Movie', 'Action'],
-            duration: item.type === 'tv' ? '1 Season' : '2h 10m',
-            rating: typeof item.rating === 'number' ? item.rating : 8.2,
-            director: 'Cinema Filmmaker',
-            cast: ['Featured Cast'],
-            type: item.type === 'tv' ? 'series' : 'movie',
-            featured: false,
-            trending: true,
-            videoUrl: DEFAULT_SAMPLE_VIDEO,
-            downloadUrl: DEFAULT_SAMPLE_VIDEO,
-            qualities: createDefaultQualities(DEFAULT_SAMPLE_VIDEO)
-          }));
+          results
+            .filter((item: any) => (item.media_type === 'movie' || item.media_type === 'tv') && (item.poster_path || item.backdrop_path))
+            .forEach((item: any) => {
+              const isTv = item.media_type === 'tv';
+              const title = item.title || item.name || 'Untitled';
+              const releaseDate = item.release_date || item.first_air_date || '';
+              const year = releaseDate ? parseInt(releaseDate.slice(0, 4), 10) || 2024 : 2024;
+              const genres = (item.genre_ids || [])
+                .map((id: number) => GENRE_MAP[id])
+                .filter(Boolean);
+              if (genres.length === 0) genres.push(isTv ? 'TV Series' : 'Movie');
 
-          const map = new Map();
-          [...localMatches, ...netplayMovies].forEach(m => {
-            if (m.tmdbId && !map.has(m.tmdbId)) map.set(m.tmdbId, m);
-          });
-          return Array.from(map.values());
-        }
-      }
-    } catch (e) {
-      // Ignore network errors and fallback
-    }
+              const movieItem: Movie = {
+                _id: String(item.id),
+                id: String(item.id),
+                tmdbId: item.id,
+                title,
+                slug: `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${item.id}`,
+                description: item.overview || `Watch ${title} in 1080p Ultra HD with multi-language audio and subtitle support on CineVault.`,
+                posterUrl: item.poster_path 
+                  ? `https://image.tmdb.org/t/p/w780${item.poster_path}`
+                  : `https://image.tmdb.org/t/p/w780${item.backdrop_path}`,
+                backdropUrl: item.backdrop_path
+                  ? `https://image.tmdb.org/t/p/original${item.backdrop_path}`
+                  : `https://image.tmdb.org/t/p/original${item.poster_path}`,
+                trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' trailer')}`,
+                releaseYear: year,
+                language: item.original_language === 'hi' ? 'Hindi' : (item.original_language === 'te' ? 'Telugu / Hindi' : (item.original_language === 'ta' ? 'Tamil / Hindi' : (item.original_language === 'ja' ? 'Japanese / Hindi' : (item.original_language === 'ko' ? 'Korean / Hindi' : 'English / Multi')))),
+                genres,
+                duration: isTv ? 'TV Series' : '2h 15m',
+                rating: item.vote_average ? Number(item.vote_average.toFixed(1)) : 8.2,
+                director: 'Global Cinema',
+                cast: ['Featured Cast'],
+                type: isTv ? 'series' : 'movie',
+                featured: false,
+                trending: true,
+                videoUrl: DEFAULT_SAMPLE_VIDEO,
+                downloadUrl: DEFAULT_SAMPLE_VIDEO,
+                qualities: createDefaultQualities(DEFAULT_SAMPLE_VIDEO)
+              };
 
-    try {
-      const indexRes = await fetch(`${API_BASE}/scraper/tmdb-index-search?q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(2000) });
-      if (indexRes.ok) {
-        const json = await indexRes.json();
-        if (json.data && json.data.length > 0) {
-          const map = new Map();
-          [...localMatches, ...json.data].forEach(m => {
-            if (m.tmdbId && !map.has(m.tmdbId)) map.set(m.tmdbId, m);
-          });
-          return Array.from(map.values());
+              const key = movieItem.tmdbId || movieItem.id;
+              if (key && !resultMap.has(key)) {
+                resultMap.set(key, movieItem);
+              }
+            });
         }
       }
     } catch {}
 
-    // MovieBox / ShortTV API Search integration
+    // 2. MovieBox / ShortTV API Search integration
     try {
       const mbData = await movieboxService.searchMovie(q);
       const items = mbData?.data?.list || mbData?.data?.items || [];
       if (Array.isArray(items) && items.length > 0) {
-        const mbMovies: Movie[] = items.map((item: any) => {
+        items.forEach((item: any) => {
           const id = item.subjectId || item.id || String(Math.floor(Math.random() * 900000) + 100000);
-          return {
+          const title = item.title || item.subjectName || 'MovieBox Stream';
+          const mbMovie: Movie = {
             _id: String(id),
             id: String(id),
             tmdbId: item.tmdbId || id,
-            title: item.title || item.subjectName || 'MovieBox Stream',
-            slug: `${(item.title || 'movie').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${id}`,
+            title,
+            slug: `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${id}`,
             description: item.description || item.subTitle || 'Stream in 1080p Full HD directly from MovieBox VIP servers on CineVault.',
-            posterUrl: item.cover?.url || item.coverUrl || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80',
-            backdropUrl: item.cover?.url || item.coverUrl || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1920&q=80',
-            trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent((item.title || '') + ' trailer')}`,
+            posterUrl: item.cover?.url || item.coverUrl || 'https://image.tmdb.org/t/p/w780/bS4p0m5kL1w8kL5n0a2B4m8o0.jpg',
+            backdropUrl: item.cover?.url || item.coverUrl || 'https://image.tmdb.org/t/p/original/jX6b6W8X0r0L9Z4K2m7C5V3B1A.jpg',
+            trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' trailer')}`,
             releaseYear: parseInt(item.releaseYear || item.year || '2024', 10) || 2024,
             language: 'Hindi / Multi',
-            genres: ['Featured', 'MovieBox VIP'],
+            genres: ['MovieBox VIP', 'Featured'],
             duration: item.duration || '2h 05m',
             rating: typeof item.score === 'number' ? item.score : 8.5,
             director: 'MovieBox Cinema',
@@ -363,26 +382,15 @@ export const api = {
             downloadUrl: DEFAULT_SAMPLE_VIDEO,
             qualities: createDefaultQualities(DEFAULT_SAMPLE_VIDEO)
           };
+          const key = mbMovie.tmdbId || mbMovie.id;
+          if (key && !resultMap.has(key)) {
+            resultMap.set(key, mbMovie);
+          }
         });
-
-        const map = new Map();
-        [...localMatches, ...mbMovies].forEach(m => {
-          const key = m.tmdbId || m.id;
-          if (key && !map.has(key)) map.set(key, m);
-        });
-        return Array.from(map.values());
       }
     } catch {}
 
-    try {
-      const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(2000) });
-      if (res.ok) {
-        const json = await res.json();
-        if (Array.isArray(json) && json.length > 0) return json;
-      }
-    } catch {}
-
-    return localMatches;
+    return Array.from(resultMap.values());
   },
 
   fetchFromExternalUrlOrId: async (input: string): Promise<Movie> => {
