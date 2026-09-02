@@ -15,4 +15,7 @@ router.get('/trending', cacheMiddleware(config.cache.ttlTrending), MovieControll
 // GET /api/v1/movies/:id
 router.get('/:id', validateMovieId, cacheMiddleware(config.cache.ttlDetails), MovieController.getById);
 
+// GET /api/v1/movies/:id/streams
+router.get('/:id/streams', validateMovieId, cacheMiddleware(300), MovieController.getStreams);
+
 export default router;
