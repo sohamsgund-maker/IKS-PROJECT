@@ -1,0 +1,32 @@
+{
+  "name": "movie-metadata-api-service",
+  "version": "1.0.0",
+  "description": "Production-grade Node.js REST API service for Movie & Series Metadata with caching, rate limiting, and timeouts",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "movie",
+    "metadata",
+    "api",
+    "rest",
+    "tmdb",
+    "caching",
+    "rate-limiting"
+  ],
+  "author": "CineVault Team",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "node-cache": "^5.1.2"
+  }
+}
