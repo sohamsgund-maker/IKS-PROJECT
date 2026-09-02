@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
-import { Search, Bell, X, Settings, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, Bell, X, Settings, ChevronDown, Sparkles, RefreshCw } from 'lucide-react';
 import type { AuthUser } from '../types/movie';
 
 interface NetflixNavbarProps {
@@ -10,6 +10,8 @@ interface NetflixNavbarProps {
   currentUser?: AuthUser | null;
   onOpenSettings: () => void;
   watchlistCount?: number;
+  onSyncMovieBox?: () => void;
+  isSyncingMovieBox?: boolean;
 }
 
 export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
@@ -19,6 +21,8 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
   setSearchQuery,
   onOpenSettings,
   watchlistCount = 0,
+  onSyncMovieBox,
+  isSyncingMovieBox = false,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -49,6 +53,7 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
 
   const navLinks = [
     { id: 'home', label: 'Home' },
+    { id: 'moviebox', label: 'MovieBox VIP' },
     { id: 'south', label: 'South Indian' },
     { id: 'bollywood', label: 'Bollywood' },
     { id: 'movies', label: 'Movies' },
@@ -60,6 +65,7 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
 
   const categories = [
     { id: 'home', label: 'Home' },
+    { id: 'moviebox', label: '🎬 MovieBox VIP Streams' },
     { id: 'south', label: '🏹 South Indian Blockbusters' },
     { id: 'bollywood', label: '🇮🇳 Bollywood (Hindi Cinema)' },
     { id: 'movies', label: '🌍 Hollywood & Global Hits' },
@@ -95,7 +101,7 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
           </button>
 
           {/* Desktop Navigation Links (Laptop / PC) */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-sm font-medium text-[#e5e5e5]">
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-sm font-medium text-[#e5e5e5]">
             {navLinks.map((link) => {
               const isActive = activeTab === link.id && !searchQuery.trim();
               return (
@@ -107,7 +113,7 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
                   }}
                   className={`transition-colors cursor-pointer whitespace-nowrap focus:outline-none ${
                     isActive
-                      ? 'text-white font-bold'
+                      ? 'text-white font-bold border-b-2 border-[#E50914] pb-0.5'
                       : 'text-[#b3b3b3] hover:text-[#e5e5e5]'
                   }`}
                 >
@@ -118,8 +124,25 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
           </nav>
         </div>
 
-        {/* Right Side: Search, Notifications, Settings */}
+        {/* Right Side: MovieBox Sync, Search, Notifications, Settings */}
         <div className="flex items-center gap-2 sm:gap-4 text-white">
+          {/* MovieBox Scraper Live Sync Button */}
+          {onSyncMovieBox && (
+            <button
+              onClick={onSyncMovieBox}
+              disabled={isSyncingMovieBox}
+              className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition-all cursor-pointer shadow-lg ${
+                isSyncingMovieBox
+                  ? 'bg-amber-600/80 text-white cursor-wait'
+                  : 'bg-gradient-to-r from-[#E50914] to-red-700 hover:brightness-110 text-white'
+              }`}
+              title="Scrape & Sync MovieBox Movies"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingMovieBox ? 'animate-spin' : ''}`} />
+              <span>{isSyncingMovieBox ? 'Syncing...' : 'Sync MovieBox'}</span>
+            </button>
+          )}
+
           {/* Search Box */}
           <div className="relative flex items-center">
             {isSearchOpen ? (
@@ -128,7 +151,7 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Search movies, anime, stars..."
+                  placeholder="Search MovieBox, titles, stars..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none w-36 sm:w-60"
@@ -154,9 +177,9 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
             )}
           </div>
 
-          {/* Kids / VIP 4K Badge */}
-          <span className="hidden md:inline-block text-xs font-bold text-[#e5e5e5] hover:text-white cursor-pointer select-none">
-            VIP 4K
+          {/* VIP 4K Badge */}
+          <span className="hidden md:inline-block text-xs font-bold text-[#e5e5e5] hover:text-white cursor-pointer select-none bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-700">
+            MOVIEBOX VIP
           </span>
 
           {/* Notifications Bell */}
@@ -180,30 +203,13 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
                 </div>
                 <div className="space-y-2.5">
                   <div className="flex gap-3 items-start hover:bg-zinc-800/50 p-1.5 rounded transition-colors cursor-pointer">
-                    <img
-                      src="https://image.tmdb.org/t/p/w342/oiIPU4lvnI0Ag2K9cyAi44eCaoE.jpg"
-                      alt="Toxic"
-                      className="w-12 h-16 object-cover rounded"
-                      loading="lazy"
-                    />
-                    <div>
-                      <span className="font-bold text-white block">New Arrival: Toxic</span>
-                      <span className="text-[11px] text-zinc-400 block mt-0.5">
-                        Rocking Star Yash's Pan-India crime saga is streaming in 4K.
-                      </span>
+                    <div className="p-2 bg-red-600/20 text-[#E50914] rounded">
+                      <Sparkles className="w-5 h-5" />
                     </div>
-                  </div>
-                  <div className="flex gap-3 items-start hover:bg-zinc-800/50 p-1.5 rounded transition-colors cursor-pointer">
-                    <img
-                      src="https://image.tmdb.org/t/p/w342/bS4p0m5kL1w8kL5n0a2B4m8o0.jpg"
-                      alt="Pushpa 2"
-                      className="w-12 h-16 object-cover rounded"
-                      loading="lazy"
-                    />
                     <div>
-                      <span className="font-bold text-white block">Pushpa 2: The Rule</span>
+                      <span className="font-bold text-white block">MovieBox Auto-Scraper Active</span>
                       <span className="text-[11px] text-zinc-400 block mt-0.5">
-                        Now available with Hindi dual-audio stream.
+                        Scraping newest HD movie streams & multi-language dubs.
                       </span>
                     </div>
                   </div>
@@ -227,14 +233,14 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
       <div className="lg:hidden px-4 pb-2 pt-0.5 flex items-center justify-around text-xs font-semibold border-t border-zinc-800/80 bg-[#141414]">
         <button
           onClick={() => {
-            setActiveTab('series');
+            setActiveTab('moviebox');
             setSearchQuery('');
           }}
           className={`py-1 px-3 rounded-full transition-colors cursor-pointer ${
-            activeTab === 'series' ? 'bg-white text-black font-bold' : 'text-zinc-300 hover:text-white'
+            activeTab === 'moviebox' ? 'bg-[#E50914] text-white font-bold' : 'text-zinc-300 hover:text-white'
           }`}
         >
-          TV Shows
+          MovieBox VIP
         </button>
 
         <button

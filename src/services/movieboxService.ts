@@ -1,11 +1,13 @@
 /**
  * MovieBox & ShortTV API Service for CineVault (React 19 + TypeScript + Vite)
- * Scraped and extracted from com.community.oneroom (base.apk)
+ * Real-time scraper, stream extractor and catalog synchronizer
  */
 
+import type { Movie } from '../types/movie';
+
 export interface MovieBoxStreamQuality {
-  quality: string; // e.g. "1080p", "720p", "480p"
-  url: string;     // Direct video stream URL
+  quality: string;
+  url: string;
 }
 
 export interface MovieBoxSearchResult {
@@ -26,7 +28,8 @@ export interface MovieBoxTmdbResponse {
   rawMovieBoxResults?: any;
 }
 
-const MOVIEBOX_BASE_URL = 'https://api.aoneroom.com';
+const API_BASE = 'http://localhost:5000/api/moviebox';
+const MOVIEBOX_DIRECT_BASE = 'https://api.aoneroom.com';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const DEFAULT_TMDB_API_KEY = '8265bd1679663a7ea12ac168da84d2e8';
 
@@ -50,21 +53,71 @@ export class MovieBoxService {
   }
 
   /**
-   * Search MovieBox API by Movie/TV Title
+   * Fetch freshly scraped MovieBox Catalog from Backend
+   */
+  async getScrapedCatalog(): Promise<{ count: number; movies: Movie[] }> {
+    try {
+      const response = await fetch(`${API_BASE}/catalog`, { signal: AbortSignal.timeout(4000) });
+      if (response.ok) {
+        const json = await response.json();
+        if (json.success && Array.isArray(json.movies) && json.movies.length > 0) {
+          return { count: json.movies.length, movies: json.movies };
+        }
+      }
+    } catch {
+      // Backend offline fallback
+    }
+
+    return { count: 0, movies: [] };
+  }
+
+  /**
+   * Trigger Real-Time MovieBox Scrape & Sync from Backend
+   */
+  async syncScraper(): Promise<{ success: boolean; count: number; data: Movie[] }> {
+    try {
+      const response = await fetch(`${API_BASE}/sync`, { signal: AbortSignal.timeout(10000) });
+      if (response.ok) {
+        const json = await response.json();
+        if (json.success && Array.isArray(json.data)) {
+          return { success: true, count: json.data.length, data: json.data };
+        }
+      }
+    } catch {
+      // Fallback
+    }
+
+    return { success: false, count: 0, data: [] };
+  }
+
+  /**
+   * Search MovieBox API by Movie/TV Title (Backend Proxy with direct API fallback)
    */
   async searchMovie(keyword: string, page: number = 1, size: number = 20): Promise<any> {
     try {
+      // Try backend proxy first
+      const proxyRes = await fetch(`${API_BASE}/search?q=${encodeURIComponent(keyword)}&page=${page}&size=${size}`, {
+        signal: AbortSignal.timeout(4000)
+      });
+      if (proxyRes.ok) {
+        const json = await proxyRes.json();
+        if (json.success && Array.isArray(json.data)) {
+          return { data: { list: json.data } };
+        }
+      }
+    } catch {}
+
+    // Fallback: Direct call
+    try {
       const params = new URLSearchParams({ keyword, page: String(page), size: String(size) });
-      const url = `${MOVIEBOX_BASE_URL}/wefeed-mobile-bff/subject-api/search?${params.toString()}`;
+      const url = `${MOVIEBOX_DIRECT_BASE}/wefeed-mobile-bff/subject-api/search?${params.toString()}`;
 
       const response = await fetch(url, { 
         method: 'GET', 
         headers: this.headers,
         signal: AbortSignal.timeout(4000)
       });
-      if (!response.ok) {
-        return null;
-      }
+      if (!response.ok) return null;
       return await response.json();
     } catch {
       return null;
@@ -76,8 +129,16 @@ export class MovieBoxService {
    */
   async getStreamInfo(subjectId: string, token?: string): Promise<any> {
     try {
+      const proxyRes = await fetch(`${API_BASE}/stream/${subjectId}`, { signal: AbortSignal.timeout(4000) });
+      if (proxyRes.ok) {
+        const json = await proxyRes.json();
+        if (json.success) return json.data;
+      }
+    } catch {}
+
+    try {
       const params = new URLSearchParams({ subjectId });
-      const url = `${MOVIEBOX_BASE_URL}/wefeed-mobile-bff/subject-api/play-info?${params.toString()}`;
+      const url = `${MOVIEBOX_DIRECT_BASE}/wefeed-mobile-bff/subject-api/play-info?${params.toString()}`;
 
       const reqHeaders = { ...this.headers };
       if (token) {
@@ -101,7 +162,7 @@ export class MovieBoxService {
   async getSubtitles(subjectId: string): Promise<any> {
     try {
       const params = new URLSearchParams({ subjectId });
-      const url = `${MOVIEBOX_BASE_URL}/wefeed-mobile-bff/subject-api/get-ext-captions?${params.toString()}`;
+      const url = `${MOVIEBOX_DIRECT_BASE}/wefeed-mobile-bff/subject-api/get-ext-captions?${params.toString()}`;
 
       const response = await fetch(url, { 
         method: 'GET', 

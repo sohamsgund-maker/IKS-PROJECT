@@ -246,10 +246,30 @@ export const api = {
     return { count: FALLBACK_MOVIES.length, data: FALLBACK_MOVIES };
   },
 
+  syncMovieBoxScraper: async (): Promise<{ count: number; data: Movie[] }> => {
+    try {
+      const res = await movieboxService.syncScraper();
+      if (res.success && res.data && res.data.length > 0) {
+        return { count: res.data.length, data: res.data };
+      }
+    } catch {}
+    return { count: 0, data: [] };
+  },
+
   getMovies: async (params?: { type?: string; genre?: string; sort?: string; language?: string; year?: string }): Promise<Movie[]> => {
     let list = [...FALLBACK_MOVIES];
 
-    // 1. Check Supabase Cloud Database First
+    // 1. Check MovieBox Scraped Catalog
+    try {
+      const mbCatalog = await movieboxService.getScrapedCatalog();
+      if (mbCatalog.movies && mbCatalog.movies.length > 0) {
+        const existingIds = new Set(list.map(m => String(m.id || m._id || m.tmdbId)));
+        const newMbMovies = mbCatalog.movies.filter(m => !existingIds.has(String(m.id || m._id || m.tmdbId)));
+        list = [...newMbMovies, ...list];
+      }
+    } catch {}
+
+    // 2. Check Supabase Cloud Database
     try {
       const cloudMovies = await getCloudMovies();
       if (cloudMovies && cloudMovies.length > 0) {

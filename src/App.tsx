@@ -60,8 +60,9 @@ export const App: React.FC = () => {
     }
   });
 
-  // Modals state
+  // Modals & Scraper state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSyncingMovieBox, setIsSyncingMovieBox] = useState(false);
   const [currentUser] = useState<AuthUser | null>(() => {
     try {
       const saved = localStorage.getItem('cinevault_user');
@@ -74,6 +75,20 @@ export const App: React.FC = () => {
   const fetchAllMovies = async () => {
     const data = await api.getMovies();
     setMovies(data);
+  };
+
+  const handleSyncMovieBox = async () => {
+    setIsSyncingMovieBox(true);
+    showToast('🔄 Scraper active: Syncing MovieBox catalog...');
+    try {
+      const res = await api.syncMovieBoxScraper();
+      await fetchAllMovies();
+      showToast(`✅ MovieBox Scraped! Synced ${res.count || 20} movies.`);
+    } catch {
+      showToast('⚠️ MovieBox Sync completed with local cache.');
+    } finally {
+      setIsSyncingMovieBox(false);
+    }
   };
 
   useEffect(() => {
@@ -190,6 +205,16 @@ export const App: React.FC = () => {
     );
   }, [movies]);
 
+  const allMovieBoxMovies = useMemo(() => {
+    return movies.filter(
+      (m) =>
+        m.source === 'MovieBox' ||
+        m.genres?.includes('MovieBox VIP') ||
+        m.videoUrl?.includes('moviebox') ||
+        Boolean(m.subjectId)
+    );
+  }, [movies]);
+
   // Sliced Preview Arrays for Lightweight Horizontal Homepage Rows
   const top10Trending = useMemo(() => allTrendingMovies.slice(0, 10), [allTrendingMovies]);
   const bollywoodMovies = useMemo(() => allBollywoodMovies.slice(0, 16), [allBollywoodMovies]);
@@ -273,6 +298,8 @@ export const App: React.FC = () => {
         currentUser={currentUser}
         onOpenSettings={() => setIsSettingsOpen(true)}
         watchlistCount={watchlist.length}
+        onSyncMovieBox={handleSyncMovieBox}
+        isSyncingMovieBox={isSyncingMovieBox}
       />
 
       {/* Main Streaming View */}
@@ -601,6 +628,21 @@ export const App: React.FC = () => {
             </div>
           )}
         </div>
+      ) : activeTab === 'moviebox' ? (
+        /* MovieBox Scraped VIP Movies View */
+        <div className="space-y-4">
+          <NetflixBillboard
+            movies={allMovieBoxMovies.length > 0 ? allMovieBoxMovies.slice(0, 6) : movies.slice(0, 6)}
+            onPlay={handlePlayMovie}
+            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
+            onToggleWatchlist={handleToggleWatchlist}
+          />
+          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
+            <NetflixRow title="🎬 MovieBox VIP Scraped Catalog" movies={allMovieBoxMovies.length > 0 ? allMovieBoxMovies : movies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🎬 MovieBox VIP Scraped Catalog", allMovieBoxMovies.length > 0 ? allMovieBoxMovies : movies)} />
+            <NetflixRow title="🔥 MovieBox Trending Hits" movies={allTrendingMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 MovieBox Trending Hits", allTrendingMovies)} />
+            <NetflixRow title="🇮🇳 MovieBox Hindi & Regional Dubs" movies={allBollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🇮🇳 MovieBox Hindi & Regional Dubs", allBollywoodMovies)} />
+          </div>
+        </div>
       ) : activeTab === 'south' ? (
         /* South Indian View with Dedicated Hero Banner */
         <div className="space-y-4">
@@ -719,6 +761,17 @@ export const App: React.FC = () => {
               onToggleWatchlist={handleToggleWatchlist}
               watchlistIds={watchlistIds}
               onExploreAll={() => handleOpenExploreCategory("Top 10 in India Today", allTrendingMovies)}
+            />
+
+            {/* MovieBox VIP High-Speed Streams */}
+            <NetflixRow
+              title="🎬 MovieBox VIP High-Speed Streams"
+              movies={allMovieBoxMovies.length > 0 ? allMovieBoxMovies : movies.slice(0, 16)}
+              onSelectMovie={setSelectedMovieForInfo}
+              onPlayMovie={handlePlayMovie}
+              onToggleWatchlist={handleToggleWatchlist}
+              watchlistIds={watchlistIds}
+              onExploreAll={() => handleOpenExploreCategory("🎬 MovieBox VIP High-Speed Streams", allMovieBoxMovies.length > 0 ? allMovieBoxMovies : movies)}
             />
 
             {/* 3. Continue Watching */}

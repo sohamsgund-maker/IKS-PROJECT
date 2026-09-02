@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes.js';
 import scraperRoutes from './routes/scraperRoutes.js';
 import movieboxRoutes from './routes/movieboxRoutes.js';
 import { initAutoScraperSchedule } from './services/movieScraper.js';
+import { initMovieBoxScraperSchedule } from './services/movieboxScraper.js';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ mongoose.connect(MONGODB_URI)
     app.listen(PORT, () => {
       console.log(`🚀 CineVault Backend running on http://localhost:${PORT}`);
       initAutoScraperSchedule();
+      initMovieBoxScraperSchedule();
     });
   })
   .catch((err) => {
@@ -44,5 +46,6 @@ mongoose.connect(MONGODB_URI)
     app.listen(PORT, () => {
       console.log(`🚀 CineVault Backend running on http://localhost:${PORT} (Local Fallback)`);
       initAutoScraperSchedule();
+      initMovieBoxScraperSchedule();
     });
   });

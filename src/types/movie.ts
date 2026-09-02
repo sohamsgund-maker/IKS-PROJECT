@@ -45,6 +45,8 @@ export interface Movie {
   downloadUrl?: string;
   subtitles?: Subtitle[];
   episodes?: Episode[];
+  source?: string;
+  subjectId?: string;
   createdAt?: string;
   updatedAt?: string;
 }
