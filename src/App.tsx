@@ -60,9 +60,8 @@ export const App: React.FC = () => {
     }
   });
 
-  // Modals & Scraper state
+  // Modals & User state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isSyncingMovieBox, setIsSyncingMovieBox] = useState(false);
   const [currentUser] = useState<AuthUser | null>(() => {
     try {
       const saved = localStorage.getItem('cinevault_user');
@@ -77,25 +76,13 @@ export const App: React.FC = () => {
     setMovies(data);
   };
 
-  const handleSyncMovieBox = async () => {
-    setIsSyncingMovieBox(true);
-    showToast('🔄 Scraper active: Syncing MovieBox catalog...');
-    try {
-      const res = await api.syncMovieBoxScraper();
-      await fetchAllMovies();
-      showToast(`✅ MovieBox Scraped! Synced ${res.count || 20} movies.`);
-    } catch {
-      showToast('⚠️ MovieBox Sync completed with local cache.');
-    } finally {
-      setIsSyncingMovieBox(false);
-    }
-  };
-
   useEffect(() => {
     try {
       localStorage.removeItem('cinevault_scraped_cache');
     } catch {}
     fetchAllMovies();
+    // Silent background scraper synchronization
+    api.syncMovieBoxScraper().then(() => fetchAllMovies()).catch(() => {});
   }, []);
 
   const handleToggleWatchlist = (movie: Movie) => {
@@ -298,8 +285,6 @@ export const App: React.FC = () => {
         currentUser={currentUser}
         onOpenSettings={() => setIsSettingsOpen(true)}
         watchlistCount={watchlist.length}
-        onSyncMovieBox={handleSyncMovieBox}
-        isSyncingMovieBox={isSyncingMovieBox}
       />
 
       {/* Main Streaming View */}
