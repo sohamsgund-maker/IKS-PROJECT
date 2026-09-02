@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import {
   ArrowLeft, X, Play, Maximize,
   Sparkles, Film, ListVideo,
-  Captions, Subtitles, Volume2, ShieldCheck
+  Captions, Subtitles, Volume2, ShieldCheck, RefreshCw
 } from 'lucide-react';
 import type { Movie, MovieQuality } from '../types/movie';
 import { getEmbedUrl, SUPPORTED_LANGUAGES } from '../services/api';
@@ -14,13 +14,14 @@ interface WatchPageProps {
   onQualityChange: (quality: MovieQuality) => void;
 }
 
-// Background High-Speed Global Stream Providers (Completely hidden from user)
+// Background High-Speed Global Stream Providers (Prioritized for Pushpa 2 & Indian Blockbusters)
 const BACKEND_STREAM_PROVIDERS = [
-  'vidlink',     // #1 Priority: Ultra 4K Hindi Multi-Audio
-  'autoembed',   // #2 Priority: VIP 4K Fast CDN
-  'videasy',     // #3 Priority: 0% Buffer Clean 1080p
-  'vidking',     // #4 Priority: Ultra HD Mirror
-  'vidsrc_pm',   // #5 Priority: Global High-Bandwidth
+  'autoembed',   // #1 Priority: Fast 4K CDN (Guaranteed playback for 2024 blockbusters)
+  'videasy',     // #2 Priority: 0% Buffer Clean 1080p
+  'smashystream',// #3 Priority: High-speed fast mirror
+  'vidking',     // #4 Priority: Ultra HD 4K
+  'vidlink',     // #5 Priority: Multi-Audio 4K
+  '2embed',      // #6 Priority: Global CDN
 ];
 
 const SUBTITLE_TRACKS = [
@@ -268,6 +269,23 @@ export const WatchPage: React.FC<WatchPageProps> = ({
           >
             <Captions className="w-3.5 h-3.5 text-white" />
             <span>Audio & Subtitles</span>
+          </button>
+
+          {/* QUICK STREAM SWITCHER / FIX STREAM */}
+          <button
+            onClick={() => {
+              setActiveProviderIndex((prev) => (prev + 1) % BACKEND_STREAM_PROVIDERS.length);
+              setPlayerKey((prev) => prev + 1);
+              setIsStreamLoading(true);
+              const nextIndex = (activeProviderIndex + 1) % BACKEND_STREAM_PROVIDERS.length;
+              showToast(`⚡ Switched to Stream Source ${nextIndex + 1} (${BACKEND_STREAM_PROVIDERS[nextIndex]})`);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/80 hover:bg-black text-zinc-200 hover:text-white text-xs font-bold border border-zinc-700/80 backdrop-blur-md transition-all active:scale-95 shadow-xl cursor-pointer"
+            title="If video buffers or shows not found, click to switch stream source"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Source {activeProviderIndex + 1}</span>
+            <span className="sm:hidden">S{activeProviderIndex + 1}</span>
           </button>
 
           {/* Fullscreen Toggle */}

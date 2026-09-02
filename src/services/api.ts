@@ -149,11 +149,6 @@ export const getEmbedUrl = (
   const lang = audioLanguage || 'Hindi';
 
   switch (server) {
-    case 'vidlink':
-      return isSeries
-        ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true&autoplay=true&nextbutton=true`
-        : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true&autoplay=true&nextbutton=true`;
-
     case 'autoembed':
       return isSeries
         ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}?lang=${encodeURIComponent(lang)}`
@@ -164,43 +159,30 @@ export const getEmbedUrl = (
         ? `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=${color}&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true`
         : `https://player.videasy.net/movie/${tmdbId}?color=${color}`;
 
-    case 'moviebox':
-      return isSeries
-        ? `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=${color}&nextEpisode=true&autoplayNextEpisode=true&cdn=moviebox`
-        : `https://player.videasy.net/movie/${tmdbId}?color=${color}&cdn=moviebox`;
-
-    case 'peachify':
-      // Clean URL without breaking query params
-      return isSeries
-        ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}`
-        : `https://peachify.top/embed/movie/${tmdbId}`;
-
-    case 'vidsrc_pm':
-    case 'vidsrc_icu':
-    case 'vidsrc':
-      return isSeries
-        ? `https://vidsrc.pm/embed/tv/${tmdbId}/${season}/${episode}`
-        : `https://vidsrc.pm/embed/movie/${tmdbId}`;
-
     case 'smashystream':
       return isSeries
         ? `https://player.smashystream.com/tv/${tmdbId}?s=${season}&e=${episode}`
         : `https://player.smashystream.com/movie/${tmdbId}`;
-
-    case '2embed':
-      return isSeries
-        ? `https://www.2embed.skin/embedtv/${tmdbId}&s=${season}&e=${episode}`
-        : `https://www.2embed.skin/embed/${tmdbId}`;
 
     case 'vidking':
       return isSeries
         ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=${color}&autoPlay=true&nextEpisode=true&episodeSelector=true`
         : `https://www.vidking.net/embed/movie/${tmdbId}?color=${color}&autoPlay=true`;
 
+    case 'vidlink':
+      return isSeries
+        ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true&autoplay=true&nextbutton=true`
+        : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true&autoplay=true&nextbutton=true`;
+
+    case '2embed':
+      return isSeries
+        ? `https://www.2embed.cc/embedtv/${tmdbId}&s=${season}&e=${episode}`
+        : `https://www.2embed.cc/embed/${tmdbId}`;
+
     default:
       return isSeries
-        ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true`
-        : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true`;
+        ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}`
+        : `https://autoembed.co/movie/tmdb/${tmdbId}`;
   }
 };
 
