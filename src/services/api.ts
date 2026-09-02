@@ -3,7 +3,7 @@ import { CURATED_MOVIES_CATALOG } from '../data/curatedCatalog';
 import { movieboxService } from './movieboxService';
 import { getCloudMovies } from './supabaseClient';
 
-const API_BASE = 'http://localhost:5000/api';
+
 
 export interface StreamingServer {
   id: string;
@@ -228,21 +228,6 @@ export const extractMovieId = (urlOrId: string): { id: string; type: 'movie' | '
 export const api = {
   // Automatic Scraping & Syncing
   syncAllScraper: async (): Promise<{ count: number; data: Movie[] }> => {
-    try {
-      const res = await fetch(`${API_BASE}/scraper/sync-all`, { signal: AbortSignal.timeout(10000) });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.data && json.data.length > 0) {
-          try {
-            localStorage.setItem('cinevault_scraped_cache', JSON.stringify(json.data));
-          } catch (e) {}
-          return { count: json.data.length, data: json.data };
-        }
-      }
-    } catch (e) {
-      console.warn('Backend scraper sync offline, using client discovery');
-    }
-
     return { count: FALLBACK_MOVIES.length, data: FALLBACK_MOVIES };
   },
 
@@ -283,13 +268,7 @@ export const api = {
   },
 
   getMovieBySlug: async (slug: string): Promise<Movie | null> => {
-    try {
-      const res = await fetch(`${API_BASE}/movies/${slug}`, { signal: AbortSignal.timeout(2500) });
-      if (!res.ok) throw new Error('API error');
-      return await res.json();
-    } catch {
-      return FALLBACK_MOVIES.find(m => m.slug === slug || m._id === slug || m.id === slug || m.tmdbId?.toString() === slug) || null;
-    }
+    return FALLBACK_MOVIES.find(m => m.slug === slug || m._id === slug || m.id === slug || m.tmdbId?.toString() === slug) || null;
   },
 
   search: async (q: string): Promise<Movie[]> => {
@@ -424,20 +403,6 @@ export const api = {
   },
 
   fetchFromExternalUrlOrId: async (input: string): Promise<Movie> => {
-    try {
-      const res = await fetch(`${API_BASE}/scraper/import-url`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: input }),
-        signal: AbortSignal.timeout(4000)
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.data) return json.data;
-      }
-    } catch (e) {
-      // Fallback
-    }
 
     const parsed = extractMovieId(input);
     const id = parsed ? parsed.id : '1213243';
@@ -470,81 +435,45 @@ export const api = {
   },
 
   login: async (email: string, password: string): Promise<{ token: string; user: AuthUser }> => {
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) throw new Error('Login failed');
-      return await res.json();
-    } catch {
-      if ((email === 'admin@cinevault.com' || email === 'admin') && (password === 'admin123' || password === 'admin')) {
-        return {
-          token: 'mock_jwt_token_admin_2026',
-          user: { id: 'admin_1', username: 'Admin', email: 'admin@cinevault.com', role: 'admin' }
-        };
-      }
-      throw new Error('Invalid credentials');
-    }
-  },
-
-  createMovie: async (movie: Partial<Movie>, token: string): Promise<Movie> => {
-    try {
-      const res = await fetch(`${API_BASE}/admin/movies`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(movie),
-      });
-      return await res.json();
-    } catch {
-      const fallbackNew: Movie = {
-        _id: `m_${Date.now()}`,
-        id: `m_${Date.now()}`,
-        tmdbId: movie.tmdbId,
-        slug: movie.slug || movie.title?.toLowerCase().replace(/\s+/g, '-') || 'movie',
-        title: movie.title || 'Untitled',
-        description: movie.description || '',
-        posterUrl: movie.posterUrl || '',
-        backdropUrl: movie.backdropUrl || movie.posterUrl || '',
-        releaseYear: movie.releaseYear || 2026,
-        language: movie.language || 'English',
-        genres: movie.genres || ['Action'],
-        duration: movie.duration || '2h',
-        rating: movie.rating || 8.0,
-        director: movie.director || '',
-        cast: movie.cast || [],
-        type: movie.type || 'movie',
-        qualities: movie.qualities || [{ quality: '1080p', videoUrl: movie.videoUrl || '' }],
-        videoUrl: movie.videoUrl || '',
-        downloadUrl: movie.downloadUrl || ''
+    if ((email === 'admin@cinevault.com' || email === 'admin') && (password === 'admin123' || password === 'admin')) {
+      return {
+        token: 'mock_jwt_token_admin_2026',
+        user: { id: 'admin_1', username: 'Admin', email: 'admin@cinevault.com', role: 'admin' }
       };
-      return fallbackNew;
     }
+    throw new Error('Invalid credentials');
   },
 
-  updateMovie: async (id: string, movie: Partial<Movie>, token: string): Promise<Movie> => {
-    try {
-      const res = await fetch(`${API_BASE}/admin/movies/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(movie),
-      });
-      return await res.json();
-    } catch {
-      return { ...movie, _id: id } as Movie;
-    }
+  createMovie: async (movie: Partial<Movie>, _token?: string): Promise<Movie> => {
+    const fallbackNew: Movie = {
+      _id: `m_${Date.now()}`,
+      id: `m_${Date.now()}`,
+      tmdbId: movie.tmdbId,
+      slug: movie.slug || movie.title?.toLowerCase().replace(/\s+/g, '-') || 'movie',
+      title: movie.title || 'Untitled',
+      description: movie.description || '',
+      posterUrl: movie.posterUrl || '',
+      backdropUrl: movie.backdropUrl || movie.posterUrl || '',
+      releaseYear: movie.releaseYear || 2026,
+      language: movie.language || 'English',
+      genres: movie.genres || ['Action'],
+      duration: movie.duration || '2h',
+      rating: movie.rating || 8.0,
+      director: movie.director || '',
+      cast: movie.cast || [],
+      type: movie.type || 'movie',
+      qualities: movie.qualities || [{ quality: '1080p', videoUrl: movie.videoUrl || '' }],
+      videoUrl: movie.videoUrl || '',
+      downloadUrl: movie.downloadUrl || ''
+    };
+    return fallbackNew;
   },
 
-  deleteMovie: async (id: string, token: string): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE}/admin/movies/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return await res.json();
-    } catch {
-      return { message: 'Deleted locally' };
-    }
+  updateMovie: async (id: string, movie: Partial<Movie>, _token?: string): Promise<Movie> => {
+    return { ...movie, _id: id } as Movie;
+  },
+
+  deleteMovie: async (_id: string, _token?: string): Promise<any> => {
+    return { message: 'Deleted locally' };
   }
 };
