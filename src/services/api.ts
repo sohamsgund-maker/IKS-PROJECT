@@ -1,4 +1,4 @@
-import type { Movie, AuthUser, MovieQuality } from '../types/movie';
+import type { Movie, AuthUser, MovieQuality, StreamInfoResponse } from '../types/movie';
 import { CURATED_MOVIES_CATALOG } from '../data/curatedCatalog';
 import { movieboxService } from './movieboxService';
 import { getCloudMovies } from './supabaseClient';
@@ -279,6 +279,21 @@ export const api = {
     return { count: 0, data: [] };
   },
 
+  getStreamInfo: async (movieId: string | number, season: number = 1, episode: number = 1): Promise<StreamInfoResponse | null> => {
+    try {
+      const res = await fetch(`/api/v1/movies/${movieId}/streams?season=${season}&episode=${episode}`, {
+        signal: AbortSignal.timeout(4000)
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          return json.data as StreamInfoResponse;
+        }
+      }
+    } catch {}
+    return null;
+  },
+
   getMovies: async (params?: { type?: string; genre?: string; sort?: string; language?: string; year?: string }): Promise<Movie[]> => {
     let list = [...FALLBACK_MOVIES];
 
@@ -341,6 +356,49 @@ export const api = {
       10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western',
       10759: 'Action & Adventure', 10765: 'Sci-Fi & Fantasy', 10768: 'War & Politics'
     };
+
+    // 0. Query Existing Backend API Scraper / Processing Layer (Ad-Filtered & Normalized)
+    try {
+      const backendRes = await fetch(`/api/v1/movies/search?q=${encodeURIComponent(q)}`, {
+        signal: AbortSignal.timeout(4000)
+      });
+      if (backendRes.ok) {
+        const json = await backendRes.json();
+        const items = json?.data || [];
+        if (Array.isArray(items) && items.length > 0) {
+          items.forEach((item: any) => {
+            const movieItem: Movie = {
+              _id: String(item.id),
+              id: String(item.id),
+              tmdbId: item.id,
+              title: item.title,
+              slug: `${(item.title || 'movie').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${item.id}`,
+              description: item.overview || `Watch ${item.title} in 1080p Ultra HD on CineVault.`,
+              posterUrl: item.posterUrl || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80',
+              backdropUrl: item.backdropUrl || item.posterUrl,
+              trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(item.title + ' trailer')}`,
+              releaseYear: item.releaseYear || 2024,
+              language: item.originalLanguage === 'hi' ? 'Hindi' : 'English / Multi',
+              genres: ['Blockbuster', 'Featured'],
+              duration: item.type === 'series' ? 'TV Series' : '2h 15m',
+              rating: item.rating || 8.4,
+              director: 'Featured Director',
+              cast: ['Ensemble Cast'],
+              type: item.type || 'movie',
+              featured: false,
+              trending: true,
+              videoUrl: DEFAULT_SAMPLE_VIDEO,
+              downloadUrl: DEFAULT_SAMPLE_VIDEO,
+              qualities: createDefaultQualities(DEFAULT_SAMPLE_VIDEO)
+            };
+            const key = movieItem.tmdbId || movieItem.id;
+            if (key && !resultMap.has(key)) {
+              resultMap.set(key, movieItem);
+            }
+          });
+        }
+      }
+    } catch {}
 
     // 1. Live TMDB Multi-Search (Over 1,000,000+ Global Movies, Anime & Series)
     try {

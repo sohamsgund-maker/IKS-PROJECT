@@ -75,7 +75,14 @@ export const scrapeMovieBoxSearch = async (keyword, page = 1, size = 20) => {
     if (!response.ok) throw new Error(`MovieBox API error ${response.status}`);
     const data = await response.json();
     const items = data?.data?.list || data?.data?.items || [];
-    return items.map(item => formatMovieBoxItem(item));
+    const cleanItems = items.filter((item) => {
+      if (!item) return false;
+      if (item.is_ad || item.isAd || item.sponsored || item.advertisement || item.is_promotion) return false;
+      const cat = String(item.category || item.type || '').toLowerCase();
+      if (['ad', 'advertisement', 'promo', 'sponsored', 'sponsor'].includes(cat)) return false;
+      return true;
+    });
+    return cleanItems.map(item => formatMovieBoxItem(item));
   } catch (error) {
     console.error(`MovieBox Scrape Error for key '${keyword}':`, error.message);
     return [];

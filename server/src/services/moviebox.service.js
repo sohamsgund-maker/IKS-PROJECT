@@ -29,7 +29,7 @@ export class MovieboxService {
       );
       return response.data?.data?.items || [];
     } catch (error) {
-      logger.warn(`MovieBox search failed for "${query}": ${error.message}`);
+      logger.debug(`MovieBox search unavailable for "${query}": ${error.message}`);
       return [];
     }
   }
@@ -49,7 +49,7 @@ export class MovieboxService {
       );
       return response.data?.data || null;
     } catch (error) {
-      logger.warn(`MovieBox play info failed for subjectId "${subjectId}": ${error.message}`);
+      logger.debug(`MovieBox play info unavailable for subjectId "${subjectId}": ${error.message}`);
       return null;
     }
   }

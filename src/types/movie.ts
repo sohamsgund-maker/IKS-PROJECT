@@ -11,6 +11,27 @@ export interface Subtitle {
   label: string;
 }
 
+export interface AudioTrack {
+  id: string;
+  name: string;
+  language: string;
+  nativeName?: string;
+  flag?: string;
+  url?: string;
+  isDefault?: boolean;
+}
+
+export interface StreamInfoResponse {
+  tmdbId: number | string;
+  title: string;
+  defaultLanguage: string;
+  audioTracks: AudioTrack[];
+  qualities: MovieQuality[];
+  subtitles: Subtitle[];
+  directStreamUrl?: string;
+  fallbackEmbedUrl?: string;
+}
+
 export interface Episode {
   season: number;
   episode: number;
@@ -44,6 +65,7 @@ export interface Movie {
   videoUrl: string;
   downloadUrl?: string;
   subtitles?: Subtitle[];
+  audioTracks?: AudioTrack[];
   episodes?: Episode[];
   source?: string;
   subjectId?: string;

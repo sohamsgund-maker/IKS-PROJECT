@@ -28,9 +28,10 @@ export class TmdbService {
     }
   }
 
-  static async getMovieDetails(id) {
+  static async getMovieDetails(id, mediaType = 'movie') {
     try {
-      const response = await tmdbClient.get(`/movie/${id}`, {
+      const endpoint = mediaType === 'series' || mediaType === 'tv' ? `/tv/${id}` : `/movie/${id}`;
+      const response = await tmdbClient.get(endpoint, {
         params: {
           api_key: config.tmdb.apiKey,
           append_to_response: 'credits,videos',
@@ -38,6 +39,20 @@ export class TmdbService {
       });
       return response.data;
     } catch (error) {
+      // If movie lookup failed with 404, try tv as fallback
+      if (error.response && error.response.status === 404 && mediaType !== 'tv' && mediaType !== 'series') {
+        try {
+          const tvResponse = await tmdbClient.get(`/tv/${id}`, {
+            params: {
+              api_key: config.tmdb.apiKey,
+              append_to_response: 'credits,videos',
+            },
+          });
+          return tvResponse.data;
+        } catch {
+          // fallback failed, continue to original error handling
+        }
+      }
       this.handleAxiosError(error);
     }
   }

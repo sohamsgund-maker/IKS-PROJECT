@@ -21,8 +21,9 @@ app.use(requestLogger);
 // Global Rate Limiting
 app.use('/api', apiRateLimiter);
 
-// API v1 Routing
+// API Routing (both /api/v1 and /api aliases supported)
 app.use('/api/v1', routes);
+app.use('/api', routes);
 
 // 404 Route Handler
 app.use((req, res, next) => {

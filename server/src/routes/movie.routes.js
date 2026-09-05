@@ -12,6 +12,9 @@ router.get('/search', validateSearchQuery, cacheMiddleware(config.cache.ttlSearc
 // GET /api/v1/movies/trending?page={page}
 router.get('/trending', cacheMiddleware(config.cache.ttlTrending), MovieController.getTrending);
 
+// GET /api/v1/movies/languages
+router.get('/languages', MovieController.getLanguages);
+
 // GET /api/v1/movies/:id
 router.get('/:id', validateMovieId, cacheMiddleware(config.cache.ttlDetails), MovieController.getById);
 
