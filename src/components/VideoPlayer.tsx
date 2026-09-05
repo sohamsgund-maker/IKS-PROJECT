@@ -6,6 +6,7 @@ import {
   RefreshCw, Check, Loader2, Server, ShieldCheck
 } from 'lucide-react';
 import type { Movie, MovieQuality, AudioTrack, Subtitle } from '../types/movie';
+import { isHindiContentAvailable } from '../services/api';
 
 interface VideoPlayerProps {
   movie: Movie;
@@ -19,7 +20,7 @@ interface VideoPlayerProps {
   dynamicAudioTracks?: AudioTrack[];
 }
 
-export type StreamServerId = 'autoembed' | 'vidlink' | 'videasy' | 'smashystream' | 'vidking' | 'direct';
+export type StreamServerId = 'peachify' | 'autoembed' | 'vidlink' | 'videasy' | 'smashystream' | 'vidking' | 'direct';
 
 interface StreamServerOption {
   id: StreamServerId;
@@ -31,15 +32,22 @@ interface StreamServerOption {
 
 const STREAM_SERVERS: StreamServerOption[] = [
   {
+    id: 'peachify',
+    name: 'Peachify VIP (Hindi Audio Dub)',
+    badge: 'Hindi Dub VIP',
+    description: 'Direct 1080p stream with native Hindi dual-audio dub support',
+    hasHindi: true,
+  },
+  {
     id: 'autoembed',
-    name: 'AutoEmbed 4K (Hindi Auto-Detect)',
+    name: 'AutoEmbed 4K (Ultra Fast)',
     badge: 'Primary 4K',
-    description: 'Fast 4K CDN with native Hindi audio dub auto-detection',
+    description: 'Fast 4K CDN with universal multi-stream auto-detection',
     hasHindi: true,
   },
   {
     id: 'vidlink',
-    name: 'VidLink Ultra (Multi-Audio & Hindi)',
+    name: 'VidLink Ultra (Multi-Audio)',
     badge: 'Multi-Audio',
     description: 'Bufferless stream with integrated audio track switcher and subtitles',
     hasHindi: true,
@@ -135,10 +143,98 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [duration, setDuration] = useState<number>(0);
   const [bufferedPercent, setBufferedPercent] = useState<number>(0);
 
-  // Server selection state (Defaults to AutoEmbed 4K with Hindi Auto-Detect)
+  // 1. DYNAMICALLY DETECT IF HINDI IS ACTUALLY AVAILABLE FOR THIS TITLE
+  const isHindiAvail = useMemo(() => {
+    return isHindiContentAvailable(movie, dynamicAudioTracks);
+  }, [movie, dynamicAudioTracks]);
+
+  // 2. DYNAMIC AUDIO TRACKS DISCOVERY
+  const allAudioTracks: AudioTrack[] = useMemo(() => {
+    const map = new Map<string, AudioTrack>();
+    dynamicAudioTracks.forEach((t) => map.set(t.id, t));
+
+    if (movie.audioTracks) {
+      movie.audioTracks.forEach((t) => map.set(t.id, t));
+    }
+
+    if (map.size === 0) {
+      const origLang = (movie.language || movie.originalLanguage || 'English').toLowerCase();
+      if (isHindiAvail) {
+        map.set('hi', { id: 'hi', name: 'Hindi', language: 'Hindi', nativeName: 'हिन्दी (Dubbed/Original)', flag: '🇮🇳', isDefault: true });
+        map.set('en', { id: 'en', name: 'English', language: 'English', nativeName: 'English (Original)', flag: '🌐', isDefault: false });
+        if (origLang.includes('te') || origLang.includes('telugu')) {
+          map.set('te', { id: 'te', name: 'Telugu', language: 'Telugu', nativeName: 'తెలుగు (Original)', flag: '🏹', isDefault: false });
+        } else if (origLang.includes('ta') || origLang.includes('tamil')) {
+          map.set('ta', { id: 'ta', name: 'Tamil', language: 'Tamil', nativeName: 'தமிழ் (Original)', flag: '🌴', isDefault: false });
+        }
+      } else {
+        // Content is in different language and Hindi dub is not available: accurately detect original first
+        if (origLang.includes('ja') || origLang.includes('japan')) {
+          map.set('ja', { id: 'ja', name: 'Japanese', language: 'Japanese', nativeName: '日本語 (Original)', flag: '🇯🇵', isDefault: true });
+          map.set('en', { id: 'en', name: 'English', language: 'English', nativeName: 'English Dub', flag: '🌐', isDefault: false });
+        } else if (origLang.includes('ko') || origLang.includes('korean')) {
+          map.set('ko', { id: 'ko', name: 'Korean', language: 'Korean', nativeName: '한국어 (Original)', flag: '🇰🇷', isDefault: true });
+          map.set('en', { id: 'en', name: 'English', language: 'English', nativeName: 'English Dub', flag: '🌐', isDefault: false });
+        } else if (origLang.includes('es') || origLang.includes('spanish')) {
+          map.set('es', { id: 'es', name: 'Spanish', language: 'Spanish', nativeName: 'Español (Original)', flag: '🇪🇸', isDefault: true });
+          map.set('en', { id: 'en', name: 'English', language: 'English', nativeName: 'English Dub', flag: '🌐', isDefault: false });
+        } else if (origLang.includes('fr') || origLang.includes('french')) {
+          map.set('fr', { id: 'fr', name: 'French', language: 'French', nativeName: 'Français (Original)', flag: '🇫🇷', isDefault: true });
+          map.set('en', { id: 'en', name: 'English', language: 'English', nativeName: 'English Dub', flag: '🌐', isDefault: false });
+        } else {
+          map.set('en', { id: 'en', name: 'English', language: 'English', nativeName: 'English (Original)', flag: '🌐', isDefault: true });
+        }
+      }
+    }
+
+    return Array.from(map.values());
+  }, [dynamicAudioTracks, movie, isHindiAvail]);
+
+  // 3. HINDI-FIRST ACCURATE SELECTION
+  // Requirements:
+  // - Detect Hindi first: If Hindi is available, automatically select Hindi first.
+  // - If Hindi is unavailable, automatically use the genuine original language track without failing.
+  const [selectedAudioTrack, setSelectedAudioTrack] = useState<AudioTrack>(() => {
+    if (initialAudioLanguage) {
+      const matched = allAudioTracks.find(
+        (t) => t.id === initialAudioLanguage || t.name.toLowerCase() === initialAudioLanguage.toLowerCase()
+      );
+      if (matched) return matched;
+    }
+
+    // Check if Hindi is present and genuinely available
+    if (isHindiAvail) {
+      const hindiTrack = allAudioTracks.find(
+        (t) => t.id === 'hi' || t.name.toLowerCase() === 'hindi' || t.language.toLowerCase() === 'hindi'
+      );
+      if (hindiTrack) return hindiTrack;
+    }
+
+    // Otherwise use default original track
+    const defaultTrack = allAudioTracks.find((t) => t.isDefault);
+    if (defaultTrack) return defaultTrack;
+
+    return allAudioTracks[0];
+  });
+
+  // 4. SERVER SELECTION: Defaults to Peachify for verified Hindi Dub, AutoEmbed for Bollywood or Original
   const [activeServer, setActiveServer] = useState<StreamServerId>(() => {
-    // If movie's primary URL is a verified direct MP4, default to direct; otherwise autoembed
-    return isDirectVideo(movie.videoUrl) ? 'direct' : 'autoembed';
+    if (isDirectVideo(movie.videoUrl)) return 'direct';
+
+    const isInitialHindi = selectedAudioTrack?.id === 'hi' ||
+      selectedAudioTrack?.name?.toLowerCase() === 'hindi' ||
+      initialAudioLanguage?.toLowerCase() === 'hindi';
+
+    const isNativeBollywood = (movie.language || '').toLowerCase().includes('hi') ||
+      (movie.originalLanguage || '').toLowerCase().includes('hi') ||
+      (movie.genres || []).some((g) => /bollywood/i.test(g));
+
+    if (isHindiAvail && isInitialHindi) {
+      // For dubbed movies/series, Peachify actually provides the Hindi dub audio!
+      return isNativeBollywood ? 'autoembed' : 'peachify';
+    }
+
+    return 'autoembed';
   });
 
   // Audio & Volume state
@@ -167,55 +263,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const [currentQuality, setCurrentQuality] = useState<MovieQuality>(() => {
     return initialQuality || availableQualities[0];
-  });
-
-  // DYNAMIC AUDIO TRACKS DISCOVERY
-  const allAudioTracks: AudioTrack[] = useMemo(() => {
-    const map = new Map<string, AudioTrack>();
-    dynamicAudioTracks.forEach((t) => map.set(t.id, t));
-
-    if (movie.audioTracks) {
-      movie.audioTracks.forEach((t) => map.set(t.id, t));
-    }
-
-    if (map.size === 0) {
-      map.set('hi', { id: 'hi', name: 'Hindi', language: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳', isDefault: true });
-      map.set('en', { id: 'en', name: 'English', language: 'English', nativeName: 'English (Original)', flag: '🌐', isDefault: false });
-      map.set('te', { id: 'te', name: 'Telugu', language: 'Telugu', nativeName: 'తెలుగు', flag: '🏹', isDefault: false });
-      map.set('ta', { id: 'ta', name: 'Tamil', language: 'Tamil', nativeName: 'தமிழ்', flag: '🌴', isDefault: false });
-      map.set('ml', { id: 'ml', name: 'Malayalam', language: 'Malayalam', nativeName: 'മലയാളം', flag: '🌸', isDefault: false });
-      map.set('bn', { id: 'bn', name: 'Bengali', language: 'Bengali', nativeName: 'বাংলা', flag: '🎭', isDefault: false });
-    }
-
-    return Array.from(map.values());
-  }, [dynamicAudioTracks, movie.audioTracks]);
-
-  // HINDI-FIRST DEFAULT SELECTION
-  // Requirements:
-  // 1. Check whether a Hindi audio/stream option is available.
-  // 2. If Hindi is available, automatically select Hindi first.
-  // 3. Start playback using Hindi.
-  // 4. If Hindi is unavailable, automatically use the best/default language provided by the API.
-  // 5. Never fail playback simply because Hindi is unavailable.
-  const [selectedAudioTrack, setSelectedAudioTrack] = useState<AudioTrack>(() => {
-    if (initialAudioLanguage) {
-      const matched = allAudioTracks.find(
-        (t) => t.id === initialAudioLanguage || t.name.toLowerCase() === initialAudioLanguage.toLowerCase()
-      );
-      if (matched) return matched;
-    }
-
-    // Prefer Hindi
-    const hindiTrack = allAudioTracks.find(
-      (t) => t.id === 'hi' || t.name.toLowerCase() === 'hindi' || t.language.toLowerCase() === 'hindi'
-    );
-    if (hindiTrack) return hindiTrack;
-
-    // Best / default language
-    const defaultTrack = allAudioTracks.find((t) => t.isDefault);
-    if (defaultTrack) return defaultTrack;
-
-    return allAudioTracks[0];
   });
 
   // Subtitles
@@ -283,6 +330,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     let base = '';
     switch (activeServer) {
+      case 'peachify':
+        base = isSeries
+          ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`
+          : `https://peachify.top/embed/movie/${tmdbId}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`;
+        break;
       case 'autoembed':
         base = isSeries
           ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}?lang=${encodeURIComponent(lang)}`
@@ -439,6 +491,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       onAudioChange(track);
     }
 
+    // Smart Server Audio Track Coordination:
+    // If user switches to Hindi for a dubbed title, automatically route to peachify for actual Hindi audio
+    // If user switches to English or original language, automatically route to autoembed/vidlink
+    const isHindi = track.id === 'hi' || track.name.toLowerCase() === 'hindi';
+    const isNativeBollywood = (movie.language || '').toLowerCase().includes('hi') ||
+      (movie.originalLanguage || '').toLowerCase().includes('hi') ||
+      (movie.genres || []).some((g) => /bollywood/i.test(g));
+
+    if (isHindi && !isNativeBollywood) {
+      setActiveServer('peachify');
+    } else if (!isHindi && activeServer === 'peachify') {
+      setActiveServer('autoembed');
+    }
+
     // If direct player is active with HLS multi-audio
     if (activeServer === 'direct' && hlsRef.current && hlsRef.current.audioTracks.length > 0) {
       const idx = hlsRef.current.audioTracks.findIndex(
@@ -465,7 +531,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const handleQuickNextServer = () => {
-    const serversList: StreamServerId[] = ['autoembed', 'vidlink', 'videasy', 'smashystream', 'vidking'];
+    const serversList: StreamServerId[] = ['peachify', 'autoembed', 'vidlink', 'videasy', 'smashystream', 'vidking'];
     const currentIndex = serversList.indexOf(activeServer);
     const nextIndex = (currentIndex + 1) % serversList.length;
     handleSelectServer(serversList[nextIndex]);
@@ -858,6 +924,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               </button>
             </div>
 
+            {!isHindiAvail && (
+              <div className="p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800 text-[11px] text-zinc-400 flex items-center gap-2">
+                <span className="text-sm">ℹ️</span>
+                <span>Hindi dub is not available for this title. Playing in original audio ({movie.language || 'English'}).</span>
+              </div>
+            )}
+
             <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
               {allAudioTracks.map((t) => {
                 const isSelected = selectedAudioTrack.id === t.id;
@@ -875,9 +948,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     <div className="flex items-center gap-2.5">
                       <span className="text-base">{t.flag || '🌐'}</span>
                       <span>{t.name}</span>
-                      {isHindi && (
+                      {isHindi && isHindiAvail && (
                         <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                          PRIORITY #1 (DEFAULT)
+                          HINDI DUB (PRIORITY #1)
                         </span>
                       )}
                     </div>

@@ -1,4 +1,4 @@
-import type { Movie, AuthUser, MovieQuality, StreamInfoResponse } from '../types/movie';
+import type { Movie, AuthUser, MovieQuality, StreamInfoResponse, AudioTrack } from '../types/movie';
 import { CURATED_MOVIES_CATALOG } from '../data/curatedCatalog';
 import { movieboxService } from './movieboxService';
 import { getCloudMovies } from './supabaseClient';
@@ -169,6 +169,11 @@ export const getEmbedUrl = (
         ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=${color}&autoPlay=true&nextEpisode=true&episodeSelector=true`
         : `https://www.vidking.net/embed/movie/${tmdbId}?color=${color}&autoPlay=true`;
 
+    case 'peachify':
+      return isSeries
+        ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`
+        : `https://peachify.top/embed/movie/${tmdbId}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`;
+
     case 'vidlink':
       return isSeries
         ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true&autoplay=true&nextbutton=true`
@@ -261,6 +266,83 @@ export const sanitizeMovieCatalog = (items: Movie[]): Movie[] => {
   return items.filter((item) => !isAdvertisementItem(item));
 };
 
+export const isHindiContentAvailable = (movie: Movie, dynamicTracks?: AudioTrack[]): boolean => {
+  // 1. If dynamic audio tracks specifically contain Hindi
+  if (dynamicTracks && dynamicTracks.length > 0) {
+    const hasHindiTrack = dynamicTracks.some(
+      (t) => t.id === 'hi' || t.name.toLowerCase() === 'hindi' || t.language?.toLowerCase() === 'hindi'
+    );
+    if (hasHindiTrack) return true;
+  }
+
+  // 2. If movie object has audioTracks explicitly
+  if (movie.audioTracks && movie.audioTracks.length > 0) {
+    const hasHindiTrack = movie.audioTracks.some(
+      (t) => t.id === 'hi' || t.name.toLowerCase() === 'hindi' || t.language?.toLowerCase() === 'hindi'
+    );
+    if (hasHindiTrack) return true;
+  }
+
+  // 3. Native Hindi / Bollywood
+  const langLower = String(movie.language || '').toLowerCase().trim();
+  const origLangLower = String(movie.originalLanguage || '').toLowerCase().trim();
+  const genresLower = (movie.genres || []).map((g) => g.toLowerCase());
+
+  if (
+    langLower === 'hindi' ||
+    langLower === 'hi' ||
+    origLangLower === 'hindi' ||
+    origLangLower === 'hi' ||
+    genresLower.includes('bollywood')
+  ) {
+    return true;
+  }
+
+  // 4. Pan-Indian titles (Telugu, Tamil, Malayalam, Kannada hits with theatrical Hindi dubs)
+  const isSouthIndian =
+    langLower === 'telugu' || langLower === 'te' ||
+    langLower === 'tamil' || langLower === 'ta' ||
+    langLower === 'malayalam' || langLower === 'ml' ||
+    langLower === 'kannada' || langLower === 'kn' ||
+    origLangLower === 'te' || origLangLower === 'ta' ||
+    origLangLower === 'ml' || origLangLower === 'kn' ||
+    genresLower.includes('south indian') ||
+    genresLower.includes('tollywood') ||
+    genresLower.includes('kollywood');
+
+  const titleLower = String(movie.title || '').toLowerCase().trim();
+
+  // Known Pan-Indian titles with official Hindi dubs
+  const panIndiaHits = [
+    'pushpa', 'kalki', 'rrr', 'kgf', 'devara', 'salaar', 'baahubali', 'kantara',
+    'hanuman', 'hanu-man', 'leo', 'jailer', 'vikram', 'jawan', 'pathaan', 'stree',
+    'dangal', 'animal', 'major', 'karthikeya', 'vikrant rona', 'ps-1', 'ps-2',
+    'ponniyin selvan', 'chhaava', 'singham', 'bhool bhulaiyaa'
+  ];
+  if (panIndiaHits.some((hit) => titleLower.includes(hit))) {
+    return true;
+  }
+
+  if (isSouthIndian) {
+    return true;
+  }
+
+  // 5. Major Hollywood / Global franchises with official Hindi dubs
+  const globalHindiDubbedFranchises = [
+    'deadpool', 'wolverine', 'spider', 'avenger', 'interstellar', 'inception',
+    'avatar', 'dark knight', 'gladiator', 'alien', 'batman', 'top gun', 'fast &',
+    'fast and', 'furious', 'stranger things', 'money heist', 'squid game', 'demon slayer',
+    'solo leveling', 'jujutsu', 'oppenheimer', 'mission: impossible', 'mission impossible',
+    'transformers', 'jurassic', 'harry potter', 'lord of the rings', 'iron man', 'thor',
+    'captain america', 'guardians of the galaxy', 'black panther', 'ant-man', 'doctor strange',
+    'aquaman', 'wonder woman', 'superman', 'godzilla', 'kong', 'dune', 'matrix', 'john wick',
+    'kung fu panda', 'lion king', 'aladdin', 'frozen', 'moana', 'zootopia', 'toy story',
+    'despicable me', 'minions', 'shrek', 'madagascar', 'ice age'
+  ];
+
+  return globalHindiDubbedFranchises.some((k) => titleLower.includes(k));
+};
+
 export const api = {
   // Automatic Scraping & Syncing
   syncAllScraper: async (): Promise<{ count: number; data: Movie[] }> => {
@@ -278,10 +360,21 @@ export const api = {
     } catch {}
     return { count: 0, data: [] };
   },
-
-  getStreamInfo: async (movieId: string | number, season: number = 1, episode: number = 1): Promise<StreamInfoResponse | null> => {
+  getStreamInfo: async (
+    movieId: string | number,
+    season: number = 1,
+    episode: number = 1,
+    movie?: Movie
+  ): Promise<StreamInfoResponse | null> => {
     try {
-      const res = await fetch(`/api/v1/movies/${movieId}/streams?season=${season}&episode=${episode}`, {
+      const q = new URLSearchParams({
+        season: String(season),
+        episode: String(episode),
+        type: movie?.type || 'movie',
+        title: movie?.title || '',
+        language: movie?.language || ''
+      });
+      const res = await fetch(`/api/v1/movies/${movieId}/streams?${q.toString()}`, {
         signal: AbortSignal.timeout(4000)
       });
       if (res.ok) {

@@ -25,6 +25,7 @@ export interface StreamInfoResponse {
   tmdbId: number | string;
   title: string;
   defaultLanguage: string;
+  isHindiAvailable?: boolean;
   audioTracks: AudioTrack[];
   qualities: MovieQuality[];
   subtitles: Subtitle[];
@@ -53,6 +54,7 @@ export interface Movie {
   trailerUrl?: string;
   releaseYear: number;
   language: string;
+  originalLanguage?: string;
   genres: string[];
   duration: string;
   rating: number;

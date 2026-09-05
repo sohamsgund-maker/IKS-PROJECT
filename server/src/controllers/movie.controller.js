@@ -71,16 +71,16 @@ export class MovieController {
   static async getStreams(req, res, next) {
     try {
       const { id } = req.params;
-      const { season = 1, episode = 1, type = 'movie' } = req.query;
+      const { season = 1, episode = 1, type = 'movie', title: qTitle, language: qLang } = req.query;
 
       // 1. Fetch Movie Details from TMDB
       let movieDetails = {};
       try {
         movieDetails = await TmdbService.getMovieDetails(Number(id), type);
       } catch {
-        movieDetails = { id, title: `Stream ${id}` };
+        movieDetails = { id, title: qTitle || `Stream ${id}` };
       }
-      const title = movieDetails.title || movieDetails.name || `Title #${id}`;
+      const title = movieDetails.title || movieDetails.name || qTitle || `Title #${id}`;
       const isSeries = Boolean(movieDetails.number_of_seasons || type === 'series' || req.query.type === 'series');
 
       // 2. Search MovieBox for matching subject play info
@@ -95,11 +95,14 @@ export class MovieController {
       } catch {}
 
       // 3. Process Streams, Dynamic Audio Languages & Hindi-First Selection
+      const origLang = movieDetails.original_language || movieDetails.language || qLang || 'en';
+      const genresList = (movieDetails.genres || []).map((g) => g.name || g);
+
       const processedStreamData = ApiProcessor.processStreamsAndAudio({
         tmdbId: Number(id),
         title,
-        originalLanguage: movieDetails.original_language || 'en',
-        genres: (movieDetails.genres || []).map((g) => g.name || g),
+        originalLanguage: origLang,
+        genres: genresList,
         season: Number(season),
         episode: Number(episode),
         isSeries,

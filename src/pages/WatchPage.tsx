@@ -3,7 +3,7 @@ import {
   ArrowLeft, Film, ShieldCheck, Sparkles, Check
 } from 'lucide-react';
 import type { Movie, MovieQuality, AudioTrack, StreamInfoResponse } from '../types/movie';
-import { api, getEmbedUrl } from '../services/api';
+import { api, getEmbedUrl, isHindiContentAvailable } from '../services/api';
 import { VideoPlayer } from '../components/VideoPlayer';
 
 interface WatchPageProps {
@@ -31,6 +31,14 @@ export const WatchPage: React.FC<WatchPageProps> = ({
     setTimeout(() => setToastMessage(null), 2500);
   }, []);
 
+  // Check if Hindi is genuinely available for this content
+  const isHindiAvail = useMemo(() => {
+    if (streamInfo?.isHindiAvailable !== undefined) {
+      return streamInfo.isHindiAvailable;
+    }
+    return isHindiContentAvailable(movie);
+  }, [streamInfo, movie]);
+
   // Fetch Stream Info from Backend API Scraper & Processing Layer
   useEffect(() => {
     let isCancelled = false;
@@ -39,11 +47,11 @@ export const WatchPage: React.FC<WatchPageProps> = ({
       if (!id) return;
 
       try {
-        const info = await api.getStreamInfo(id, currentSeason, currentEpisode);
+        const info = await api.getStreamInfo(id, currentSeason, currentEpisode, movie);
         if (!isCancelled && info) {
           setStreamInfo(info);
           if (info.audioTracks && info.audioTracks.length > 0) {
-            // Find default track (Hindi-first by backend processor)
+            // Find default track (Hindi-first if Hindi available, else original)
             const defaultTrack = info.audioTracks.find((t) => t.isDefault) || info.audioTracks[0];
             setSelectedAudioTrack(defaultTrack);
           }
@@ -62,24 +70,35 @@ export const WatchPage: React.FC<WatchPageProps> = ({
   // Fallback Embed Provider URL
   const fallbackEmbedUrl = useMemo(() => {
     if (streamInfo?.fallbackEmbedUrl) return streamInfo.fallbackEmbedUrl;
-    return getEmbedUrl('vidlink', movie, currentSeason, currentEpisode, selectedAudioTrack?.name || 'Hindi');
-  }, [streamInfo, movie, currentSeason, currentEpisode, selectedAudioTrack]);
+    const defaultLang = isHindiAvail ? 'Hindi' : (movie.language || 'English');
+    return getEmbedUrl('peachify', movie, currentSeason, currentEpisode, selectedAudioTrack?.name || defaultLang);
+  }, [streamInfo, movie, currentSeason, currentEpisode, selectedAudioTrack, isHindiAvail]);
 
   // Detected Dynamic Audio Tracks
   const audioTracksList = useMemo(() => {
     if (streamInfo?.audioTracks && streamInfo.audioTracks.length > 0) {
       return streamInfo.audioTracks;
     }
+    const origLang = (movie.language || movie.originalLanguage || 'English').toLowerCase();
+    if (isHindiAvail) {
+      const tracks: AudioTrack[] = [
+        { id: 'hi', name: 'Hindi', language: 'Hindi', nativeName: 'हिन्दी (Dubbed/Original)', flag: '🇮🇳', isDefault: true },
+        { id: 'en', name: 'English', language: 'English', nativeName: 'English (Original)', flag: '🌐', isDefault: false },
+      ];
+      if (origLang.includes('te') || origLang.includes('telugu')) {
+        tracks.push({ id: 'te', name: 'Telugu', language: 'Telugu', nativeName: 'తెలుగు', flag: '🏹', isDefault: false });
+      } else if (origLang.includes('ta') || origLang.includes('tamil')) {
+        tracks.push({ id: 'ta', name: 'Tamil', language: 'Tamil', nativeName: 'தமிழ்', flag: '🌴', isDefault: false });
+      }
+      return tracks;
+    }
     return [
-      { id: 'hi', name: 'Hindi', language: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳', isDefault: true },
-      { id: 'en', name: 'English', language: 'English', nativeName: 'English (Original)', flag: '🌐', isDefault: false },
-      { id: 'te', name: 'Telugu', language: 'Telugu', nativeName: 'తెలుగు', flag: '🏹', isDefault: false },
-      { id: 'ta', name: 'Tamil', language: 'Tamil', nativeName: 'தமிழ்', flag: '🌴', isDefault: false },
+      { id: 'en', name: 'English', language: 'English', nativeName: `${movie.language || 'English'} (Original)`, flag: '🌐', isDefault: true },
     ];
-  }, [streamInfo]);
+  }, [streamInfo, isHindiAvail, movie]);
 
-  const activeAudioName = selectedAudioTrack?.name || 'Hindi';
-  const activeAudioFlag = selectedAudioTrack?.flag || '🇮🇳';
+  const activeAudioName = selectedAudioTrack?.name || (isHindiAvail ? 'Hindi' : (movie.language || 'English'));
+  const activeAudioFlag = selectedAudioTrack?.flag || (isHindiAvail ? '🇮🇳' : '🌐');
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pt-16 sm:pt-20 pb-24 px-3 sm:px-6 lg:px-12 max-w-[1720px] mx-auto select-none">
@@ -111,9 +130,11 @@ export const WatchPage: React.FC<WatchPageProps> = ({
 
           <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E50914]/15 border border-[#E50914]/40 text-red-400 text-[11px] font-bold">
             <span>{activeAudioFlag} Audio: {activeAudioName}</span>
-            <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-              PRIORITY #1
-            </span>
+            {isHindiAvail && (
+              <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                PRIORITY #1
+              </span>
+            )}
           </span>
         </div>
       </div>
@@ -166,10 +187,17 @@ export const WatchPage: React.FC<WatchPageProps> = ({
               U/A 16+
             </span>
 
-            <span className="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1">
-              <Check className="w-3 h-3" />
-              <span>Hindi Dub & Multi-Audio Verified</span>
-            </span>
+            {isHindiAvail ? (
+              <span className="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1">
+                <Check className="w-3 h-3" />
+                <span>Hindi Dub & Multi-Audio Verified</span>
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-md bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-bold flex items-center gap-1">
+                <Check className="w-3 h-3 text-emerald-400" />
+                <span>Original Audio Stream Verified</span>
+              </span>
+            )}
           </div>
         </div>
 
@@ -202,7 +230,16 @@ export const WatchPage: React.FC<WatchPageProps> = ({
 
             <div>
               <span className="text-zinc-500 font-medium">Available Audio: </span>
-              <span className="text-amber-400 font-bold">Hindi (Default)</span>, English, Telugu, Tamil, Malayalam, Bengali
+              {isHindiAvail ? (
+                <>
+                  <span className="text-amber-400 font-bold">Hindi (Default)</span>, English, Telugu, Tamil, Malayalam
+                </>
+              ) : (
+                <>
+                  <span className="text-zinc-200 font-bold">{movie.language || 'English'} (Original)</span>
+                  <span className="text-zinc-500 ml-1">(Hindi dub unavailable)</span>
+                </>
+              )}
             </div>
           </div>
         </div>

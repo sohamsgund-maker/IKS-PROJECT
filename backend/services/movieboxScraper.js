@@ -42,7 +42,7 @@ export const formatMovieBoxItem = (item, customCategory = 'MovieBox VIP') => {
     backdropUrl,
     trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' official trailer')}`,
     releaseYear: parseInt(item.releaseYear || item.year || '2024', 10) || 2024,
-    language: item.language || 'Hindi / Multi',
+    language: item.language || item.original_language || item.lang || 'English',
     genres: Array.from(new Set(genres)).filter(Boolean),
     duration: item.duration || '2h 10m',
     rating: typeof item.score === 'number' ? Number(item.score.toFixed(1)) : 8.6,

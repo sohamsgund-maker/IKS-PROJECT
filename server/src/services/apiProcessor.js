@@ -163,28 +163,42 @@ export class ApiProcessor {
     detectedLanguages.add(origLangLower);
 
     const genreList = Array.isArray(genres) ? genres.map((g) => String(g).toLowerCase()) : [];
-    const isIndian = origLangLower === 'hi' || origLangLower === 'te' || origLangLower === 'ta' ||
-      origLangLower === 'ml' || origLangLower === 'kn' || genreList.includes('bollywood') || genreList.includes('south indian');
+    const isNativeHindi = origLangLower === 'hi' || genreList.includes('bollywood');
+    const isPanIndiaIndian = origLangLower === 'te' || origLangLower === 'ta' ||
+      origLangLower === 'ml' || origLangLower === 'kn' || genreList.includes('south indian');
 
-    // Pan-India & Global multi-audio options
-    if (isIndian) {
-      detectedLanguages.add('hi'); // Hindi is universally available for Indian releases
-      if (origLangLower !== 'hi') detectedLanguages.add(origLangLower);
+    const titleLower = String(title || '').toLowerCase();
+    const isGlobalHindiDubbed = [
+      'deadpool', 'wolverine', 'spider', 'avenger', 'interstellar', 'inception',
+      'avatar', 'dark knight', 'gladiator', 'alien', 'batman', 'top gun', 'fast &', 'fast and', 'furious',
+      'stranger things', 'money heist', 'squid game', 'demon slayer', 'solo leveling', 'jujutsu',
+      'oppenheimer', 'mission: impossible', 'mission impossible', 'transformers', 'jurassic',
+      'harry potter', 'lord of the rings', 'iron man', 'thor', 'captain america', 'guardians of the galaxy',
+      'black panther', 'ant-man', 'doctor strange', 'aquaman', 'wonder woman', 'superman', 'godzilla',
+      'kong', 'dune', 'matrix', 'john wick', 'kung fu panda', 'lion king', 'aladdin', 'frozen', 'moana',
+      'zootopia', 'toy story', 'despicable me', 'minions', 'shrek', 'madagascar', 'ice age',
+      'pushpa', 'kalki', 'rrr', 'kgf', 'devara', 'salaar', 'baahubali', 'kantara', 'hanuman', 'hanu-man',
+      'leo', 'jailer', 'vikram', 'jawan', 'pathaan', 'stree', 'dangal', 'animal', 'chhaava'
+    ].some((keyword) => titleLower.includes(keyword));
+
+    const isHindiActuallyAvailable = isNativeHindi || isPanIndiaIndian || isGlobalHindiDubbed ||
+      Boolean(upstreamPlayInfo?.audio_tracks?.some((t) => String(t.language || t.name || '').toLowerCase().includes('hi')));
+
+    if (isNativeHindi) {
+      detectedLanguages.add('hi');
+      detectedLanguages.add('en');
+    } else if (isPanIndiaIndian) {
+      detectedLanguages.add('hi');
+      detectedLanguages.add(origLangLower);
+      detectedLanguages.add('en');
+    } else if (isGlobalHindiDubbed) {
+      detectedLanguages.add('hi');
       detectedLanguages.add('en');
     } else {
-      // Global movies typically have original language + Hindi dub option
       detectedLanguages.add('en');
-      detectedLanguages.add('hi'); // Hindi dub track
-    }
-
-    if (origLangLower === 'ja' || genreList.includes('anime')) {
-      detectedLanguages.add('ja');
-      detectedLanguages.add('hi');
-      detectedLanguages.add('en');
-    } else if (origLangLower === 'ko' || genreList.includes('k-drama')) {
-      detectedLanguages.add('ko');
-      detectedLanguages.add('hi');
-      detectedLanguages.add('en');
+      if (origLangLower && origLangLower !== 'en') {
+        detectedLanguages.add(origLangLower);
+      }
     }
 
     // Build audio track objects
@@ -204,31 +218,17 @@ export class ApiProcessor {
     const audioTracks = Array.from(audioTrackMap.values());
 
     // 3. HINDI-FIRST DEFAULT SELECTION LOGIC
-    // Requirements:
-    // 1. Check whether a Hindi audio/stream option is available.
-    // 2. If Hindi is available, automatically select Hindi first.
-    // 3. Start playback using Hindi.
-    // 4. If Hindi is unavailable, automatically use the best/default language provided by the API.
-    // 5. Never fail playback simply because Hindi is unavailable.
-    // Priority: Hindi → API default/best available language → first valid available language
-    let defaultLanguageId = 'hi';
-    const hasHindi = audioTracks.some((t) => t.id === 'hi' || t.name.toLowerCase() === 'hindi');
+    // Check if Hindi is available -> Select Hindi first -> Start playback in Hindi.
+    // If Hindi is unavailable -> Automatically use the best/default language without failing playback.
+    let defaultLanguageId = origLangLower || 'en';
+    const hasHindi = isHindiActuallyAvailable && audioTracks.some((t) => t.id === 'hi' || t.name.toLowerCase() === 'hindi');
 
     if (hasHindi) {
       defaultLanguageId = 'hi';
+    } else if (audioTracks.some((t) => t.id === origLangLower)) {
+      defaultLanguageId = origLangLower;
     } else if (audioTracks.length > 0) {
       defaultLanguageId = audioTracks[0].id;
-    } else {
-      defaultLanguageId = 'hi';
-      audioTracks.push({
-        id: 'hi',
-        name: 'Hindi',
-        nativeName: 'हिन्दी',
-        flag: '🇮🇳',
-        language: 'Hindi',
-        url: sampleVideoUrl,
-        isDefault: true,
-      });
     }
 
     // Mark isDefault flag
@@ -258,14 +258,19 @@ export class ApiProcessor {
 
     // 5. Fallback Embed Providers (High speed backup)
     const color = 'E50914';
-    const fallbackEmbedUrl = isSeries
-      ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true&autoplay=true`
-      : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true&autoplay=true`;
+    const fallbackEmbedUrl = isHindiActuallyAvailable
+      ? (isSeries
+          ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}?dub=Hindi`
+          : `https://peachify.top/embed/movie/${tmdbId}?dub=Hindi`)
+      : (isSeries
+          ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true&autoplay=true`
+          : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true&autoplay=true`);
 
     return {
       tmdbId: Number(tmdbId),
       title,
       defaultLanguage: defaultLanguageId,
+      isHindiAvailable: isHindiActuallyAvailable,
       audioTracks,
       qualities,
       subtitles,
