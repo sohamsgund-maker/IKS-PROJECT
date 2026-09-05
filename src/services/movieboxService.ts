@@ -79,7 +79,29 @@ export class MovieBoxService {
         signal: AbortSignal.timeout(4000)
       });
       if (!response.ok) return null;
-      return await response.json();
+      const data = await response.json();
+      
+      // Filter out advertisement, sponsor, and promotional cards
+      if (data?.data?.items && Array.isArray(data.data.items)) {
+        data.data.items = data.data.items.filter((item: any) => {
+          if (!item) return false;
+          if (item.is_ad || item.isAd || item.sponsored || item.advertisement || item.is_promotion) return false;
+          const cat = String(item.category || item.type || '').toLowerCase();
+          if (['ad', 'advertisement', 'promo', 'sponsored', 'sponsor'].includes(cat)) return false;
+          return true;
+        });
+      }
+      if (data?.data?.list && Array.isArray(data.data.list)) {
+        data.data.list = data.data.list.filter((item: any) => {
+          if (!item) return false;
+          if (item.is_ad || item.isAd || item.sponsored || item.advertisement || item.is_promotion) return false;
+          const cat = String(item.category || item.type || '').toLowerCase();
+          if (['ad', 'advertisement', 'promo', 'sponsored', 'sponsor'].includes(cat)) return false;
+          return true;
+        });
+      }
+
+      return data;
     } catch {
       return null;
     }

@@ -239,6 +239,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
           title={`${movie.title} Stream`}
           allowFullScreen
           allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
           onLoad={() => setIsStreamLoading(false)}
           className="w-full h-full border-0 absolute inset-0 z-0 bg-black"
         />

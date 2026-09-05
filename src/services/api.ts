@@ -207,17 +207,73 @@ export const extractMovieId = (urlOrId: string): { id: string; type: 'movie' | '
   return null;
 };
 
+/**
+ * Centralized Advertisement & Promotional Content Filter
+ * Strips all API-provided ads, sponsored cards, promotional banners, and tracking items
+ * while preserving legitimate movie, series, and anime metadata.
+ */
+export const isAdvertisementItem = (item: any): boolean => {
+  if (!item || typeof item !== 'object') return true;
+
+  // 1. Explicit boolean ad / promotion flags
+  if (
+    item.is_ad === true ||
+    item.isAd === true ||
+    item.advertisement === true ||
+    item.sponsored === true ||
+    item.is_sponsored === true ||
+    item.is_promotion === true ||
+    item.isPromotion === true ||
+    item.commercial === true ||
+    item.is_commercial === true
+  ) {
+    return true;
+  }
+
+  // 2. Type / Placement indicators
+  const typeStr = String(item.type || item.media_type || item.category || item.placement || '').toLowerCase();
+  if (['ad', 'advertisement', 'banner_ad', 'promo', 'sponsored', 'sponsor', 'commercial', 'ad_banner'].includes(typeStr)) {
+    return true;
+  }
+
+  // 3. Ad URL / Tracking presence
+  if (item.ad_url || item.adUrl || item.click_url || item.tracking_url || item.ad_image || item.adImage) {
+    return true;
+  }
+
+  // 4. Title / Text based ad indicators
+  const title = String(item.title || item.name || item.subjectName || '').toLowerCase().trim();
+  if (
+    title.startsWith('sponsored:') ||
+    title.startsWith('ad:') ||
+    title.startsWith('promotion:') ||
+    title === 'advertisement' ||
+    title === 'google ad'
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+export const sanitizeMovieCatalog = (items: Movie[]): Movie[] => {
+  if (!Array.isArray(items)) return [];
+  return items.filter((item) => !isAdvertisementItem(item));
+};
+
 export const api = {
   // Automatic Scraping & Syncing
   syncAllScraper: async (): Promise<{ count: number; data: Movie[] }> => {
-    return { count: FALLBACK_MOVIES.length, data: FALLBACK_MOVIES };
+    const cleanCatalog = sanitizeMovieCatalog(FALLBACK_MOVIES);
+    return { count: cleanCatalog.length, data: cleanCatalog };
   },
 
   syncMovieBoxScraper: async (): Promise<{ count: number; data: Movie[] }> => {
     try {
       const res = await movieboxService.syncScraper();
       if (res.success && res.data && res.data.length > 0) {
-        return { count: res.data.length, data: res.data };
+        const cleanData = sanitizeMovieCatalog(res.data);
+        return { count: cleanData.length, data: cleanData };
       }
     } catch {}
     return { count: 0, data: [] };
@@ -226,23 +282,28 @@ export const api = {
   getMovies: async (params?: { type?: string; genre?: string; sort?: string; language?: string; year?: string }): Promise<Movie[]> => {
     let list = [...FALLBACK_MOVIES];
 
-    // 1. Check MovieBox Scraped Catalog
+    // 1. Check MovieBox Scraped Catalog (Filtered)
     try {
       const mbCatalog = await movieboxService.getScrapedCatalog();
       if (mbCatalog.movies && mbCatalog.movies.length > 0) {
         const existingIds = new Set(list.map(m => String(m.id || m._id || m.tmdbId)));
-        const newMbMovies = mbCatalog.movies.filter(m => !existingIds.has(String(m.id || m._id || m.tmdbId)));
-        list = [...newMbMovies, ...list];
+        const cleanMbMovies = sanitizeMovieCatalog(mbCatalog.movies).filter(
+          m => !existingIds.has(String(m.id || m._id || m.tmdbId))
+        );
+        list = [...cleanMbMovies, ...list];
       }
     } catch {}
 
-    // 2. Check Supabase Cloud Database
+    // 2. Check Supabase Cloud Database (Filtered)
     try {
       const cloudMovies = await getCloudMovies();
       if (cloudMovies && cloudMovies.length > 0) {
-        list = cloudMovies;
+        list = sanitizeMovieCatalog(cloudMovies);
       }
     } catch {}
+
+    // Centralized ad sanitization
+    list = sanitizeMovieCatalog(list);
 
     if (params?.type) list = list.filter(m => m.type === params.type);
     if (params?.genre && params.genre !== 'All') list = list.filter(m => m.genres?.includes(params.genre!));
@@ -292,7 +353,7 @@ export const api = {
         const results = data?.results || [];
         if (Array.isArray(results) && results.length > 0) {
           results
-            .filter((item: any) => (item.media_type === 'movie' || item.media_type === 'tv') && (item.poster_path || item.backdrop_path))
+            .filter((item: any) => !isAdvertisementItem(item) && (item.media_type === 'movie' || item.media_type === 'tv') && (item.poster_path || item.backdrop_path))
             .forEach((item: any) => {
               const isTv = item.media_type === 'tv';
               const title = item.title || item.name || 'Untitled';
@@ -346,42 +407,44 @@ export const api = {
       const mbData = await movieboxService.searchMovie(q);
       const items = mbData?.data?.list || mbData?.data?.items || [];
       if (Array.isArray(items) && items.length > 0) {
-        items.forEach((item: any) => {
-          const id = item.subjectId || item.id || String(Math.floor(Math.random() * 900000) + 100000);
-          const title = item.title || item.subjectName || 'MovieBox Stream';
-          const mbMovie: Movie = {
-            _id: String(id),
-            id: String(id),
-            tmdbId: item.tmdbId || id,
-            title,
-            slug: `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${id}`,
-            description: item.description || item.subTitle || 'Stream in 1080p Full HD directly from MovieBox VIP servers on CineVault.',
-            posterUrl: item.cover?.url || item.coverUrl || 'https://image.tmdb.org/t/p/w780/bS4p0m5kL1w8kL5n0a2B4m8o0.jpg',
-            backdropUrl: item.cover?.url || item.coverUrl || 'https://image.tmdb.org/t/p/original/jX6b6W8X0r0L9Z4K2m7C5V3B1A.jpg',
-            trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' trailer')}`,
-            releaseYear: parseInt(item.releaseYear || item.year || '2024', 10) || 2024,
-            language: 'Hindi / Multi',
-            genres: ['MovieBox VIP', 'Featured'],
-            duration: item.duration || '2h 05m',
-            rating: typeof item.score === 'number' ? item.score : 8.5,
-            director: 'MovieBox Cinema',
-            cast: ['Verified Cast'],
-            type: item.category === 'tv' ? 'series' : 'movie',
-            featured: false,
-            trending: true,
-            videoUrl: DEFAULT_SAMPLE_VIDEO,
-            downloadUrl: DEFAULT_SAMPLE_VIDEO,
-            qualities: createDefaultQualities(DEFAULT_SAMPLE_VIDEO)
-          };
-          const key = mbMovie.tmdbId || mbMovie.id;
-          if (key && !resultMap.has(key)) {
-            resultMap.set(key, mbMovie);
-          }
-        });
+        items
+          .filter((item: any) => !isAdvertisementItem(item))
+          .forEach((item: any) => {
+            const id = item.subjectId || item.id || String(Math.floor(Math.random() * 900000) + 100000);
+            const title = item.title || item.subjectName || 'MovieBox Stream';
+            const mbMovie: Movie = {
+              _id: String(id),
+              id: String(id),
+              tmdbId: item.tmdbId || id,
+              title,
+              slug: `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${id}`,
+              description: item.description || item.subTitle || 'Stream in 1080p Full HD directly from MovieBox VIP servers on CineVault.',
+              posterUrl: item.cover?.url || item.coverUrl || 'https://image.tmdb.org/t/p/w780/bS4p0m5kL1w8kL5n0a2B4m8o0.jpg',
+              backdropUrl: item.cover?.url || item.coverUrl || 'https://image.tmdb.org/t/p/original/jX6b6W8X0r0L9Z4K2m7C5V3B1A.jpg',
+              trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' trailer')}`,
+              releaseYear: parseInt(item.releaseYear || item.year || '2024', 10) || 2024,
+              language: 'Hindi / Multi',
+              genres: ['MovieBox VIP', 'Featured'],
+              duration: item.duration || '2h 05m',
+              rating: typeof item.score === 'number' ? item.score : 8.5,
+              director: 'MovieBox Cinema',
+              cast: ['Verified Cast'],
+              type: item.category === 'tv' ? 'series' : 'movie',
+              featured: false,
+              trending: true,
+              videoUrl: DEFAULT_SAMPLE_VIDEO,
+              downloadUrl: DEFAULT_SAMPLE_VIDEO,
+              qualities: createDefaultQualities(DEFAULT_SAMPLE_VIDEO)
+            };
+            const key = mbMovie.tmdbId || mbMovie.id;
+            if (key && !resultMap.has(key)) {
+              resultMap.set(key, mbMovie);
+            }
+          });
       }
     } catch {}
 
-    return Array.from(resultMap.values());
+    return sanitizeMovieCatalog(Array.from(resultMap.values()));
   },
 
   fetchFromExternalUrlOrId: async (input: string): Promise<Movie> => {

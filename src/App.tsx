@@ -8,7 +8,6 @@ import { NetflixInfoModal } from './components/NetflixInfoModal';
 import { NetflixFooter } from './components/NetflixFooter';
 import { NetflixMobileNav } from './components/NetflixMobileNav';
 import { SettingsModal } from './components/SettingsModal';
-import { GoogleAdBanner } from './components/GoogleAdBanner';
 import { WatchPage } from './pages/WatchPage';
 import { syncCloudWatchlist, syncCloudHistory } from './services/supabaseClient';
 import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles, ArrowLeft, Star, Film } from 'lucide-react';
@@ -843,9 +842,6 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Google Ads Web Banner */}
-      <GoogleAdBanner className="my-6" />
 
       {/* Netflix Footer */}
       <NetflixFooter />
