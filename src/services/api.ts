@@ -351,6 +351,9 @@ export const api = {
 
     // Centralized ad sanitization
     list = sanitizeMovieCatalog(list);
+    if (!list || list.length === 0) {
+      list = [...FALLBACK_MOVIES];
+    }
     moviesCatalogCache = { data: list, timestamp: Date.now() };
 
     if (params?.type) list = list.filter(m => m.type === params.type);

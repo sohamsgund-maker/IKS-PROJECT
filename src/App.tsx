@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import type { Movie, MovieQuality, AuthUser } from './types/movie';
-import { api } from './services/api';
+import { api, FALLBACK_MOVIES } from './services/api';
 import { NetflixNavbar } from './components/NetflixNavbar';
 import { NetflixBillboard } from './components/NetflixBillboard';
 import { NetflixRow } from './components/NetflixRow';
@@ -19,7 +19,7 @@ const NetflixInfoModal = lazy(() => import('./components/NetflixInfoModal').then
 const SettingsModal = lazy(() => import('./components/SettingsModal').then(m => ({ default: m.SettingsModal })));
 
 export const App: React.FC = () => {
-  const [movies, setMovies] = useState<Movie[]>([]);
+  const [movies, setMovies] = useState<Movie[]>(() => FALLBACK_MOVIES);
   const [activeTab, setActiveTab] = useState<string>('home');
   const [searchQuery, setSearchQuery] = useState<string>('');
   

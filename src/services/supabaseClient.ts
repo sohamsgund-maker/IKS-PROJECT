@@ -12,10 +12,16 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  */
 export async function getCloudMovies(): Promise<Movie[] | null> {
   try {
-    const { data, error } = await supabase
+    const queryPromise = supabase
       .from('movies')
       .select('*')
       .order('created_at', { ascending: false });
+
+    const timeoutPromise = new Promise<{ data: null; error: any }>((resolve) =>
+      setTimeout(() => resolve({ data: null, error: new Error('Timeout') }), 2000)
+    );
+
+    const { data, error } = (await Promise.race([queryPromise, timeoutPromise])) as any;
 
     if (error) {
       console.warn('Supabase movies query (using local catalog fallback):', error.message);
