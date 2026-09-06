@@ -17,12 +17,12 @@ export interface StreamingServer {
 
 export const STREAMING_SERVERS: StreamingServer[] = [
   {
-    id: 'autoembed',
-    name: 'AutoEmbed 4K (Ultra Fast & Clean)',
-    badge: 'Primary 4K',
+    id: '2embed',
+    name: 'Server Epsilon (2Embed - Dual Audio)',
+    badge: 'Multi-Stream',
     hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Hindi Dub Auto-Detected',
-    description: 'Fast 4K universal CDN stream prioritizing Hindi audio without ads',
+    hindiBadge: '🇮🇳 Dual Audio / Multi-Stream',
+    description: 'High-speed Dual Audio multi-stream server with instant Hindi audio playback',
     priority: 1
   },
   {
@@ -35,49 +35,13 @@ export const STREAMING_SERVERS: StreamingServer[] = [
     priority: 2
   },
   {
-    id: 'vidlink',
-    name: 'VidLink Ultra (Multi-Audio)',
-    badge: 'Multi-Audio VIP',
-    hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Multi-Audio & Subtitles',
-    description: 'Bufferless VIP stream with integrated audio track switcher and subtitles',
-    priority: 3
-  },
-  {
-    id: 'videasy',
-    name: 'Videasy HD Stream',
-    badge: 'Clean Player',
-    hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Hindi Audio & Subtitles',
-    description: 'Direct multi-source stream with clean player and Hindi audio track support',
-    priority: 4
-  },
-  {
     id: 'direct',
     name: 'Direct HTML5 Player',
     badge: '100% Ad-Free',
     hasHindiAudio: true,
     hindiBadge: '🌐 Native HTML5',
     description: 'Pure HTML5 MP4 / HLS player with zero ads and bufferless playback',
-    priority: 5
-  },
-  {
-    id: 'smashystream',
-    name: 'SmashyStream Fast Mirror',
-    badge: 'Fast Mirror',
-    hasHindiAudio: false,
-    hindiBadge: '🌐 Original Audio',
-    description: 'Reliable cloud backup server for global movies and series',
-    priority: 6
-  },
-  {
-    id: 'vidking',
-    name: 'VidKing 4K Ultra',
-    badge: 'Ultra HD',
-    hasHindiAudio: false,
-    hindiBadge: '🌐 Original Audio',
-    description: 'High-bitrate server with auto-next episode and 4K capability',
-    priority: 7
+    priority: 3
   },
 ];
 
@@ -118,44 +82,20 @@ export const getEmbedUrl = (
 ): string => {
   const tmdbId = movie.tmdbId || movie.id || movie._id || '1213243';
   const isSeries = movie.type === 'series';
-  const color = 'E50914';
+  const rawId = (movie as any).imdb_id || movie.imdbId || tmdbId;
   const lang = audioLanguage || 'Hindi';
 
   switch (server) {
-    case 'autoembed':
-      return isSeries
-        ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}?lang=${encodeURIComponent(lang)}`
-        : `https://autoembed.co/movie/tmdb/${tmdbId}?lang=${encodeURIComponent(lang)}`;
-
-    case 'videasy':
-      return isSeries
-        ? `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=${color}&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true`
-        : `https://player.videasy.net/movie/${tmdbId}?color=${color}`;
-
-    case 'smashystream':
-      return isSeries
-        ? `https://player.smashystream.com/tv/${tmdbId}?s=${season}&e=${episode}`
-        : `https://player.smashystream.com/movie/${tmdbId}`;
-
-    case 'vidking':
-      return isSeries
-        ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=${color}&autoPlay=true&nextEpisode=true&episodeSelector=true`
-        : `https://www.vidking.net/embed/movie/${tmdbId}?color=${color}&autoPlay=true`;
-
     case 'peachify':
       return isSeries
         ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`
         : `https://peachify.top/embed/movie/${tmdbId}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`;
 
-    case 'vidlink':
-      return isSeries
-        ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true&autoplay=true&nextbutton=true`
-        : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true&autoplay=true&nextbutton=true`;
-
+    case '2embed':
     default:
       return isSeries
-        ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}`
-        : `https://autoembed.co/movie/tmdb/${tmdbId}`;
+        ? `https://www.2embed.cc/embedtv/${rawId}&s=${season}&e=${episode}`
+        : `https://www.2embed.cc/embed/${rawId}`;
   }
 };
 

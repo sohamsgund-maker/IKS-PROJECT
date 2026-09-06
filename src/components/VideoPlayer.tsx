@@ -33,13 +33,10 @@ const isDirectVideo = (url?: string): boolean => {
   if (!url) return false;
   const lower = url.toLowerCase().trim();
   if (
-    lower.includes('autoembed.co') ||
-    lower.includes('player.videasy.net') ||
-    lower.includes('videasy.net') ||
-    lower.includes('vidlink.pro') ||
-    lower.includes('smashystream.com') ||
-    lower.includes('vidking.net') ||
-    lower.includes('peachify.top')
+    lower.includes('2embed.cc') ||
+    lower.includes('peachify.top') ||
+    lower.includes('embed') ||
+    lower.includes('iframe')
   ) {
     return false;
   }
@@ -173,20 +170,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return allAudioTracks[0];
   });
 
-  // 4. SERVER SELECTION: Clean, ad-free streaming defaulting to AutoEmbed 4K or Peachify for Hindi
+  // 4. SERVER SELECTION: Defaults to Server Epsilon (2Embed) for instant Dual Audio & Hindi streaming
   const [internalServer, setInternalServer] = useState<StreamServerId>(() => {
     if (propActiveServer) return propActiveServer;
     if (isDirectVideo(movie.videoUrl)) return 'direct';
-
-    const isInitialHindi = selectedAudioTrack?.id === 'hi' ||
-      selectedAudioTrack?.name?.toLowerCase() === 'hindi' ||
-      initialAudioLanguage?.toLowerCase() === 'hindi';
-
-    if (isHindiAvail && isInitialHindi) {
-      return 'peachify';
-    }
-
-    return 'autoembed';
+    return '2embed';
   });
 
   const activeServer = propActiveServer || internalServer;
@@ -284,8 +272,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const resolvedEmbedUrl = useMemo(() => {
     const tmdbId = movie.tmdbId || movie.id || movie._id || '1213243';
     const isSeries = movie.type === 'series';
-    const color = 'E50914';
     const lang = selectedAudioTrack.name || 'Hindi';
+
+    const rawId = (movie as any).imdb_id || movie.imdbId || tmdbId;
 
     let base = '';
     switch (activeServer) {
@@ -294,35 +283,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`
           : `https://peachify.top/embed/movie/${tmdbId}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`;
         break;
-      case 'autoembed':
-        base = isSeries
-          ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}?lang=${encodeURIComponent(lang)}`
-          : `https://autoembed.co/movie/tmdb/${tmdbId}?lang=${encodeURIComponent(lang)}`;
-        break;
-      case 'vidlink':
-        base = isSeries
-          ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true&autoplay=true`
-          : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true&autoplay=true`;
-        break;
-      case 'videasy':
-        base = isSeries
-          ? `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=${color}&nextEpisode=true&autoplayNextEpisode=true`
-          : `https://player.videasy.net/movie/${tmdbId}?color=${color}`;
-        break;
-      case 'smashystream':
-        base = isSeries
-          ? `https://player.smashystream.com/tv/${tmdbId}?s=${season}&e=${episode}`
-          : `https://player.smashystream.com/movie/${tmdbId}`;
-        break;
-      case 'vidking':
-        base = isSeries
-          ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=${color}&autoPlay=true`
-          : `https://www.vidking.net/embed/movie/${tmdbId}?color=${color}&autoPlay=true`;
-        break;
+      case '2embed':
       default:
         base = fallbackEmbedUrl || (isSeries
-          ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}`
-          : `https://autoembed.co/movie/tmdb/${tmdbId}`);
+          ? `https://www.2embed.cc/embedtv/${rawId}&s=${season}&e=${episode}`
+          : `https://www.2embed.cc/embed/${rawId}`);
         break;
     }
 
@@ -366,8 +331,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       });
 
       hls.on(Hls.Events.ERROR, () => {
-        setActiveServer('autoembed');
-        showToast('⚡ Switched to AutoEmbed 4K Stream');
+        setActiveServer('2embed');
+        showToast('⚡ Switched to Server Epsilon (2Embed)');
       });
 
       hlsRef.current = hls;
@@ -616,9 +581,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const isHindi = track.id === 'hi' || track.name.toLowerCase() === 'hindi';
 
     if (isHindi && !activeServerInfo.hasHindi) {
-      handleSelectServer('peachify');
-    } else if (!isHindi && activeServer === 'peachify') {
-      handleSelectServer('autoembed');
+      handleSelectServer('2embed');
     }
 
     if (activeServer === 'direct' && hlsRef.current && hlsRef.current.audioTracks.length > 0) {
@@ -646,15 +609,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const handleQuickNextServer = () => {
-    const serversList: StreamServerId[] = [
-      'autoembed',
-      'peachify',
-      'vidlink',
-      'videasy',
-      'direct',
-      'smashystream',
-      'vidking',
-    ];
+    const serversList: StreamServerId[] = STREAM_SERVERS.map((s) => s.id);
     const currentIndex = serversList.indexOf(activeServer);
     const nextIndex = (currentIndex + 1) % serversList.length;
     handleSelectServer(serversList[nextIndex]);
@@ -853,8 +808,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             }}
             onPause={() => setIsPlaying(false)}
             onError={() => {
-              setActiveServer('autoembed');
-              showToast('⚡ Auto-switched to AutoEmbed 4K Stream');
+              setActiveServer('peachify');
+              showToast('⚡ Switched to Peachify VIP Stream');
             }}
             className="w-full h-full object-contain cursor-pointer"
           />
@@ -991,7 +946,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </>
       ) : (
         <>
-          {/* HIGH-SPEED VIP STREAMING EMBED (AutoEmbed 4K, VidLink, Videasy, Peachify) */}
+          {/* HIGH-SPEED VIP STREAMING EMBED (Server Epsilon 2Embed, Peachify VIP) */}
           <iframe
             key={`${activeServer}-${selectedAudioTrack.id}-${season}-${episode}-${resolvedEmbedUrl}`}
             src={resolvedEmbedUrl}

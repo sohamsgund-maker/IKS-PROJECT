@@ -21,7 +21,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
 }) => {
   const [currentSeason, setCurrentSeason] = useState<number>(1);
   const [currentEpisode, setCurrentEpisode] = useState<number>(1);
-  const [activeServer, setActiveServer] = useState<StreamServerId>(() => 'autoembed');
+  const [activeServer, setActiveServer] = useState<StreamServerId>(() => '2embed');
   const [streamInfo, setStreamInfo] = useState<StreamInfoResponse | null>(null);
   const [selectedAudioTrack, setSelectedAudioTrack] = useState<AudioTrack | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -72,7 +72,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
   const fallbackEmbedUrl = useMemo(() => {
     if (streamInfo?.fallbackEmbedUrl) return streamInfo.fallbackEmbedUrl;
     const defaultLang = isHindiAvail ? 'Hindi' : (movie.language || 'English');
-    return getEmbedUrl('peachify', movie, currentSeason, currentEpisode, selectedAudioTrack?.name || defaultLang);
+    return getEmbedUrl('2embed', movie, currentSeason, currentEpisode, selectedAudioTrack?.name || defaultLang);
   }, [streamInfo, movie, currentSeason, currentEpisode, selectedAudioTrack, isHindiAvail]);
 
   // Detected Dynamic Audio Tracks

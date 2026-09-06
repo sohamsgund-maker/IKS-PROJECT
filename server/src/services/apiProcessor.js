@@ -256,14 +256,14 @@ export class ApiProcessor {
       );
     }
 
-    // 5. Clean VIP Fallback Embed Providers (Ad-Free AutoEmbed / Peachify)
+    // 5. Clean VIP Fallback Embed Providers (Server Epsilon 2Embed / Peachify)
     const fallbackEmbedUrl = isHindiActuallyAvailable
       ? (isSeries
           ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}?dub=Hindi`
           : `https://peachify.top/embed/movie/${tmdbId}?dub=Hindi`)
       : (isSeries
-          ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}`
-          : `https://autoembed.co/movie/tmdb/${tmdbId}`);
+          ? `https://www.2embed.cc/embedtv/${tmdbId}&s=${season}&e=${episode}`
+          : `https://www.2embed.cc/embed/${tmdbId}`);
 
     return {
       tmdbId: Number(tmdbId),

@@ -53,12 +53,12 @@ export const formatMovieBoxItem = (item, customCategory = 'MovieBox VIP') => {
     trending: true,
     source: 'MovieBox',
     qualities: [
-      { quality: '1080p', videoUrl: `https://player.videasy.net/movie/${tmdbId}?cdn=moviebox`, downloadUrl: `https://vidlink.pro/movie/${tmdbId}`, fileSize: '2.5 GB' },
-      { quality: '720p', videoUrl: `https://player.videasy.net/movie/${tmdbId}?cdn=moviebox`, downloadUrl: `https://vidlink.pro/movie/${tmdbId}`, fileSize: '1.3 GB' },
+      { quality: '1080p', videoUrl: `https://www.2embed.cc/embed/${tmdbId}`, downloadUrl: `https://www.2embed.cc/embed/${tmdbId}`, fileSize: '2.5 GB' },
+      { quality: '720p', videoUrl: `https://peachify.top/embed/movie/${tmdbId}?dub=Hindi`, downloadUrl: `https://peachify.top/embed/movie/${tmdbId}?dub=Hindi`, fileSize: '1.3 GB' },
       { quality: '480p', videoUrl: `https://peachify.top/embed/movie/${tmdbId}?dub=Hindi`, downloadUrl: `https://peachify.top/embed/movie/${tmdbId}?dub=Hindi`, fileSize: '650 MB' },
     ],
-    videoUrl: `https://player.videasy.net/movie/${tmdbId}?cdn=moviebox`,
-    downloadUrl: `https://vidlink.pro/movie/${tmdbId}`
+    videoUrl: `https://www.2embed.cc/embed/${tmdbId}`,
+    downloadUrl: `https://www.2embed.cc/embed/${tmdbId}`
   };
 };
 

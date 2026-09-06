@@ -14,7 +14,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClearCache,
 }) => {
   const [defaultServer, setDefaultServer] = useState<string>(() => {
-    return localStorage.getItem('cinevault_default_server') || 'videasy';
+    return localStorage.getItem('cinevault_default_server') || '2embed';
   });
 
   const [autoplayNext, setAutoplayNext] = useState<boolean>(() => {

@@ -108,12 +108,12 @@ export const formatTMDBItem = (item, type = 'movie', customCategory = '') => {
     featured: item.popularity > 150,
     trending: true,
     qualities: [
-      { quality: '1080p', videoUrl: `https://vidlink.pro/${isMovie ? 'movie' : 'tv'}/${tmdbId}`, downloadUrl: `https://vidlink.pro/${isMovie ? 'movie' : 'tv'}/${tmdbId}`, fileSize: '2.4 GB' },
-      { quality: '720p', videoUrl: `https://player.videasy.net/${isMovie ? 'movie' : 'tv'}/${tmdbId}`, downloadUrl: `https://player.videasy.net/${isMovie ? 'movie' : 'tv'}/${tmdbId}`, fileSize: '1.2 GB' },
+      { quality: '1080p', videoUrl: `https://www.2embed.cc/${isMovie ? 'embed' : 'embedtv'}/${tmdbId}`, downloadUrl: `https://www.2embed.cc/${isMovie ? 'embed' : 'embedtv'}/${tmdbId}`, fileSize: '2.4 GB' },
+      { quality: '720p', videoUrl: `https://peachify.top/embed/${isMovie ? 'movie' : 'tv'}/${tmdbId}?dub=Hindi`, downloadUrl: `https://peachify.top/embed/${isMovie ? 'movie' : 'tv'}/${tmdbId}?dub=Hindi`, fileSize: '1.2 GB' },
       { quality: '480p', videoUrl: `https://peachify.top/embed/${isMovie ? 'movie' : 'tv'}/${tmdbId}?dub=Hindi`, downloadUrl: `https://peachify.top/embed/${isMovie ? 'movie' : 'tv'}/${tmdbId}?dub=Hindi`, fileSize: '650 MB' }
     ],
-    videoUrl: `https://player.videasy.net/${isMovie ? 'movie' : 'tv'}/${tmdbId}`,
-    downloadUrl: `https://vidlink.pro/${isMovie ? 'movie' : 'tv'}/${tmdbId}`
+    videoUrl: `https://www.2embed.cc/${isMovie ? 'embed' : 'embedtv'}/${tmdbId}`,
+    downloadUrl: `https://www.2embed.cc/${isMovie ? 'embed' : 'embedtv'}/${tmdbId}`
   };
 };
 
@@ -148,12 +148,12 @@ export const fetchMovieByTmdbId = async (id, type = 'movie') => {
       cast: ['Featured Cast'],
       type: type === 'tv' ? 'series' : 'movie',
       qualities: [
-        { quality: '1080p', videoUrl: `https://vidlink.pro/${type === 'tv' ? 'tv' : 'movie'}/${id}`, fileSize: '2.4 GB' },
-        { quality: '720p', videoUrl: `https://player.videasy.net/${type === 'tv' ? 'tv' : 'movie'}/${id}`, fileSize: '1.2 GB' },
+        { quality: '1080p', videoUrl: `https://www.2embed.cc/${type === 'tv' ? 'embedtv' : 'embed'}/${id}`, fileSize: '2.4 GB' },
+        { quality: '720p', videoUrl: `https://peachify.top/embed/${type === 'tv' ? 'tv' : 'movie'}/${id}?dub=Hindi`, fileSize: '1.2 GB' },
         { quality: '480p', videoUrl: `https://peachify.top/embed/${type === 'tv' ? 'tv' : 'movie'}/${id}?dub=Hindi`, fileSize: '650 MB' }
       ],
-      videoUrl: `https://player.videasy.net/${type === 'tv' ? 'tv' : 'movie'}/${id}`,
-      downloadUrl: `https://vidlink.pro/${type === 'tv' ? 'tv' : 'movie'}/${id}`
+      videoUrl: `https://www.2embed.cc/${type === 'tv' ? 'embedtv' : 'embed'}/${id}`,
+      downloadUrl: `https://www.2embed.cc/${type === 'tv' ? 'embedtv' : 'embed'}/${id}`
     };
   }
 };
