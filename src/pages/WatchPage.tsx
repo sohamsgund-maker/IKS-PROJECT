@@ -157,6 +157,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
         }}
         fallbackEmbedUrl={fallbackEmbedUrl}
         dynamicAudioTracks={audioTracksList}
+        onBack={onBack}
       />
 
       {/* 3. METADATA SECTION */}
