@@ -40,6 +40,10 @@ public class MainActivity extends BridgeActivity {
                 settings.setMediaPlaybackRequiresUserGesture(false);
                 settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
+                // VIP MOD: Suppress third-party embed ad popups, window openings, and redirects
+                settings.setSupportMultipleWindows(false);
+                settings.setJavaScriptCanOpenWindowsAutomatically(false);
+
                 // Disguise as standard Chrome Mobile to bypass Cloudflare & embed server WebView blocks
                 String currentUa = settings.getUserAgentString();
                 if (currentUa != null) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react';
-import { Play, Info, Volume2, VolumeX, Plus, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Info, Volume2, VolumeX, Plus, Check, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
 import type { Movie } from '../types/movie';
 
 interface NetflixBillboardProps {
@@ -124,11 +124,15 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = memo(({
         
         {/* Mobile Centered Content Layout (< 640px) */}
         <div className="sm:hidden flex flex-col items-center text-center space-y-2.5 pb-2">
-          {/* N Series / Film Badge */}
-          <div className="flex items-center gap-1">
+          {/* N Series / Film Badge with VIP MOD */}
+          <div className="flex items-center gap-1.5">
             <span className="font-display font-black text-[#E50914] text-base">N</span>
             <span className="text-[9px] font-bold text-zinc-300 tracking-[0.2em] uppercase">
               {activeMovie.type === 'series' ? 'SERIES' : 'FILM'}
+            </span>
+            <span className="px-1.5 py-0.2 rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-[9px] font-black uppercase flex items-center gap-0.5 shadow">
+              <Crown className="w-2.5 h-2.5 fill-current" />
+              <span>VIP 4K</span>
             </span>
           </div>
 
@@ -187,11 +191,15 @@ export const NetflixBillboard: React.FC<NetflixBillboardProps> = memo(({
 
         {/* Desktop / Tablet Left-Aligned Layout (>= 640px) */}
         <div className="hidden sm:flex flex-col max-w-2xl lg:max-w-3xl space-y-3 sm:space-y-4">
-          {/* N Series / Film Badge */}
+          {/* N Series / Film Badge with VIP MOD */}
           <div className="flex items-center gap-2">
             <span className="font-display font-black text-[#E50914] text-xl tracking-tighter">N</span>
             <span className="text-[11px] font-bold text-zinc-300 tracking-[0.25em] uppercase">
               {activeMovie.type === 'series' ? 'SERIES' : 'FILM'}
+            </span>
+            <span className="px-2 py-0.5 rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md">
+              <Crown className="w-3 h-3 fill-current" />
+              <span>VIP MOD 4K</span>
             </span>
           </div>
 

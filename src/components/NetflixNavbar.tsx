@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
 import {
   Search, Bell, X, Settings, ChevronDown,
-  Bookmark, ShieldCheck, Check
+  Bookmark, ShieldCheck, Check, Crown
 } from 'lucide-react';
 import type { AuthUser } from '../types/movie';
 
@@ -99,17 +99,21 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
         
         {/* Left Side: Netflix Logo + Category Links */}
         <div className="flex items-center gap-4 sm:gap-8 lg:gap-10">
-          {/* Brand Logo */}
+          {/* Brand Logo with VIP MOD Badge */}
           <button
             onClick={() => {
               setActiveTab('home');
               setSearchQuery('');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="flex items-center gap-1 cursor-pointer select-none group focus:outline-none"
+            className="flex items-center gap-2 cursor-pointer select-none group focus:outline-none"
           >
             <span className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tighter text-[#E50914] uppercase drop-shadow font-display">
               CINEVAULT
+            </span>
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-black font-black text-[10px] tracking-wider uppercase shadow-[0_0_12px_rgba(245,158,11,0.6)]">
+              <Crown className="w-3 h-3 fill-current" />
+              <span>VIP MOD</span>
             </span>
           </button>
 
@@ -138,9 +142,19 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
           </nav>
         </div>
 
-        {/* Right Side: Search, Notifications & User Profile Menu */}
-        <div className="flex items-center gap-2 sm:gap-4 text-white">
+        {/* Right Side: Search, Ad-Free Shield, Notifications & User Profile Menu */}
+        <div className="flex items-center gap-2 sm:gap-3.5 text-white">
           
+          {/* Ad-Free VIP Shield Indicator */}
+          <button
+            onClick={onOpenSettings}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border border-amber-500/40 text-amber-300 text-xs font-bold hover:border-amber-400 hover:shadow-[0_0_10px_rgba(245,158,11,0.3)] transition-all cursor-pointer"
+            title="VIP MOD Control Center (100% Ad-Free Active)"
+          >
+            <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            <span>100% Ad-Free MOD</span>
+          </button>
+
           {/* Expandable Search Box */}
           <div className="relative flex items-center">
             {isSearchOpen ? (
@@ -237,17 +251,32 @@ export const NetflixNavbar: React.FC<NetflixNavbarProps> = memo(({
             {isProfileMenuOpen && (
               <div className="absolute right-0 top-12 w-64 sm:w-72 bg-[#181818] border border-zinc-800 rounded-xl shadow-2xl p-3 z-50 space-y-3 animate-fade-in text-xs">
                 
-                {/* User Info Header */}
-                <div className="flex items-center gap-3 p-2 bg-zinc-900/80 rounded-lg border border-zinc-800">
-                  <div className="w-9 h-9 rounded bg-[#E50914] flex items-center justify-center text-white font-black text-sm shadow">
-                    {activeProfile.charAt(0).toUpperCase()}
+                {/* VIP User Header */}
+                <div className="flex items-center gap-3 p-2.5 bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-zinc-900 rounded-xl border border-amber-500/40">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-black font-black text-sm shadow">
+                    👑
                   </div>
                   <div className="min-w-0">
-                    <span className="font-bold text-white text-sm block truncate">{activeProfile}</span>
-                    <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
-                      <ShieldCheck className="w-3 h-3" />
-                      <span>VIP 4K Ultra • Active</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-white text-sm truncate">{activeProfile}</span>
+                      <span className="px-1 py-0.2 rounded bg-amber-400 text-black text-[9px] font-black uppercase">VIP MOD</span>
+                    </div>
+                    <span className="text-[10px] text-amber-300 font-semibold flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                      <span>Lifetime VIP • 100% Ad-Free</span>
                     </span>
+                  </div>
+                </div>
+
+                {/* VIP Perks Badge List */}
+                <div className="p-2 rounded-lg bg-black/40 border border-white/[0.06] space-y-1 text-[10px]">
+                  <div className="flex items-center justify-between text-zinc-300">
+                    <span className="text-zinc-400">🛡️ Ad-Blocker Shield</span>
+                    <span className="text-emerald-400 font-bold">ACTIVE (0 Ads)</span>
+                  </div>
+                  <div className="flex items-center justify-between text-zinc-300">
+                    <span className="text-zinc-400">⚡ 4K Ultra HD & Dual Audio</span>
+                    <span className="text-amber-400 font-bold">UNLOCKED</span>
                   </div>
                 </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
-  ArrowLeft, Film, ShieldCheck, Sparkles, Check, Server
+  ArrowLeft, Film, ShieldCheck, Sparkles, Check, Server, Crown
 } from 'lucide-react';
 import type { Movie, MovieQuality, AudioTrack, StreamInfoResponse } from '../types/movie';
 import { api, getEmbedUrl, isHindiContentAvailable } from '../services/api';
@@ -128,6 +128,12 @@ export const WatchPage: React.FC<WatchPageProps> = ({
         </button>
 
         <div className="flex items-center gap-2 text-xs font-semibold">
+          {/* VIP MOD 100% Ad-Free Badge */}
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-transparent border border-amber-500/40 text-amber-300 text-[11px] font-bold shadow-sm">
+            <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            <span>VIP MOD • 100% Ad-Free</span>
+          </span>
+
           <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-[11px]">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             <span>4K Ultra HD</span>
@@ -172,32 +178,40 @@ export const WatchPage: React.FC<WatchPageProps> = ({
         onBack={onBack}
       />
 
-      {/* QUICK SERVER SWITCHER PILLS (Instant 1-Tap Switching) */}
-      <div className="mt-3.5 flex items-center gap-2 overflow-x-auto pb-1 select-none scrollbar-none">
-        <span className="text-xs font-bold text-zinc-400 shrink-0 flex items-center gap-1.5 pr-1">
-          <Server className="w-3.5 h-3.5 text-amber-400" />
-          <span>Server:</span>
-        </span>
-        {STREAM_SERVERS.map((server) => {
-          const isSelected = activeServer === server.id;
-          return (
-            <button
-              key={server.id}
-              onClick={() => {
-                setActiveServer(server.id);
-                showToast(`⚡ Switched to ${server.name}`);
-              }}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
-                isSelected
-                  ? 'bg-[#E50914] border-[#E50914] text-white shadow-lg ring-2 ring-red-500/30'
-                  : 'bg-zinc-900/80 hover:bg-zinc-800 border-zinc-800 text-zinc-300'
-              }`}
-            >
-              <span>{server.badge || server.name}</span>
-              {isSelected && <Check className="w-3 h-3 text-white" />}
-            </button>
-          );
-        })}
+      {/* QUICK VIP SERVER SWITCHER PILLS (Instant 1-Tap Switching) */}
+      <div className="mt-3.5 space-y-1.5">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 select-none scrollbar-none">
+          <span className="text-xs font-bold text-zinc-400 shrink-0 flex items-center gap-1.5 pr-1">
+            <Server className="w-3.5 h-3.5 text-amber-400" />
+            <span>VIP Server:</span>
+          </span>
+          {STREAM_SERVERS.map((server) => {
+            const isSelected = activeServer === server.id;
+            return (
+              <button
+                key={server.id}
+                onClick={() => {
+                  setActiveServer(server.id);
+                  showToast(`⚡ Switched to ${server.name}`);
+                }}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-black border-amber-400 font-extrabold shadow-lg shadow-amber-500/20'
+                    : 'bg-zinc-900/80 hover:bg-zinc-800 border-zinc-800 text-zinc-300'
+                }`}
+              >
+                <span>{server.badge || server.name}</span>
+                {isSelected && <Check className="w-3 h-3 text-black" />}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* VIP Shield Active Notice */}
+        <div className="flex items-center gap-1.5 text-[11px] text-amber-400/90 font-medium px-0.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <span>VIP Shield Active • Popups blocked natively • Unthrottled 4K stream</span>
+        </div>
       </div>
 
       {/* 3. METADATA SECTION */}

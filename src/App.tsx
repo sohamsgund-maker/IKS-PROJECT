@@ -12,7 +12,7 @@ import { SearchResultsSkeleton, HeroBillboardSkeleton } from './components/Skele
 import { ContinueWatching } from './components/ContinueWatching';
 import type { WatchProgressItem } from './components/ContinueWatching';
 import { syncCloudWatchlist, syncCloudHistory } from './services/supabaseClient';
-import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles, ArrowLeft, Star, Film } from 'lucide-react';
+import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles, ArrowLeft, Star, Film, Crown, ShieldCheck } from 'lucide-react';
 
 const WatchPage = lazy(() => import('./pages/WatchPage').then(m => ({ default: m.WatchPage })));
 const NetflixInfoModal = lazy(() => import('./components/NetflixInfoModal').then(m => ({ default: m.NetflixInfoModal })));
@@ -790,6 +790,40 @@ export const App: React.FC = () => {
           )}
 
           <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
+            {/* VIP MOD Active Status Banner */}
+            <div className="px-4 sm:px-8 lg:px-12">
+              <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-zinc-900/60 border border-amber-500/40 backdrop-blur-md shadow-lg shadow-amber-500/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 text-black flex items-center justify-center font-black shadow">
+                    <Crown className="w-4 h-4 fill-current" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wide">
+                        CineVault VIP MOD Activated
+                      </span>
+                      <span className="px-1.5 py-0.2 rounded bg-amber-400 text-black text-[9px] font-black uppercase">
+                        Lifetime 4K
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-zinc-400 hidden sm:block">
+                      100% Ad-Free • Bufferless 4K Streaming • All VIP Servers Unlocked
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsSettingsOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/40 hover:bg-emerald-500/30 transition-all cursor-pointer"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Ad-Shield Active (0 Ads)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* 2. Top 10 in India Today (Numbered Rank Row) */}
             <NetflixRow
               title="Top 10 in India Today"
