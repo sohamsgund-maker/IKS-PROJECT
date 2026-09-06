@@ -17,67 +17,31 @@ export interface StreamingServer {
 
 export const STREAMING_SERVERS: StreamingServer[] = [
   {
-    id: '2embed',
-    name: 'Server Epsilon (2Embed - Dual Audio)',
-    badge: 'Multi-Stream',
+    id: 'autoembed',
+    name: 'AutoEmbed 4K (Ultra Fast & Clean)',
+    badge: 'Primary 4K',
     hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Dual Audio / Multi-Stream',
-    description: 'Dual Audio multi-stream server with instant Hindi audio playback',
+    hindiBadge: '🇮🇳 Hindi Dub Auto-Detected',
+    description: 'Fast 4K universal CDN stream prioritizing Hindi audio without ads',
     priority: 1
-  },
-  {
-    id: 'vidsrc',
-    name: 'Server Beta (VidSrc - Dual Audio / 1080p)',
-    badge: '1080p HD Dual Audio',
-    hasHindiAudio: true,
-    hindiBadge: '🇮🇳 1080p Dual Audio',
-    description: 'Direct 1080p stream with dual audio channels and subtitles',
-    priority: 2
-  },
-  {
-    id: 'superembed',
-    name: 'Server Alpha (SuperEmbed - Hindi / Multi-Audio)',
-    badge: '1080p / 4K Multi-Track',
-    hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Hindi Dub Multi-Track',
-    description: 'High-reliability embed server with native Hindi dubs and multi-track audio',
-    priority: 3
   },
   {
     id: 'peachify',
     name: 'Peachify VIP (Hindi Audio Dub)',
     badge: 'Hindi Dub VIP',
     hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Hindi Dual Audio Track',
-    description: 'Direct 1080p stream with native Hindi dual-audio dub support',
-    priority: 4
-  },
-  {
-    id: 'autoembed',
-    name: 'AutoEmbed 4K (Ultra Fast)',
-    badge: 'Primary 4K',
-    hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Hindi Dub Auto-Detected',
-    description: 'Fast 4K CDN with universal multi-stream auto-detection',
-    priority: 5
+    hindiBadge: '🇮🇳 Real Hindi Dual Audio',
+    description: 'Direct 1080p stream with native Hindi dual-audio track support',
+    priority: 2
   },
   {
     id: 'vidlink',
     name: 'VidLink Ultra (Multi-Audio)',
-    badge: 'Multi-Audio',
+    badge: 'Multi-Audio VIP',
     hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Real Hindi Audio Track',
-    description: 'Fast 1080p bufferless stream with native Hindi audio track switcher and subtitles',
-    priority: 6
-  },
-  {
-    id: 'embedsu',
-    name: 'Server Gamma (EmbedSu - Ultra HD)',
-    badge: '1080p Ultra',
-    hasHindiAudio: false,
-    hindiBadge: '🌐 Ultra HD',
-    description: 'Ultra HD high-bitrate multi-stream player',
-    priority: 7
+    hindiBadge: '🇮🇳 Multi-Audio & Subtitles',
+    description: 'Bufferless VIP stream with integrated audio track switcher and subtitles',
+    priority: 3
   },
   {
     id: 'videasy',
@@ -86,7 +50,16 @@ export const STREAMING_SERVERS: StreamingServer[] = [
     hasHindiAudio: true,
     hindiBadge: '🇮🇳 Hindi Audio & Subtitles',
     description: 'Direct multi-source stream with clean player and Hindi audio track support',
-    priority: 8
+    priority: 4
+  },
+  {
+    id: 'direct',
+    name: 'Direct HTML5 Player',
+    badge: '100% Ad-Free',
+    hasHindiAudio: true,
+    hindiBadge: '🌐 Native HTML5',
+    description: 'Pure HTML5 MP4 / HLS player with zero ads and bufferless playback',
+    priority: 5
   },
   {
     id: 'smashystream',
@@ -95,7 +68,7 @@ export const STREAMING_SERVERS: StreamingServer[] = [
     hasHindiAudio: false,
     hindiBadge: '🌐 Original Audio',
     description: 'Reliable cloud backup server for global movies and series',
-    priority: 9
+    priority: 6
   },
   {
     id: 'vidking',
@@ -104,16 +77,7 @@ export const STREAMING_SERVERS: StreamingServer[] = [
     hasHindiAudio: false,
     hindiBadge: '🌐 Original Audio',
     description: 'High-bitrate server with auto-next episode and 4K capability',
-    priority: 10
-  },
-  {
-    id: 'direct',
-    name: 'Direct HTML5 Player',
-    badge: '100% Up',
-    hasHindiAudio: false,
-    hindiBadge: '🌐 Direct Video',
-    description: 'Plays direct media stream with 100% bufferless uptime',
-    priority: 11
+    priority: 7
   },
 ];
 
@@ -187,32 +151,6 @@ export const getEmbedUrl = (
       return isSeries
         ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true&autoplay=true&nextbutton=true`
         : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true&autoplay=true&nextbutton=true`;
-
-    case '2embed': {
-      const id = (movie as any).imdb_id || movie.imdbId || tmdbId;
-      return isSeries
-        ? `https://www.2embed.cc/embedtv/${id}&s=${season}&e=${episode}`
-        : `https://www.2embed.cc/embed/${id}`;
-    }
-
-    case 'vidsrc': {
-      const id = (movie as any).imdb_id || movie.imdbId || tmdbId;
-      return isSeries
-        ? `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`
-        : `https://vidsrc.to/embed/movie/${id}`;
-    }
-
-    case 'superembed': {
-      return isSeries
-        ? `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${season}&e=${episode}`
-        : `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1`;
-    }
-
-    case 'embedsu': {
-      return isSeries
-        ? `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`
-        : `https://embed.su/embed/movie/${tmdbId}`;
-    }
 
     default:
       return isSeries

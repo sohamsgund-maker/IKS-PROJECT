@@ -38,10 +38,6 @@ const isDirectVideo = (url?: string): boolean => {
     lower.includes('videasy.net') ||
     lower.includes('vidlink.pro') ||
     lower.includes('smashystream.com') ||
-    lower.includes('2embed.cc') ||
-    lower.includes('multiembed.mov') ||
-    lower.includes('vidsrc.to') ||
-    lower.includes('embed.su') ||
     lower.includes('vidking.net') ||
     lower.includes('peachify.top')
   ) {
@@ -177,7 +173,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return allAudioTracks[0];
   });
 
-  // 4. SERVER SELECTION: Defaults to 2Embed (Server Epsilon) with Dual Audio for Hindi
+  // 4. SERVER SELECTION: Clean, ad-free streaming defaulting to AutoEmbed 4K or Peachify for Hindi
   const [internalServer, setInternalServer] = useState<StreamServerId>(() => {
     if (propActiveServer) return propActiveServer;
     if (isDirectVideo(movie.videoUrl)) return 'direct';
@@ -187,10 +183,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       initialAudioLanguage?.toLowerCase() === 'hindi';
 
     if (isHindiAvail && isInitialHindi) {
-      return '2embed';
+      return 'peachify';
     }
 
-    return '2embed';
+    return 'autoembed';
   });
 
   const activeServer = propActiveServer || internalServer;
@@ -286,7 +282,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // EMBED URL RESOLUTION WITH HINDI PRIORITY & TIMESTAMP RESUME
   // -------------------------------------------------------------
   const resolvedEmbedUrl = useMemo(() => {
-    const rawId = (movie as any).imdb_id || movie.imdbId || movie.tmdbId || movie.id || movie._id || '1213243';
     const tmdbId = movie.tmdbId || movie.id || movie._id || '1213243';
     const isSeries = movie.type === 'series';
     const color = 'E50914';
@@ -294,26 +289,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     let base = '';
     switch (activeServer) {
-      case '2embed':
-        base = isSeries
-          ? `https://www.2embed.cc/embedtv/${rawId}&s=${season}&e=${episode}`
-          : `https://www.2embed.cc/embed/${rawId}`;
-        break;
-      case 'vidsrc':
-        base = isSeries
-          ? `https://vidsrc.to/embed/tv/${rawId}/${season}/${episode}`
-          : `https://vidsrc.to/embed/movie/${rawId}`;
-        break;
-      case 'superembed':
-        base = isSeries
-          ? `https://multiembed.mov/?video_id=${rawId}&s=${season}&e=${episode}`
-          : `https://multiembed.mov/?video_id=${rawId}&tmdb=1`;
-        break;
-      case 'embedsu':
-        base = isSeries
-          ? `https://embed.su/embed/tv/${rawId}/${season}/${episode}`
-          : `https://embed.su/embed/movie/${rawId}`;
-        break;
       case 'peachify':
         base = isSeries
           ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`
@@ -346,8 +321,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         break;
       default:
         base = fallbackEmbedUrl || (isSeries
-          ? `https://www.2embed.cc/embedtv/${rawId}&s=${season}&e=${episode}`
-          : `https://www.2embed.cc/embed/${rawId}`);
+          ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}`
+          : `https://autoembed.co/movie/tmdb/${tmdbId}`);
         break;
     }
 
@@ -641,8 +616,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const isHindi = track.id === 'hi' || track.name.toLowerCase() === 'hindi';
 
     if (isHindi && !activeServerInfo.hasHindi) {
-      handleSelectServer('2embed');
-    } else if (!isHindi && (activeServer === 'peachify' || activeServer === '2embed')) {
+      handleSelectServer('peachify');
+    } else if (!isHindi && activeServer === 'peachify') {
       handleSelectServer('autoembed');
     }
 
@@ -672,14 +647,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const handleQuickNextServer = () => {
     const serversList: StreamServerId[] = [
-      '2embed',
-      'vidsrc',
-      'superembed',
-      'peachify',
       'autoembed',
+      'peachify',
       'vidlink',
-      'embedsu',
       'videasy',
+      'direct',
       'smashystream',
       'vidking',
     ];
@@ -1026,6 +998,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             title={`${streamTitle} Stream`}
             allowFullScreen
             allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
             onLoad={() => {
               setIsLoading(false);
               setIsBuffering(false);

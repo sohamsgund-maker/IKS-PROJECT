@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
-  ArrowLeft, Film, ShieldCheck, Sparkles, Check, Server
+  ArrowLeft, Film, ShieldCheck, Sparkles, Check
 } from 'lucide-react';
 import type { Movie, MovieQuality, AudioTrack, StreamInfoResponse } from '../types/movie';
 import { api, getEmbedUrl, isHindiContentAvailable } from '../services/api';
-import { VideoPlayer, STREAM_SERVERS, type StreamServerId } from '../components/VideoPlayer';
+import { VideoPlayer, type StreamServerId } from '../components/VideoPlayer';
 
 interface WatchPageProps {
   movie: Movie;
@@ -21,7 +21,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
 }) => {
   const [currentSeason, setCurrentSeason] = useState<number>(1);
   const [currentEpisode, setCurrentEpisode] = useState<number>(1);
-  const [activeServer, setActiveServer] = useState<StreamServerId>(() => '2embed');
+  const [activeServer, setActiveServer] = useState<StreamServerId>(() => 'autoembed');
   const [streamInfo, setStreamInfo] = useState<StreamInfoResponse | null>(null);
   const [selectedAudioTrack, setSelectedAudioTrack] = useState<AudioTrack | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -158,62 +158,6 @@ export const WatchPage: React.FC<WatchPageProps> = ({
         fallbackEmbedUrl={fallbackEmbedUrl}
         dynamicAudioTracks={audioTracksList}
       />
-
-      {/* 2.5. ADSTUDIO STREAMING SERVERS & DUAL AUDIO MIRRORS */}
-      <div className="mt-4 p-3.5 sm:p-4 rounded-xl bg-[#111111]/90 border border-zinc-800/80 shadow-xl backdrop-blur-md">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-2">
-            <Server className="w-4 h-4 text-[#E50914]" />
-            <span className="text-xs font-bold uppercase tracking-wider text-zinc-200">
-              Streaming Servers & Dual-Audio Mirrors
-            </span>
-            <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E50914]/15 border border-[#E50914]/30 text-red-400">
-              ADSTUDIO Multi-Stream
-            </span>
-          </div>
-          <span className="text-[11px] text-zinc-400">
-            Switch server if stream buffers or audio language is not synced
-          </span>
-        </div>
-
-        {/* Horizontal scrollable server pills matching ADSTUDIO */}
-        <div className="flex items-center gap-2.5 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-zinc-800">
-          {STREAM_SERVERS.map((srv) => {
-            const isSelected = activeServer === srv.id;
-            return (
-              <button
-                key={srv.id}
-                onClick={() => {
-                  setActiveServer(srv.id);
-                  showToast(`Connected: ${srv.name}`);
-                }}
-                className={`flex items-center gap-2.5 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer border shadow-sm active:scale-95 ${
-                  isSelected
-                    ? 'bg-[#E50914]/20 border-[#E50914] text-white ring-2 ring-[#E50914]/30 shadow-red-950/40'
-                    : 'bg-[#181818] hover:bg-[#222222] border-zinc-800 text-zinc-300 hover:text-white'
-                }`}
-                title={srv.description}
-              >
-                <span>{srv.name}</span>
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                    isSelected
-                      ? 'bg-[#E50914] text-white'
-                      : 'bg-zinc-800 text-zinc-300 border border-zinc-700/60'
-                  }`}
-                >
-                  {srv.badge}
-                </span>
-                {srv.hasHindi && (
-                  <span className="text-[11px]" title="Hindi Dual Audio Supported">
-                    🇮🇳
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* 3. METADATA SECTION */}
       <div className="mt-6 sm:mt-8 space-y-6">

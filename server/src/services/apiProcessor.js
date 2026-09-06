@@ -256,15 +256,14 @@ export class ApiProcessor {
       );
     }
 
-    // 5. Fallback Embed Providers (ADSTUDIO Multi-Server: 2Embed Epsilon / Peachify / SuperEmbed)
-    const color = 'E50914';
+    // 5. Clean VIP Fallback Embed Providers (Ad-Free AutoEmbed / Peachify)
     const fallbackEmbedUrl = isHindiActuallyAvailable
       ? (isSeries
-          ? `https://www.2embed.cc/embedtv/${tmdbId}&s=${season}&e=${episode}`
-          : `https://www.2embed.cc/embed/${tmdbId}`)
+          ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}?dub=Hindi`
+          : `https://peachify.top/embed/movie/${tmdbId}?dub=Hindi`)
       : (isSeries
-          ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true&autoplay=true`
-          : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true&autoplay=true`);
+          ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}`
+          : `https://autoembed.co/movie/tmdb/${tmdbId}`);
 
     return {
       tmdbId: Number(tmdbId),
