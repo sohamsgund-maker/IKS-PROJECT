@@ -256,12 +256,12 @@ export class ApiProcessor {
       );
     }
 
-    // 5. Fallback Embed Providers (High speed backup)
+    // 5. Fallback Embed Providers (ADSTUDIO Multi-Server: 2Embed Epsilon / Peachify / SuperEmbed)
     const color = 'E50914';
     const fallbackEmbedUrl = isHindiActuallyAvailable
       ? (isSeries
-          ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}?dub=Hindi`
-          : `https://peachify.top/embed/movie/${tmdbId}?dub=Hindi`)
+          ? `https://www.2embed.cc/embedtv/${tmdbId}&s=${season}&e=${episode}`
+          : `https://www.2embed.cc/embed/${tmdbId}`)
       : (isSeries
           ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=${color}&multiAudio=true&autoplay=true`
           : `https://vidlink.pro/movie/${tmdbId}?primaryColor=${color}&multiAudio=true&autoplay=true`);

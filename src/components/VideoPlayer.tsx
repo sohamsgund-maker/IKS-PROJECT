@@ -7,6 +7,13 @@ import {
 } from 'lucide-react';
 import type { Movie, MovieQuality, AudioTrack, Subtitle } from '../types/movie';
 import { isHindiContentAvailable } from '../services/api';
+import {
+  STREAM_SERVERS,
+  type StreamServerId,
+  type StreamServerOption,
+} from '../constants/streamingServers';
+
+export { STREAM_SERVERS, type StreamServerId, type StreamServerOption };
 
 interface VideoPlayerProps {
   movie: Movie;
@@ -18,69 +25,9 @@ interface VideoPlayerProps {
   onAudioChange?: (audio: AudioTrack) => void;
   fallbackEmbedUrl?: string;
   dynamicAudioTracks?: AudioTrack[];
+  activeServer?: StreamServerId;
+  onServerChange?: (server: StreamServerId) => void;
 }
-
-export type StreamServerId = 'peachify' | 'autoembed' | 'vidlink' | 'videasy' | 'smashystream' | 'vidking' | 'direct';
-
-interface StreamServerOption {
-  id: StreamServerId;
-  name: string;
-  badge: string;
-  description: string;
-  hasHindi: boolean;
-}
-
-const STREAM_SERVERS: StreamServerOption[] = [
-  {
-    id: 'peachify',
-    name: 'Peachify VIP (Hindi Audio Dub)',
-    badge: 'Hindi Dub VIP',
-    description: 'Direct 1080p stream with native Hindi dual-audio dub support',
-    hasHindi: true,
-  },
-  {
-    id: 'autoembed',
-    name: 'AutoEmbed 4K (Ultra Fast)',
-    badge: 'Primary 4K',
-    description: 'Fast 4K CDN with universal multi-stream auto-detection',
-    hasHindi: true,
-  },
-  {
-    id: 'vidlink',
-    name: 'VidLink Ultra (Multi-Audio)',
-    badge: 'Multi-Audio',
-    description: 'Bufferless stream with integrated audio track switcher and subtitles',
-    hasHindi: true,
-  },
-  {
-    id: 'videasy',
-    name: 'Videasy HD Stream',
-    badge: 'Clean Player',
-    description: 'Direct multi-source stream with clean player and subtitle support',
-    hasHindi: true,
-  },
-  {
-    id: 'smashystream',
-    name: 'SmashyStream Fast Mirror',
-    badge: 'Fast Mirror',
-    description: 'High-speed cloud mirror for global cinema and TV series',
-    hasHindi: false,
-  },
-  {
-    id: 'vidking',
-    name: 'VidKing Ultra HD',
-    badge: 'Ultra HD',
-    description: 'High-bitrate server with auto-next episode and 4K support',
-    hasHindi: false,
-  },
-  {
-    id: 'direct',
-    name: 'Direct Media Player (HTML5)',
-    badge: 'Direct Video',
-    description: 'Direct HTML5 MP4 / HLS player with custom scrubbing controls',
-    hasHindi: true,
-  },
-];
 
 const isDirectVideo = (url?: string): boolean => {
   if (!url) return false;
@@ -92,6 +39,9 @@ const isDirectVideo = (url?: string): boolean => {
     lower.includes('vidlink.pro') ||
     lower.includes('smashystream.com') ||
     lower.includes('2embed.cc') ||
+    lower.includes('multiembed.mov') ||
+    lower.includes('vidsrc.to') ||
+    lower.includes('embed.su') ||
     lower.includes('vidking.net') ||
     lower.includes('peachify.top')
   ) {
@@ -119,6 +69,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onAudioChange,
   fallbackEmbedUrl,
   dynamicAudioTracks = [],
+  activeServer: propActiveServer,
+  onServerChange,
 }) => {
   const streamTitle = movie.type === 'series'
     ? `${movie.title} - S${season} E${episode}`
@@ -150,32 +102,39 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const [hoverPosPercent, setHoverPosPercent] = useState<number>(0);
 
-  // 1. DYNAMICALLY DETECT IF HINDI IS ACTUALLY AVAILABLE FOR THIS TITLE
+  // Accurate detection of Hindi content availability
   const isHindiAvail = useMemo(() => {
-    return isHindiContentAvailable(movie, dynamicAudioTracks);
-  }, [movie, dynamicAudioTracks]);
+    return isHindiContentAvailable(movie);
+  }, [movie]);
 
-  // 2. DYNAMIC AUDIO TRACKS DISCOVERY
-  const allAudioTracks: AudioTrack[] = useMemo(() => {
+  // 1. DYNAMIC MULTI-AUDIO LANGUAGES DISCOVERY
+  const allAudioTracks = useMemo<AudioTrack[]>(() => {
     const map = new Map<string, AudioTrack>();
-    dynamicAudioTracks.forEach((t) => map.set(t.id, t));
 
-    if (movie.audioTracks) {
-      movie.audioTracks.forEach((t) => map.set(t.id, t));
+    if (dynamicAudioTracks && dynamicAudioTracks.length > 0) {
+      dynamicAudioTracks.forEach((t) => {
+        if (!map.has(t.id)) map.set(t.id, t);
+      });
+    }
+
+    if (movie.audioTracks && movie.audioTracks.length > 0) {
+      movie.audioTracks.forEach((t) => {
+        if (!map.has(t.id)) map.set(t.id, t);
+      });
     }
 
     if (map.size === 0) {
       const origLang = (movie.language || movie.originalLanguage || 'English').toLowerCase();
       if (isHindiAvail) {
-        map.set('hi', { id: 'hi', name: 'Hindi', language: 'Hindi', nativeName: 'हिन्दी (Dubbed/Original)', flag: '🇮🇳', isDefault: true });
+        map.set('hi', { id: 'hi', name: 'Hindi', language: 'Hindi', nativeName: 'हिन्दी (Dual Audio / Default)', flag: '🇮🇳', isDefault: true });
         map.set('en', { id: 'en', name: 'English', language: 'English', nativeName: 'English (Original)', flag: '🌐', isDefault: false });
         if (origLang.includes('te') || origLang.includes('telugu')) {
-          map.set('te', { id: 'te', name: 'Telugu', language: 'Telugu', nativeName: 'తెలుగు (Original)', flag: '🏹', isDefault: false });
+          map.set('te', { id: 'te', name: 'Telugu', language: 'Telugu', nativeName: 'తెలుగు', flag: '🏹', isDefault: false });
         } else if (origLang.includes('ta') || origLang.includes('tamil')) {
-          map.set('ta', { id: 'ta', name: 'Tamil', language: 'Tamil', nativeName: 'தமிழ் (Original)', flag: '🌴', isDefault: false });
+          map.set('ta', { id: 'ta', name: 'Tamil', language: 'Tamil', nativeName: 'தமிழ்', flag: '🌴', isDefault: false });
         }
       } else {
-        if (origLang.includes('ja') || origLang.includes('japan')) {
+        if (origLang.includes('ja') || origLang.includes('japanese')) {
           map.set('ja', { id: 'ja', name: 'Japanese', language: 'Japanese', nativeName: '日本語 (Original)', flag: '🇯🇵', isDefault: true });
           map.set('en', { id: 'en', name: 'English', language: 'English', nativeName: 'English Dub', flag: '🌐', isDefault: false });
         } else if (origLang.includes('ko') || origLang.includes('korean')) {
@@ -218,24 +177,28 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return allAudioTracks[0];
   });
 
-  // 4. SERVER SELECTION: Defaults to Peachify for verified Hindi Dub, AutoEmbed for Bollywood or Original
-  const [activeServer, setActiveServer] = useState<StreamServerId>(() => {
+  // 4. SERVER SELECTION: Defaults to 2Embed (Server Epsilon) with Dual Audio for Hindi
+  const [internalServer, setInternalServer] = useState<StreamServerId>(() => {
+    if (propActiveServer) return propActiveServer;
     if (isDirectVideo(movie.videoUrl)) return 'direct';
 
     const isInitialHindi = selectedAudioTrack?.id === 'hi' ||
       selectedAudioTrack?.name?.toLowerCase() === 'hindi' ||
       initialAudioLanguage?.toLowerCase() === 'hindi';
 
-    const isNativeBollywood = (movie.language || '').toLowerCase().includes('hi') ||
-      (movie.originalLanguage || '').toLowerCase().includes('hi') ||
-      (movie.genres || []).some((g) => /bollywood/i.test(g));
-
     if (isHindiAvail && isInitialHindi) {
-      return isNativeBollywood ? 'autoembed' : 'peachify';
+      return '2embed';
     }
 
-    return 'autoembed';
+    return '2embed';
   });
+
+  const activeServer = propActiveServer || internalServer;
+
+  const setActiveServer = useCallback((s: StreamServerId) => {
+    setInternalServer(s);
+    if (onServerChange) onServerChange(s);
+  }, [onServerChange]);
 
   // Audio & Volume state
   const [volume, setVolume] = useState<number>(() => {
@@ -323,6 +286,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // EMBED URL RESOLUTION WITH HINDI PRIORITY & TIMESTAMP RESUME
   // -------------------------------------------------------------
   const resolvedEmbedUrl = useMemo(() => {
+    const rawId = (movie as any).imdb_id || movie.imdbId || movie.tmdbId || movie.id || movie._id || '1213243';
     const tmdbId = movie.tmdbId || movie.id || movie._id || '1213243';
     const isSeries = movie.type === 'series';
     const color = 'E50914';
@@ -330,6 +294,26 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     let base = '';
     switch (activeServer) {
+      case '2embed':
+        base = isSeries
+          ? `https://www.2embed.cc/embedtv/${rawId}&s=${season}&e=${episode}`
+          : `https://www.2embed.cc/embed/${rawId}`;
+        break;
+      case 'vidsrc':
+        base = isSeries
+          ? `https://vidsrc.to/embed/tv/${rawId}/${season}/${episode}`
+          : `https://vidsrc.to/embed/movie/${rawId}`;
+        break;
+      case 'superembed':
+        base = isSeries
+          ? `https://multiembed.mov/?video_id=${rawId}&s=${season}&e=${episode}`
+          : `https://multiembed.mov/?video_id=${rawId}&tmdb=1`;
+        break;
+      case 'embedsu':
+        base = isSeries
+          ? `https://embed.su/embed/tv/${rawId}/${season}/${episode}`
+          : `https://embed.su/embed/movie/${rawId}`;
+        break;
       case 'peachify':
         base = isSeries
           ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`
@@ -362,8 +346,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         break;
       default:
         base = fallbackEmbedUrl || (isSeries
-          ? `https://autoembed.co/tv/tmdb/${tmdbId}-${season}-${episode}?lang=${encodeURIComponent(lang)}`
-          : `https://autoembed.co/movie/tmdb/${tmdbId}?lang=${encodeURIComponent(lang)}`);
+          ? `https://www.2embed.cc/embedtv/${rawId}&s=${season}&e=${episode}`
+          : `https://www.2embed.cc/embed/${rawId}`);
         break;
     }
 
@@ -417,7 +401,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       video.load();
       if (savedPlaybackPosition.current > 0) video.currentTime = savedPlaybackPosition.current;
     }
-  }, [activeServer, directVideoUrl, showToast]);
+  }, [activeServer, directVideoUrl, showToast, setActiveServer]);
 
   useEffect(() => {
     if (activeServer === 'direct') {
@@ -655,14 +639,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
 
     const isHindi = track.id === 'hi' || track.name.toLowerCase() === 'hindi';
-    const isNativeBollywood = (movie.language || '').toLowerCase().includes('hi') ||
-      (movie.originalLanguage || '').toLowerCase().includes('hi') ||
-      (movie.genres || []).some((g) => /bollywood/i.test(g));
 
-    if (isHindi && !isNativeBollywood) {
-      setActiveServer('peachify');
-    } else if (!isHindi && activeServer === 'peachify') {
-      setActiveServer('autoembed');
+    if (isHindi && !activeServerInfo.hasHindi) {
+      handleSelectServer('2embed');
+    } else if (!isHindi && (activeServer === 'peachify' || activeServer === '2embed')) {
+      handleSelectServer('autoembed');
     }
 
     if (activeServer === 'direct' && hlsRef.current && hlsRef.current.audioTracks.length > 0) {
@@ -690,7 +671,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const handleQuickNextServer = () => {
-    const serversList: StreamServerId[] = ['peachify', 'autoembed', 'vidlink', 'videasy', 'smashystream', 'vidking'];
+    const serversList: StreamServerId[] = [
+      '2embed',
+      'vidsrc',
+      'superembed',
+      'peachify',
+      'autoembed',
+      'vidlink',
+      'embedsu',
+      'videasy',
+      'smashystream',
+      'vidking',
+    ];
     const currentIndex = serversList.indexOf(activeServer);
     const nextIndex = (currentIndex + 1) % serversList.length;
     handleSelectServer(serversList[nextIndex]);
