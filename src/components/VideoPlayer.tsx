@@ -998,7 +998,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             title={`${streamTitle} Stream`}
             allowFullScreen
             allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
             onLoad={() => {
               setIsLoading(false);
               setIsBuffering(false);

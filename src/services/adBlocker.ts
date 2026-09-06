@@ -3,7 +3,7 @@
  * Blocks popup ads, pop-unders, click-hijacking, tracking beacons, and unauthorized redirects.
  */
 
-const KNOWN_AD_PATTERNS = [
+const KNOWN_AD_DOMAINS = [
   'popads',
   'adcash',
   'onclickads',
@@ -29,65 +29,71 @@ const KNOWN_AD_PATTERNS = [
   'popcash',
   'adflex',
   'adx',
-  'banner',
-  'trackings',
-  'adsystem',
   'syndication',
+  'histats',
+  'clicksor',
 ];
 
 export const initAdShield = (): void => {
   if (typeof window === 'undefined') return;
 
   // 1. INTERCEPT & NEUTRALIZE window.open (Popups & Pop-unders)
-  const originalOpen = window.open;
-  window.open = function (url?: string | URL, target?: string, features?: string): WindowProxy | null {
-    const urlString = String(url || '').toLowerCase();
+  try {
+    const originalOpen = window.open;
+    window.open = function (url?: string | URL, target?: string, features?: string): WindowProxy | null {
+      const urlString = String(url || '').toLowerCase();
 
-    // Check if the target is an ad pattern or external popup attempt
-    const isAdUrl = KNOWN_AD_PATTERNS.some((pattern) => urlString.includes(pattern));
-    
-    // In our single page application, legitimate user flows do not use blank window popups for streaming
-    if (isAdUrl || (!urlString.includes(window.location.hostname) && urlString.startsWith('http'))) {
-      console.warn('[AdShield] Blocked popup attempt to:', urlString);
-      // Return a dummy window object so calling script doesn't throw a fatal exception
-      return {
-        closed: true,
-        focus: () => {},
-        blur: () => {},
-        close: () => {},
-        location: { href: '' },
-      } as unknown as WindowProxy;
-    }
+      // Check if URL is an ad domain or an external popup attempt
+      const isAdUrl = KNOWN_AD_DOMAINS.some((pattern) => urlString.includes(pattern));
+      const isExternalPopup = Boolean(
+        urlString.startsWith('http') && !urlString.includes(window.location.hostname)
+      );
 
-    return originalOpen.call(window, url, target, features);
-  };
+      // In CineVault, legitimate user actions do not spawn external popup windows
+      if (isAdUrl || isExternalPopup) {
+        console.warn('[AdShield] Blocked popup window to:', urlString);
+        return {
+          closed: true,
+          focus: () => {},
+          blur: () => {},
+          close: () => {},
+          location: { href: '' },
+        } as unknown as WindowProxy;
+      }
 
-  // 2. DEFEND AGAINST SCRIPT / IFRAME INJECTION OF ADS
-  const originalCreateElement = document.createElement.bind(document);
-  document.createElement = function <K extends keyof HTMLElementTagNameMap>(
-    tagName: K,
-    options?: ElementCreationOptions
-  ): HTMLElementTagNameMap[K] {
-    const el = originalCreateElement(tagName, options);
+      return originalOpen.call(window, url, target, features);
+    };
+  } catch {
+    // Non-fatal if browser restricts window.open override
+  }
 
-    if (tagName.toLowerCase() === 'script' || tagName.toLowerCase() === 'iframe') {
-      const originalSetAttribute = el.setAttribute.bind(el);
-      el.setAttribute = function (qualifiedName: string, value: string) {
-        if (qualifiedName.toLowerCase() === 'src') {
-          const valLower = String(value).toLowerCase();
-          if (KNOWN_AD_PATTERNS.some((p) => valLower.includes(p))) {
-            console.warn('[AdShield] Blocked ad script/iframe element:', valLower);
-            return;
+  // 2. INTERCEPT CLICK-JACKING & TRANSPARENT AD OVERLAYS (Capturing Phase)
+  try {
+    window.addEventListener(
+      'click',
+      (event: MouseEvent) => {
+        const target = event.target as HTMLElement | null;
+        if (!target) return;
+
+        // Check if an anchor tag with target="_blank" leads to an ad domain
+        const anchor = target.closest('a') as HTMLAnchorElement | null;
+        if (anchor && anchor.href) {
+          const hrefLower = anchor.href.toLowerCase();
+          const isAd = KNOWN_AD_DOMAINS.some((domain) => hrefLower.includes(domain));
+          if (isAd) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.warn('[AdShield] Blocked ad link click:', hrefLower);
           }
         }
-        return originalSetAttribute(qualifiedName, value);
-      };
-    }
+      },
+      true // Capturing phase to intercept before bubbling
+    );
+  } catch {
+    // Non-fatal
+  }
 
-    return el;
-  };
-
-  // 3. MUTATION OBSERVER TO PURGE AD ARTIFACTS
+  // 3. MUTATION OBSERVER TO REMOVE INJECTED AD ARTIFACTS
   const purgeAdElements = () => {
     try {
       const selectors = [
@@ -119,8 +125,9 @@ export const initAdShield = (): void => {
       purgeAdElements();
     });
 
-    if (document.body) {
-      observer.observe(document.body, { childList: true, subtree: true });
+    const targetNode = document.body || document.documentElement;
+    if (targetNode) {
+      observer.observe(targetNode, { childList: true, subtree: true });
     } else {
       document.addEventListener('DOMContentLoaded', () => {
         if (document.body) {
@@ -130,16 +137,22 @@ export const initAdShield = (): void => {
     }
   }
 
-  // 4. PREVENT BEFOREUNLOAD HIJACKING
+  // 4. PREVENT BEFOREUNLOAD HIJACKING & UNWANTED REDIRECTS
   try {
-    Object.defineProperty(window, 'onbeforeunload', {
-      configurable: false,
-      set: () => {
-        // Prevent rogue scripts from locking or displaying redirect modals
-      },
-      get: () => null,
+    let lastUserInteraction = Date.now();
+    window.addEventListener('pointerdown', () => {
+      lastUserInteraction = Date.now();
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+      // If unload is triggered automatically without user interaction within 200ms
+      const timeSinceInteraction = Date.now() - lastUserInteraction;
+      if (timeSinceInteraction > 3000) {
+        // Prevent background redirects
+        e.preventDefault();
+      }
     });
   } catch {
-    // Non-fatal if browser restricts re-definition
+    // Non-fatal
   }
 };
