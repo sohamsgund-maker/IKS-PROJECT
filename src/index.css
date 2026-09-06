@@ -2,6 +2,22 @@
 
 @layer base {
   :root {
+    --bg-base: #101014;
+    --bg-surface: #18181e;
+    --bg-surface-hover: #22222a;
+    --bg-card: #1c1c24;
+    --text-primary: #f5f5f7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #E50914;
+    --accent-hover: #b80710;
+    --accent-glow: rgba(229, 9, 20, 0.35);
+    --accent-emerald: #46d369;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.18);
+    --overlay: rgba(0, 0, 0, 0.75);
+
+    /* Netflix palette aliases */
     --netflix-red: #E50914;
     --netflix-red-hover: #B81D24;
     --netflix-black: #141414;
@@ -15,8 +31,8 @@
   }
 
   body {
-    background-color: #141414;
-    color: #ffffff;
+    background-color: #101014;
+    color: #f5f5f7;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -26,20 +42,25 @@
   h1, h2, h3, h4, .font-display {
     font-family: 'Inter', 'Bebas Neue', 'Outfit', sans-serif;
   }
+
+  :focus-visible {
+    outline: 2px solid #E50914;
+    outline-offset: 2px;
+  }
 }
 
 /* High Performance Card Transformations */
 .netflix-card-hover {
   transform: translateZ(0);
   backface-visibility: hidden;
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease, border-color 200ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .netflix-card-hover:hover {
-    transform: scale(1.04);
+    transform: scale(1.04) translateY(-2px);
     z-index: 30;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.9), 0 0 1px rgba(255, 255, 255, 0.15);
   }
 }
 
@@ -47,18 +68,18 @@
   transform: translateZ(0);
 }
 
-/* Custom Minimal Netflix Scrollbar */
+/* Custom Minimal Cinematic Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #141414;
+  background: #101014;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333333;
+  background: #2a2a32;
   border-radius: 4px;
 }
 
@@ -74,19 +95,34 @@
   scrollbar-width: none;
 }
 
+/* Animation Keyframes */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulseRipple {
+  0% { transform: scale(0.85); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.85; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.18s ease-out forwards;
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-ripple {
+  animation: pulseRipple 0.3s ease-out forwards;
 }
 
 /* Text outline for Netflix Top 10 giant numbers */
 .netflix-rank-number {
-  -webkit-text-stroke: 3px #444444;
-  color: #141414;
+  -webkit-text-stroke: 3px #3f3f46;
+  color: #101014;
   font-weight: 900;
   font-family: 'Impact', 'Bebas Neue', sans-serif;
 }
@@ -98,4 +134,29 @@
 
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile Landscape Video Player Styling */
+@media (orientation: landscape) and (max-height: 500px) {
+  .player-landscape-container {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .netflix-card-hover:hover {
+    transform: none !important;
+  }
 }

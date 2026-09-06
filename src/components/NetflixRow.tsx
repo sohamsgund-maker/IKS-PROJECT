@@ -1,6 +1,7 @@
 import React, { useRef, useState, memo } from 'react';
 import { ChevronLeft, ChevronRight, Play, Plus, Check, Info, Star, ChevronRight as ChevronIcon } from 'lucide-react';
 import type { Movie } from '../types/movie';
+import { CinematicImage } from './CinematicImage';
 
 interface NetflixRowProps {
   title: string;
@@ -111,12 +112,13 @@ export const NetflixRow: React.FC<NetflixRowProps> = memo(({
 
                   {/* Card Poster Banner */}
                   <div className="w-28 sm:w-36 md:w-44 aspect-[2/3] rounded overflow-hidden bg-[#202020] relative shadow-md netflix-card-hover z-20">
-                    <img
+                    <CinematicImage
                       src={movie.posterUrl || movie.backdropUrl}
+                      fallbackSrc={movie.backdropUrl}
                       alt={movie.title}
+                      aspectRatioClass="aspect-[2/3]"
+                      titleFallback={movie.title}
                       className="w-full h-full object-cover img-smooth"
-                      loading="lazy"
-                      decoding="async"
                     />
 
                     {/* Top Quality Badge */}
@@ -173,12 +175,13 @@ export const NetflixRow: React.FC<NetflixRowProps> = memo(({
               >
                 {/* Image (Backdrop preferred or Poster) */}
                 <div className="aspect-video w-full overflow-hidden bg-zinc-900 relative">
-                  <img
+                  <CinematicImage
                     src={movie.backdropUrl || movie.posterUrl}
+                    fallbackSrc={movie.posterUrl}
                     alt={movie.title}
+                    aspectRatioClass="aspect-video"
+                    titleFallback={movie.title}
                     className="w-full h-full object-cover img-smooth"
-                    loading="lazy"
-                    decoding="async"
                   />
                   
                   {/* Top Badges (Quality & Language) */}

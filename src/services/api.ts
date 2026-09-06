@@ -343,6 +343,13 @@ export const isHindiContentAvailable = (movie: Movie, dynamicTracks?: AudioTrack
   return globalHindiDubbedFranchises.some((k) => titleLower.includes(k));
 };
 
+// In-memory Client-Side Caches for Rapid Response Times
+const searchCache = new Map<string, { data: Movie[]; timestamp: number }>();
+const searchInFlight = new Map<string, Promise<Movie[]>>();
+const streamInfoCache = new Map<string, { data: StreamInfoResponse; timestamp: number }>();
+let moviesCatalogCache: { data: Movie[]; timestamp: number } | null = null;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 export const api = {
   // Automatic Scraping & Syncing
   syncAllScraper: async (): Promise<{ count: number; data: Movie[] }> => {
@@ -355,17 +362,26 @@ export const api = {
       const res = await movieboxService.syncScraper();
       if (res.success && res.data && res.data.length > 0) {
         const cleanData = sanitizeMovieCatalog(res.data);
+        moviesCatalogCache = null; // Invalidate catalog cache
         return { count: cleanData.length, data: cleanData };
       }
     } catch {}
     return { count: 0, data: [] };
   },
+
   getStreamInfo: async (
     movieId: string | number,
     season: number = 1,
     episode: number = 1,
-    movie?: Movie
+    movie?: Movie,
+    signal?: AbortSignal
   ): Promise<StreamInfoResponse | null> => {
+    const cacheKey = `${movieId}-s${season}-e${episode}`;
+    const cached = streamInfoCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      return cached.data;
+    }
+
     try {
       const q = new URLSearchParams({
         season: String(season),
@@ -374,13 +390,21 @@ export const api = {
         title: movie?.title || '',
         language: movie?.language || ''
       });
+
+      const fetchSignal = signal
+        ? AbortSignal.any([signal, AbortSignal.timeout(4000)])
+        : AbortSignal.timeout(4000);
+
       const res = await fetch(`/api/v1/movies/${movieId}/streams?${q.toString()}`, {
-        signal: AbortSignal.timeout(4000)
+        signal: fetchSignal
       });
+
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
-          return json.data as StreamInfoResponse;
+          const data = json.data as StreamInfoResponse;
+          streamInfoCache.set(cacheKey, { data, timestamp: Date.now() });
+          return data;
         }
       }
     } catch {}
@@ -388,6 +412,13 @@ export const api = {
   },
 
   getMovies: async (params?: { type?: string; genre?: string; sort?: string; language?: string; year?: string }): Promise<Movie[]> => {
+    if (moviesCatalogCache && Date.now() - moviesCatalogCache.timestamp < CACHE_TTL_MS) {
+      let list = [...moviesCatalogCache.data];
+      if (params?.type) list = list.filter(m => m.type === params.type);
+      if (params?.genre && params.genre !== 'All') list = list.filter(m => m.genres?.includes(params.genre!));
+      return list;
+    }
+
     let list = [...FALLBACK_MOVIES];
 
     // 1. Check MovieBox Scraped Catalog (Filtered)
@@ -412,6 +443,7 @@ export const api = {
 
     // Centralized ad sanitization
     list = sanitizeMovieCatalog(list);
+    moviesCatalogCache = { data: list, timestamp: Date.now() };
 
     if (params?.type) list = list.filter(m => m.type === params.type);
     if (params?.genre && params.genre !== 'All') list = list.filter(m => m.genres?.includes(params.genre!));
@@ -422,83 +454,99 @@ export const api = {
     return FALLBACK_MOVIES.find(m => m.slug === slug || m._id === slug || m.id === slug || m.tmdbId?.toString() === slug) || null;
   },
 
-  search: async (q: string): Promise<Movie[]> => {
+  search: async (q: string, signal?: AbortSignal): Promise<Movie[]> => {
     if (!q.trim()) return [];
-    const lower = q.toLowerCase();
+    const lower = q.trim().toLowerCase();
 
-    // Local matches
-    const localMatches = FALLBACK_MOVIES.filter(m => 
-      m.title.toLowerCase().includes(lower) || 
-      m.genres?.some(g => g.toLowerCase().includes(lower)) ||
-      m.language?.toLowerCase().includes(lower) ||
-      m.releaseYear?.toString().includes(lower) ||
-      m.tmdbId?.toString() === q.trim()
-    );
+    // 1. Return from in-memory search cache if still fresh
+    const cached = searchCache.get(lower);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      return cached.data;
+    }
 
-    const resultMap = new Map<string | number, Movie>();
-    localMatches.forEach(m => {
-      const key = m.tmdbId || m.id || m._id || m.title;
-      if (key) resultMap.set(key, m);
-    });
+    // 2. Return active in-flight search promise to prevent duplicate API hits
+    if (searchInFlight.has(lower)) {
+      return searchInFlight.get(lower)!;
+    }
 
-    const TMDB_API_KEY = '844dba0bfd8f3a4f3799f6130ef9e335';
-    const GENRE_MAP: Record<number, string> = {
-      28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
-      99: 'Documentary', 18: 'Drama', 10751: 'Family', 14: 'Fantasy', 36: 'History',
-      27: 'Horror', 10402: 'Music', 9648: 'Mystery', 10749: 'Romance', 878: 'Sci-Fi',
-      10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western',
-      10759: 'Action & Adventure', 10765: 'Sci-Fi & Fantasy', 10768: 'War & Politics'
-    };
+    const searchPromise = (async () => {
+      const effectiveSignal = signal
+        ? AbortSignal.any([signal, AbortSignal.timeout(4000)])
+        : AbortSignal.timeout(4000);
 
-    // 0. Query Existing Backend API Scraper / Processing Layer (Ad-Filtered & Normalized)
-    try {
-      const backendRes = await fetch(`/api/v1/movies/search?q=${encodeURIComponent(q)}`, {
-        signal: AbortSignal.timeout(4000)
-      });
-      if (backendRes.ok) {
-        const json = await backendRes.json();
-        const items = json?.data || [];
-        if (Array.isArray(items) && items.length > 0) {
-          items.forEach((item: any) => {
-            const movieItem: Movie = {
-              _id: String(item.id),
-              id: String(item.id),
-              tmdbId: item.id,
-              title: item.title,
-              slug: `${(item.title || 'movie').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${item.id}`,
-              description: item.overview || `Watch ${item.title} in 1080p Ultra HD on CineVault.`,
-              posterUrl: item.posterUrl || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80',
-              backdropUrl: item.backdropUrl || item.posterUrl,
-              trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(item.title + ' trailer')}`,
-              releaseYear: item.releaseYear || 2024,
-              language: item.originalLanguage === 'hi' ? 'Hindi' : 'English / Multi',
-              genres: ['Blockbuster', 'Featured'],
-              duration: item.type === 'series' ? 'TV Series' : '2h 15m',
-              rating: item.rating || 8.4,
-              director: 'Featured Director',
-              cast: ['Ensemble Cast'],
-              type: item.type || 'movie',
-              featured: false,
-              trending: true,
-              videoUrl: DEFAULT_SAMPLE_VIDEO,
-              downloadUrl: DEFAULT_SAMPLE_VIDEO,
-              qualities: createDefaultQualities(DEFAULT_SAMPLE_VIDEO)
-            };
-            const key = movieItem.tmdbId || movieItem.id;
-            if (key && !resultMap.has(key)) {
-              resultMap.set(key, movieItem);
-            }
-          });
-        }
-      }
-    } catch {}
-
-    // 1. Live TMDB Multi-Search (Over 1,000,000+ Global Movies, Anime & Series)
-    try {
-      const tmdbRes = await fetch(
-        `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&include_adult=false&page=1`,
-        { signal: AbortSignal.timeout(4000) }
+      // Local matches
+      const localMatches = FALLBACK_MOVIES.filter(m => 
+        m.title.toLowerCase().includes(lower) || 
+        m.genres?.some(g => g.toLowerCase().includes(lower)) ||
+        m.language?.toLowerCase().includes(lower) ||
+        m.releaseYear?.toString().includes(lower) ||
+        m.tmdbId?.toString() === lower
       );
+
+      const resultMap = new Map<string | number, Movie>();
+      localMatches.forEach(m => {
+        const key = m.tmdbId || m.id || m._id || m.title;
+        if (key) resultMap.set(key, m);
+      });
+
+      const TMDB_API_KEY = '844dba0bfd8f3a4f3799f6130ef9e335';
+      const GENRE_MAP: Record<number, string> = {
+        28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
+        99: 'Documentary', 18: 'Drama', 10751: 'Family', 14: 'Fantasy', 36: 'History',
+        27: 'Horror', 10402: 'Music', 9648: 'Mystery', 10749: 'Romance', 878: 'Sci-Fi',
+        10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western',
+        10759: 'Action & Adventure', 10765: 'Sci-Fi & Fantasy', 10768: 'War & Politics'
+      };
+
+      // 0. Query Existing Backend API Scraper / Processing Layer (Ad-Filtered & Normalized)
+      try {
+        const backendRes = await fetch(`/api/v1/movies/search?q=${encodeURIComponent(q)}`, {
+          signal: effectiveSignal
+        });
+        if (backendRes.ok) {
+          const json = await backendRes.json();
+          const items = json?.data || [];
+          if (Array.isArray(items) && items.length > 0) {
+            items.forEach((item: any) => {
+              const movieItem: Movie = {
+                _id: String(item.id),
+                id: String(item.id),
+                tmdbId: item.id,
+                title: item.title,
+                slug: `${(item.title || 'movie').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${item.id}`,
+                description: item.overview || `Watch ${item.title} in 1080p Ultra HD on CineVault.`,
+                posterUrl: item.posterUrl || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80',
+                backdropUrl: item.backdropUrl || item.posterUrl,
+                trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(item.title + ' trailer')}`,
+                releaseYear: item.releaseYear || 2024,
+                language: item.originalLanguage === 'hi' ? 'Hindi' : 'English / Multi',
+                genres: ['Blockbuster', 'Featured'],
+                duration: item.type === 'series' ? 'TV Series' : '2h 15m',
+                rating: item.rating || 8.4,
+                director: 'Featured Director',
+                cast: ['Ensemble Cast'],
+                type: item.type || 'movie',
+                featured: false,
+                trending: true,
+                videoUrl: DEFAULT_SAMPLE_VIDEO,
+                downloadUrl: DEFAULT_SAMPLE_VIDEO,
+                qualities: createDefaultQualities(DEFAULT_SAMPLE_VIDEO)
+              };
+              const key = movieItem.tmdbId || movieItem.id;
+              if (key && !resultMap.has(key)) {
+                resultMap.set(key, movieItem);
+              }
+            });
+          }
+        }
+      } catch {}
+
+      // 1. Live TMDB Multi-Search (Over 1,000,000+ Global Movies, Anime & Series)
+      try {
+        const tmdbRes = await fetch(
+          `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&include_adult=false&page=1`,
+          { signal: effectiveSignal }
+        );
       if (tmdbRes.ok) {
         const data = await tmdbRes.json();
         const results = data?.results || [];
@@ -595,7 +643,17 @@ export const api = {
       }
     } catch {}
 
-    return sanitizeMovieCatalog(Array.from(resultMap.values()));
+    const cleanResults = sanitizeMovieCatalog(Array.from(resultMap.values()));
+    searchCache.set(lower, { data: cleanResults, timestamp: Date.now() });
+    searchInFlight.delete(lower);
+    return cleanResults;
+  })().catch((err) => {
+      searchInFlight.delete(lower);
+      throw err;
+    });
+
+    searchInFlight.set(lower, searchPromise);
+    return searchPromise;
   },
 
   fetchFromExternalUrlOrId: async (input: string): Promise<Movie> => {

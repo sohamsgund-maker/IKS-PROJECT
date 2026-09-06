@@ -1,64 +1,94 @@
 import React from 'react';
 import { Clock, Play } from 'lucide-react';
 import type { Movie } from '../types/movie';
+import { CinematicImage } from './CinematicImage';
+
+export interface WatchProgressItem {
+  movie: Movie;
+  playbackPosition?: number;
+  duration?: number;
+  timestamp?: number;
+}
 
 interface ContinueWatchingProps {
-  movies: Movie[];
+  items?: WatchProgressItem[];
+  movies?: Movie[];
   onSelect: (movie: Movie) => void;
-  onWatchNow: (movie: Movie) => void;
+  onWatchNow: (movie: Movie, resumeTime?: number) => void;
 }
 
 export const ContinueWatching: React.FC<ContinueWatchingProps> = ({
+  items,
   movies,
   onSelect,
   onWatchNow,
 }) => {
-  if (movies.length === 0) return null;
+  // Normalize items whether passed as WatchProgressItem[] or Movie[]
+  const watchList: WatchProgressItem[] = items && items.length > 0
+    ? items
+    : (movies || []).map((m, idx) => ({
+        movie: m,
+        playbackPosition: 1800 + idx * 300,
+        duration: 7200,
+        timestamp: Date.now() - idx * 3600000,
+      }));
 
-  // Mock progression stats for realistic display
-  const progressList = [
-    { progress: 75, timeLeft: '42m left' },
-    { progress: 40, timeLeft: '1h 12m left' },
-    { progress: 85, timeLeft: '18m left' },
-    { progress: 20, timeLeft: '1h 45m left' },
-  ];
+  if (watchList.length === 0) return null;
+
+  const formatResumeTime = (seconds?: number): string => {
+    if (!seconds || seconds <= 0) return '00:00';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0) {
+      return `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   return (
-    <section className="space-y-3.5">
+    <section className="space-y-3 px-3 sm:px-8 lg:px-12 my-4 select-none">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <Clock className="w-4 h-4 text-[#7c5cff]" />
+        <Clock className="w-4 h-4 text-[#E50914]" />
         <div>
-          <h2 className="font-display text-lg sm:text-xl font-black text-white tracking-tight leading-none">
-            Continue your journey
+          <h2 className="font-display text-sm sm:text-lg lg:text-xl font-bold text-[#e5e5e5] tracking-tight leading-none">
+            Continue Watching
           </h2>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Pick up where you left off
+          <p className="text-[11px] text-zinc-400 mt-0.5 font-medium">
+            Pick up right where you left off
           </p>
         </div>
       </div>
 
       {/* Cards Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4">
-        {movies.slice(0, 6).map((movie, idx) => {
-          const itemProgress = progressList[idx % progressList.length];
+      <div className="flex items-center gap-2.5 sm:gap-3.5 overflow-x-auto scrollbar-none py-2 px-1">
+        {watchList.slice(0, 8).map((item, idx) => {
+          const m = item.movie;
+          const pos = item.playbackPosition || 0;
+          const dur = item.duration || 7200;
+          const progressPercent = Math.min(100, Math.max(5, Math.round((pos / dur) * 100)));
+
           return (
             <div
-              key={movie.id || movie._id || idx}
-              onClick={() => onSelect(movie)}
-              className="group relative rounded-2xl overflow-hidden bg-[#101018] border border-white/[0.08] hover:border-[#7c5cff]/50 transition-all duration-300 hover:scale-[1.02] shadow-lg cursor-pointer"
+              key={m.id || m._id || idx}
+              onClick={() => onSelect(m)}
+              className="flex-shrink-0 w-36 sm:w-52 md:w-60 rounded-md overflow-hidden bg-[#18181c] border border-white/[0.06] hover:border-white/20 netflix-card-hover shadow-lg cursor-pointer group"
             >
-              {/* Poster Container */}
-              <div className="relative aspect-[3/4] w-full overflow-hidden">
-                <img
-                  src={movie.posterUrl}
-                  alt={movie.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              {/* Backdrop / Poster Container */}
+              <div className="relative aspect-video w-full overflow-hidden bg-zinc-900">
+                <CinematicImage
+                  src={m.backdropUrl || m.posterUrl}
+                  fallbackSrc={m.posterUrl}
+                  alt={m.title}
+                  aspectRatioClass="aspect-video"
+                  titleFallback={m.title}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 img-smooth"
                 />
 
                 {/* Rating Badge */}
-                <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-bold text-amber-300 flex items-center gap-0.5 shadow">
-                  ⭐ {movie.rating.toFixed(1)}
+                <div className="absolute top-1.5 right-1.5 px-1.5 py-0.2 rounded bg-black/85 text-[9px] font-bold text-amber-400 border border-amber-500/30 flex items-center gap-0.5 shadow pointer-events-none">
+                  ⭐ {m.rating ? m.rating.toFixed(1) : '8.5'}
                 </div>
 
                 {/* Play Button Overlay on Hover */}
@@ -66,32 +96,34 @@ export const ContinueWatching: React.FC<ContinueWatchingProps> = ({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onWatchNow(movie);
+                      onWatchNow(m, pos);
                     }}
-                    className="w-10 h-10 rounded-full bg-[#7c5cff] text-white flex items-center justify-center shadow-lg shadow-purple-600/40 hover:scale-110 transition-transform cursor-pointer"
+                    className="w-10 h-10 rounded-full bg-[#E50914] text-white flex items-center justify-center shadow-xl shadow-red-900/40 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+                    title={`Resume at ${formatResumeTime(pos)}`}
+                    aria-label={`Resume ${m.title}`}
                   >
                     <Play className="w-4 h-4 fill-current ml-0.5" />
                   </button>
                 </div>
+
+                {/* Inset Progress Bar at bottom of thumbnail */}
+                <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20">
+                  <div
+                    className="h-full bg-[#E50914]"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
               </div>
 
-              {/* Progress & Bottom Bar */}
-              <div className="p-2.5 bg-[#0e0e16] space-y-1.5">
-                <h4 className="text-xs font-bold text-white truncate leading-tight">
-                  {movie.title}
+              {/* Progress & Info Bar */}
+              <div className="p-2 sm:p-2.5 bg-[#16161a] space-y-1">
+                <h4 className="text-xs font-bold text-white truncate leading-tight font-display">
+                  {m.title}
                 </h4>
 
                 <div className="flex items-center justify-between text-[10px] text-zinc-400 font-semibold">
-                  <span className="text-[#a28bff] font-bold">{itemProgress.progress}%</span>
-                  <span>• {itemProgress.timeLeft}</span>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="w-full h-1 bg-white/[0.1] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#7c5cff] to-[#a28bff] rounded-full"
-                    style={{ width: `${itemProgress.progress}%` }}
-                  />
+                  <span className="text-emerald-400 font-bold">Resume at {formatResumeTime(pos)}</span>
+                  <span>{progressPercent}%</span>
                 </div>
               </div>
             </div>
@@ -101,3 +133,5 @@ export const ContinueWatching: React.FC<ContinueWatchingProps> = ({
     </section>
   );
 };
+
+export default ContinueWatching;

@@ -1,16 +1,22 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import type { Movie, MovieQuality, AuthUser } from './types/movie';
 import { api } from './services/api';
 import { NetflixNavbar } from './components/NetflixNavbar';
 import { NetflixBillboard } from './components/NetflixBillboard';
 import { NetflixRow } from './components/NetflixRow';
-import { NetflixInfoModal } from './components/NetflixInfoModal';
 import { NetflixFooter } from './components/NetflixFooter';
 import { NetflixMobileNav } from './components/NetflixMobileNav';
-import { SettingsModal } from './components/SettingsModal';
-import { WatchPage } from './pages/WatchPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { CinematicImage } from './components/CinematicImage';
+import { SearchResultsSkeleton, HeroBillboardSkeleton } from './components/Skeletons';
+import { ContinueWatching } from './components/ContinueWatching';
+import type { WatchProgressItem } from './components/ContinueWatching';
 import { syncCloudWatchlist, syncCloudHistory } from './services/supabaseClient';
 import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles, ArrowLeft, Star, Film } from 'lucide-react';
+
+const WatchPage = lazy(() => import('./pages/WatchPage').then(m => ({ default: m.WatchPage })));
+const NetflixInfoModal = lazy(() => import('./components/NetflixInfoModal').then(m => ({ default: m.NetflixInfoModal })));
+const SettingsModal = lazy(() => import('./components/SettingsModal').then(m => ({ default: m.SettingsModal })));
 
 export const App: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -59,6 +65,28 @@ export const App: React.FC = () => {
     }
   });
 
+  // Map history with saved playback progress
+  const continueWatchingItems = useMemo<WatchProgressItem[]>(() => {
+    return history.map((m) => {
+      const key = `cinevault_progress_${m.id || m.tmdbId || m.title}`;
+      let playbackPosition: number | undefined;
+      let duration: number | undefined;
+      try {
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          playbackPosition = parsed.currentTime || undefined;
+          duration = parsed.duration || undefined;
+        }
+      } catch {}
+      return {
+        movie: m,
+        playbackPosition,
+        duration,
+      };
+    });
+  }, [history]);
+
   // Modals & User state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [currentUser] = useState<AuthUser | null>(() => {
@@ -70,18 +98,28 @@ export const App: React.FC = () => {
     }
   });
 
-  const fetchAllMovies = async () => {
-    const data = await api.getMovies();
-    setMovies(data);
-  };
-
   useEffect(() => {
     try {
       localStorage.removeItem('cinevault_scraped_cache');
     } catch {}
-    fetchAllMovies();
+
+    let isMounted = true;
+    api.getMovies().then((data) => {
+      if (isMounted) setMovies(data);
+    });
+
     // Silent background scraper synchronization
-    api.syncMovieBoxScraper().then(() => fetchAllMovies()).catch(() => {});
+    api.syncMovieBoxScraper().then((res) => {
+      if (isMounted && res.count > 0) {
+        api.getMovies().then((data) => {
+          if (isMounted) setMovies(data);
+        });
+      }
+    }).catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleToggleWatchlist = (movie: Movie) => {
@@ -95,13 +133,13 @@ export const App: React.FC = () => {
         if (currentUser?.id) {
           syncCloudWatchlist(currentUser.id, movie, !exists);
         }
-      } catch (e) {}
+      } catch {}
       showToast(exists ? `Removed "${movie.title}" from My List` : `Added "${movie.title}" to My List!`);
       return updated;
     });
   };
 
-  const handlePlayMovie = (movie: Movie, quality?: MovieQuality) => {
+  const handlePlayMovie = (movie: Movie, quality?: MovieQuality, resumePosition?: number) => {
     const defaultQuality = quality || movie.qualities?.[0] || { quality: '1080p', videoUrl: movie.videoUrl };
     setWatchMovie({ movie, quality: defaultQuality });
     setSelectedMovieForInfo(null);
@@ -114,9 +152,9 @@ export const App: React.FC = () => {
       try {
         localStorage.setItem('cinevault_history', JSON.stringify(updated));
         if (currentUser?.id) {
-          syncCloudHistory(currentUser.id, movie, 0);
+          syncCloudHistory(currentUser.id, movie, resumePosition || 0);
         }
-      } catch (e) {}
+      } catch {}
       return updated;
     });
   };
@@ -238,10 +276,12 @@ export const App: React.FC = () => {
     setSearchResults(localMatches);
     setIsSearching(true);
 
-    // 2. Debounced 150ms background global search across TMDB & MovieBox
+    const controller = new AbortController();
+
+    // 2. Debounced 300ms background global search across TMDB & MovieBox with AbortSignal
     const debounceTimer = setTimeout(async () => {
       try {
-        const onlineResults = await api.search(q);
+        const onlineResults = await api.search(q, controller.signal);
         if (onlineResults && onlineResults.length > 0) {
           const map = new Map<string | number, Movie>();
           [...localMatches, ...onlineResults].forEach((m) => {
@@ -250,14 +290,20 @@ export const App: React.FC = () => {
           });
           setSearchResults(Array.from(map.values()));
         }
-      } catch (err) {
+      } catch (err: unknown) {
+        if (err && typeof err === 'object' && 'name' in err && (err as { name: string }).name === 'AbortError') {
+          return;
+        }
         console.error('Search error:', err);
       } finally {
         setIsSearching(false);
       }
-    }, 150);
+    }, 300);
 
-    return () => clearTimeout(debounceTimer);
+    return () => {
+      clearTimeout(debounceTimer);
+      controller.abort();
+    };
   }, [searchQuery, movies]);
 
   return (
@@ -290,12 +336,20 @@ export const App: React.FC = () => {
       {watchMovie ? (
         /* Dedicated Simple & Clean Video Player Page */
         <div className="pt-16 sm:pt-20 px-3 sm:px-8 max-w-7xl mx-auto">
-          <WatchPage
-            movie={watchMovie.movie}
-            selectedQuality={watchMovie.quality}
-            onBack={() => setWatchMovie(null)}
-            onQualityChange={(q) => setWatchMovie({ movie: watchMovie.movie, quality: q })}
-          />
+          <ErrorBoundary>
+            <Suspense fallback={
+              <div className="w-full aspect-video bg-[#141414] rounded-2xl flex items-center justify-center">
+                <div className="w-10 h-10 border-2 border-zinc-700 border-t-[#E50914] rounded-full animate-spin" />
+              </div>
+            }>
+              <WatchPage
+                movie={watchMovie.movie}
+                selectedQuality={watchMovie.quality}
+                onBack={() => setWatchMovie(null)}
+                onQualityChange={(q) => setWatchMovie({ movie: watchMovie.movie, quality: q })}
+              />
+            </Suspense>
+          </ErrorBoundary>
         </div>
       ) : searchQuery.trim().length > 0 ? (
         /* Netflix Global Search Results Grid */
@@ -329,17 +383,12 @@ export const App: React.FC = () => {
                   className="bg-[#202020] rounded-md overflow-hidden netflix-card-hover cursor-pointer shadow-md group relative"
                 >
                   <div className="aspect-[2/3] relative overflow-hidden bg-zinc-900">
-                    <img
+                    <CinematicImage
                       src={m.posterUrl || m.backdropUrl}
+                      fallbackSrc={m.backdropUrl}
                       alt={m.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 img-smooth"
-                      loading="lazy"
-                      onError={(e) => {
-                        const target = e.currentTarget;
-                        if (m.backdropUrl && target.src !== m.backdropUrl) {
-                          target.src = m.backdropUrl;
-                        }
-                      }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      aspectRatio="2/3"
                     />
 
                     {/* Top Quality Badge */}
@@ -386,12 +435,13 @@ export const App: React.FC = () => {
               ))}
             </div>
           ) : isSearching ? (
-            /* Pulsating Search Loading State */
-            <div className="py-20 text-center space-y-4">
-              <div className="w-10 h-10 border-3 border-zinc-700 border-t-[#E50914] rounded-full animate-spin mx-auto" />
-              <p className="text-sm font-semibold text-zinc-300">
-                Searching global database and servers for "{searchQuery}"...
-              </p>
+            /* Cinematic Skeleton Loading Grid */
+            <div className="space-y-4 py-4">
+              <div className="flex items-center gap-2 text-xs text-zinc-400">
+                <div className="w-2 h-2 rounded-full bg-[#E50914] animate-ping" />
+                <span>Searching global database and multi-region servers for "{searchQuery}"...</span>
+              </div>
+              <SearchResultsSkeleton count={12} />
             </div>
           ) : (
             /* User Requested: "Sorry for inconvenience" Friendly Empty State */
@@ -492,12 +542,12 @@ export const App: React.FC = () => {
                 className="bg-[#202020] rounded-md overflow-hidden netflix-card-hover cursor-pointer shadow-md group relative flex flex-col justify-between"
               >
                 <div className="aspect-[2/3] relative overflow-hidden bg-zinc-900">
-                  <img
+                  <CinematicImage
                     src={m.posterUrl || m.backdropUrl}
+                    fallbackSrc={m.backdropUrl}
                     alt={m.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 img-smooth"
-                    loading="lazy"
-                    decoding="async"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    aspectRatio="2/3"
                   />
 
                   {/* Top Badges */}
@@ -566,11 +616,12 @@ export const App: React.FC = () => {
                   className="bg-[#202020] rounded overflow-hidden netflix-card-hover cursor-pointer shadow-md group"
                 >
                   <div className="aspect-[2/3] relative overflow-hidden bg-zinc-900">
-                    <img
-                      src={m.posterUrl}
+                    <CinematicImage
+                      src={m.posterUrl || m.backdropUrl}
+                      fallbackSrc={m.backdropUrl}
                       alt={m.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      aspectRatio="2/3"
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <button
@@ -725,14 +776,18 @@ export const App: React.FC = () => {
         /* NETFLIX HOMEPAGE (Full Netflix Experience with Auto-Rotating Hero Carousel) */
         <div className="space-y-4">
           {/* 1. Massive Netflix Billboard Hero with Multi-Banner Auto-Rotation */}
-          <NetflixBillboard
-            movies={movies.filter(m => m.featured || m.trending).slice(0, 8)}
-            movie={heroMovie}
-            onPlay={handlePlayMovie}
-            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
-            onToggleWatchlist={handleToggleWatchlist}
-            isWatchlisted={Boolean((heroMovie?.id && watchlistIds.has(heroMovie.id)) || (heroMovie?.tmdbId && watchlistIds.has(heroMovie.tmdbId)))}
-          />
+          {movies.length === 0 ? (
+            <HeroBillboardSkeleton />
+          ) : (
+            <NetflixBillboard
+              movies={movies.filter(m => m.featured || m.trending).slice(0, 8)}
+              movie={heroMovie}
+              onPlay={handlePlayMovie}
+              onMoreInfo={(m) => setSelectedMovieForInfo(m)}
+              onToggleWatchlist={handleToggleWatchlist}
+              isWatchlisted={Boolean((heroMovie?.id && watchlistIds.has(heroMovie.id)) || (heroMovie?.tmdbId && watchlistIds.has(heroMovie.tmdbId)))}
+            />
+          )}
 
           <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
             {/* 2. Top 10 in India Today (Numbered Rank Row) */}
@@ -758,19 +813,12 @@ export const App: React.FC = () => {
               onExploreAll={() => handleOpenExploreCategory("🎬 MovieBox VIP High-Speed Streams", allMovieBoxMovies.length > 0 ? allMovieBoxMovies : movies)}
             />
 
-            {/* 3. Continue Watching */}
+            {/* 3. Continue Watching with Resume Timestamp & Progress */}
             {history.length > 0 && (
-              <NetflixRow
-                title={`Continue Watching for ${currentUser ? currentUser.username : 'You'}`}
-                movies={history}
-                onSelectMovie={setSelectedMovieForInfo}
-                onPlayMovie={handlePlayMovie}
-                onToggleWatchlist={handleToggleWatchlist}
-                watchlistIds={watchlistIds}
-                onExploreAll={() => {
-                  setActiveTab('watchlist');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
+              <ContinueWatching
+                items={continueWatchingItems}
+                onSelect={setSelectedMovieForInfo}
+                onWatchNow={(m, resumePos) => handlePlayMovie(m, undefined, resumePos)}
               />
             )}
 
@@ -848,28 +896,36 @@ export const App: React.FC = () => {
 
       {/* Netflix More Info Detailed Modal */}
       {selectedMovieForInfo && (
-        <NetflixInfoModal
-          movie={selectedMovieForInfo}
-          allMovies={movies}
-          onClose={() => setSelectedMovieForInfo(null)}
-          onPlay={handlePlayMovie}
-          onSelectMovie={(m) => setSelectedMovieForInfo(m)}
-          onToggleWatchlist={handleToggleWatchlist}
-          isWatchlisted={Boolean((selectedMovieForInfo.id && watchlistIds.has(selectedMovieForInfo.id)) || (selectedMovieForInfo.tmdbId && watchlistIds.has(selectedMovieForInfo.tmdbId)))}
-        />
+        <ErrorBoundary>
+          <Suspense fallback={null}>
+            <NetflixInfoModal
+              movie={selectedMovieForInfo}
+              allMovies={movies}
+              onClose={() => setSelectedMovieForInfo(null)}
+              onPlay={handlePlayMovie}
+              onSelectMovie={(m) => setSelectedMovieForInfo(m)}
+              onToggleWatchlist={handleToggleWatchlist}
+              isWatchlisted={Boolean((selectedMovieForInfo.id && watchlistIds.has(selectedMovieForInfo.id)) || (selectedMovieForInfo.tmdbId && watchlistIds.has(selectedMovieForInfo.tmdbId)))}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {/* Settings Modal */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        onClearCache={() => {
-          localStorage.clear();
-          showToast('All local storage & history reset');
-          setIsSettingsOpen(false);
-          window.location.reload();
-        }}
-      />
+      <ErrorBoundary>
+        <Suspense fallback={null}>
+          <SettingsModal
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            onClearCache={() => {
+              localStorage.clear();
+              showToast('All local storage & history reset');
+              setIsSettingsOpen(false);
+              window.location.reload();
+            }}
+          />
+        </Suspense>
+      </ErrorBoundary>
 
       {/* Netflix Mobile Native Bottom Navigation Bar */}
       <NetflixMobileNav

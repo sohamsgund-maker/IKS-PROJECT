@@ -1,6 +1,7 @@
 import React from 'react';
-import { Star, Play } from 'lucide-react';
+import { Star, Play, Info } from 'lucide-react';
 import type { Movie } from '../types/movie';
+import { CinematicImage } from './CinematicImage';
 
 interface MovieCardProps {
   movie: Movie;
@@ -9,72 +10,79 @@ interface MovieCardProps {
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect, onWatchNow }) => {
-  const highestQuality = movie.qualities?.[0]?.quality || '1080p';
+  const highestQuality = movie.qualities?.[0]?.quality || '4K UHD';
 
   return (
     <div
       onClick={() => onSelect(movie)}
-      className="group relative bg-[#10111a] rounded-2xl overflow-hidden border border-white/[0.08] hover:border-[#7c5cff]/60 hover:-translate-y-1.5 transition-all duration-300 shadow-xl flex flex-col justify-between cursor-pointer select-none"
+      className="group relative bg-[#18181c] rounded-md overflow-hidden border border-white/[0.06] hover:border-white/20 netflix-card-hover shadow-lg flex flex-col justify-between cursor-pointer select-none"
     >
       {/* Poster */}
-      <div className="aspect-[2/3] w-full overflow-hidden bg-[#07080d] relative">
-        <img
-          src={movie.posterUrl}
+      <div className="aspect-[2/3] w-full overflow-hidden bg-zinc-900 relative">
+        <CinematicImage
+          src={movie.posterUrl || movie.backdropUrl}
+          fallbackSrc={movie.backdropUrl}
           alt={movie.title}
-          loading="lazy"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          aspectRatioClass="aspect-[2/3]"
+          titleFallback={movie.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 img-smooth"
         />
 
         {/* Top Badges */}
-        <div className="absolute top-2 left-2 flex gap-1 pointer-events-none">
-          <span className="px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-md border border-white/[0.12] text-white font-mono text-[10px] font-bold">
+        <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between pointer-events-none z-10">
+          <span className="px-1.5 py-0.2 rounded bg-black/85 text-[8px] sm:text-[9px] font-black text-white border border-white/20">
             {highestQuality}
           </span>
-          {movie.type === 'series' && (
-            <span className="px-2 py-0.5 rounded-md bg-[#7c5cff] text-white text-[10px] font-bold">
-              SERIES
+          {movie.rating && (
+            <span className="px-1.5 py-0.2 rounded bg-black/85 text-[8px] sm:text-[9px] font-black text-amber-400 border border-amber-500/30 flex items-center gap-0.5">
+              <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+              <span>{movie.rating.toFixed(1)}</span>
             </span>
           )}
         </div>
 
-        {/* Hover Overlay Play Icon */}
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+        {/* Hover Overlay Play / Info Icon */}
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onWatchNow(movie);
             }}
-            className="w-12 h-12 rounded-full bg-[#7c5cff] text-white flex items-center justify-center shadow-xl shadow-purple-500/40 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+            className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-transform cursor-pointer"
             title="Watch Now"
+            aria-label={`Play ${movie.title}`}
           >
-            <Play className="w-5 h-5 fill-white ml-0.5" />
+            <Play className="w-4 h-4 fill-current ml-0.5" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(movie);
+            }}
+            className="w-10 h-10 rounded-full bg-black/60 border border-white/70 text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+            title="More Info"
+            aria-label={`Details for ${movie.title}`}
+          >
+            <Info className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Card Info Details */}
-      <div className="p-3 bg-[#10111a] space-y-1">
-        {/* Movie Title */}
-        <h3 className="font-bold text-xs sm:text-sm text-zinc-100 truncate group-hover:text-[#7c5cff] transition-colors leading-tight">
+      <div className="p-2.5 bg-[#16161a] space-y-1">
+        <h3 className="font-bold text-xs sm:text-sm text-zinc-100 truncate group-hover:text-white transition-colors leading-tight font-display">
           {movie.title}
         </h3>
 
-        {/* Year • Language */}
-        <p className="text-[11px] text-zinc-400 font-medium truncate">
-          {movie.releaseYear} • {movie.language}
-        </p>
-
-        {/* Quality • Rating */}
-        <div className="flex items-center justify-between text-xs pt-1.5 border-t border-white/[0.06] mt-1 text-zinc-300">
-          <span className="text-[11px] font-mono text-zinc-400 font-semibold">
-            {highestQuality}
+        <div className="flex items-center justify-between text-[10px] text-zinc-400 font-semibold">
+          <span className="text-[#46d369] font-bold">
+            {movie.rating ? `${(movie.rating * 10).toFixed(0)}% Match` : '98% Match'}
           </span>
-          <span className="text-amber-400 font-bold flex items-center gap-1 text-[11px]">
-            <Star className="w-3.5 h-3.5 fill-amber-400" />
-            <span>{movie.rating.toFixed(1)}</span>
-          </span>
+          <span>{movie.releaseYear || '2024'}</span>
         </div>
       </div>
     </div>
   );
 };
+
+export default MovieCard;
