@@ -228,13 +228,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return allAudioTracks[0];
   });
 
-  // 3. SERVER SELECTION: Defaults to Peachify VIP for South/dubbed Hindi films, otherwise Server Epsilon (2Embed)
+  // 3. SERVER SELECTION: Defaults to Peachify VIP for South/dubbed Hindi films, otherwise Server 1 (VidLink)
   const [internalServer, setInternalServer] = useState<StreamServerId>(() => {
     if (propActiveServer) return propActiveServer;
     if (isDirectVideo(movie.videoUrl)) return 'direct';
     const origLang = (movie.originalLanguage || movie.language || 'English').toLowerCase();
     const isDubbedHindi = isHindiContentAvailable(movie) && !origLang.includes('hi') && !origLang.includes('hindi');
-    return isDubbedHindi ? 'peachify' : '2embed';
+    return isDubbedHindi ? 'peachify' : 'vidlink';
   });
 
   const activeServer = propActiveServer || internalServer;
@@ -322,6 +322,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     let base = '';
     switch (activeServer) {
+      case 'vidlink':
+        base = isSeries
+          ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=e50914&secondaryColor=141414`
+          : `https://vidlink.pro/movie/${tmdbId}?primaryColor=e50914&secondaryColor=141414`;
+        break;
       case 'peachify':
         base = isSeries
           ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`
@@ -805,8 +810,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       setActiveServer('peachify');
       showToast('⚡ Switched to Peachify VIP (Hindi Audio Dub)');
     } else if (!isHindi && activeServer === 'peachify') {
-      setActiveServer('2embed');
-      showToast(`⚡ Switched to Server Epsilon (2Embed) for ${track.name}`);
+      setActiveServer('vidlink');
+      showToast(`⚡ Switched to Server 1 (VidLink) for ${track.name}`);
     }
 
     if (onAudioChange) onAudioChange(track);
@@ -876,10 +881,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     <div
       ref={containerRef}
       onMouseMove={resetControlsTimeout}
-      onClick={handlePlayerAreaClick}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      onClick={activeServer === 'direct' ? handlePlayerAreaClick : undefined}
+      onTouchStart={activeServer === 'direct' ? handleTouchStart : undefined}
+      onTouchMove={activeServer === 'direct' ? handleTouchMove : undefined}
+      onTouchEnd={activeServer === 'direct' ? handleTouchEnd : undefined}
       className={`player-landscape-container relative w-full aspect-video bg-black rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-zinc-800/80 select-none group font-sans ${
         !isHudVisible ? 'cursor-none' : 'cursor-default'
       }`}
@@ -965,7 +970,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
       {/* FLOATING UNLOCK BADGE (When screen is locked) */}
       {isScreenLocked && showUnlockBadge && (
-        <div className="absolute left-6 top-1/2 -translate-y-1/2 z-50 animate-fade-in">
+        <div className="absolute left-6 top-1/2 -translate-y-1/2 z-50 animate-fade-in pointer-events-auto">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -983,12 +988,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* 1. TOP BAR (Back, Title, Download, Share, Cast, More)           */}
       {/* ------------------------------------------------------------- */}
       <div
-        className={`absolute top-0 inset-x-0 z-30 flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3.5 bg-gradient-to-b from-black/95 via-black/60 to-transparent transition-opacity duration-300 ${
-          isHudVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        className={`absolute top-0 inset-x-0 z-30 flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3.5 bg-gradient-to-b from-black/95 via-black/60 to-transparent transition-opacity duration-300 pointer-events-none ${
+          isHudVisible ? 'opacity-100' : 'opacity-0'
         }`}
       >
         {/* Back Arrow & Title */}
-        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 pointer-events-auto">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -1008,13 +1013,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               {streamTitle}
             </h2>
             <span className="hidden sm:inline-block text-[10px] text-zinc-400">
-              {movie.releaseYear || '2024'} • {movie.duration || '2h 15m'} • {activeServer === 'peachify' ? 'Peachify VIP (Hindi Dub)' : activeServer === 'direct' ? 'Direct HD' : 'Server Epsilon (2Embed)'}
+              {movie.releaseYear || '2024'} • {movie.duration || '2h 15m'} • {activeServer === 'vidlink' ? 'VidLink (Ultra Fast 4K)' : activeServer === 'peachify' ? 'Peachify VIP (Hindi Dub)' : activeServer === 'direct' ? 'Direct HD' : 'Server 3 (2Embed)'}
             </span>
           </div>
         </div>
 
         {/* Top Right Actions: Download, Share, Cast, More */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 pointer-events-auto">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -1066,111 +1071,116 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* 2. CENTER PLAYBACK CONTROLS (Rewind 10s, Play/Pause, Forward 10s) */}
       {/* ------------------------------------------------------------- */}
-      <div
-        className={`absolute inset-0 z-30 flex items-center justify-center gap-6 sm:gap-14 transition-opacity duration-300 ${
-          isHudVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-      >
-        {/* Rewind 10s */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            seekRelative(-10);
-          }}
-          className="p-3 sm:p-3.5 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white/90 hover:text-white hover:scale-110 active:scale-95 transition-all shadow-lg backdrop-blur-md cursor-pointer flex flex-col items-center justify-center relative"
-          title="Rewind 10s"
-          aria-label="Rewind 10 seconds"
+      {/* 2. CENTER PLAYBACK CONTROLS (Only for Direct HTML5 video)      */}
+      {/* ------------------------------------------------------------- */}
+      {activeServer === 'direct' && (
+        <div
+          className={`absolute inset-0 z-30 flex items-center justify-center gap-6 sm:gap-14 transition-opacity duration-300 ${
+            isHudVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
         >
-          <RotateCcw className="w-5 h-5 sm:w-7 sm:h-7" />
-          <span className="text-[8px] sm:text-[9px] font-black absolute">10</span>
-        </button>
+          {/* Rewind 10s */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              seekRelative(-10);
+            }}
+            className="p-3 sm:p-3.5 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white/90 hover:text-white hover:scale-110 active:scale-95 transition-all shadow-lg backdrop-blur-md cursor-pointer flex flex-col items-center justify-center relative"
+            title="Rewind 10s"
+            aria-label="Rewind 10 seconds"
+          >
+            <RotateCcw className="w-5 h-5 sm:w-7 sm:h-7" />
+            <span className="text-[8px] sm:text-[9px] font-black absolute">10</span>
+          </button>
 
-        {/* Large Play/Pause Toggle - Sleek Semi-translucent */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            togglePlay();
-          }}
-          className="p-4 sm:p-5 rounded-full bg-[#E50914]/85 hover:bg-[#E50914] text-white shadow-xl hover:scale-110 active:scale-95 transition-all ring-2 sm:ring-4 ring-[#E50914]/30 backdrop-blur-md border border-white/20 cursor-pointer"
-          title={isPlaying ? 'Pause' : 'Play'}
-          aria-label={isPlaying ? 'Pause' : 'Play'}
-        >
-          {isPlaying ? (
-            <Pause className="w-7 h-7 sm:w-9 sm:h-9 fill-current" />
-          ) : (
-            <Play className="w-7 h-7 sm:w-9 sm:h-9 fill-current ml-1" />
-          )}
-        </button>
+          {/* Large Play/Pause Toggle - Sleek Semi-translucent */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePlay();
+            }}
+            className="p-4 sm:p-5 rounded-full bg-[#E50914]/85 hover:bg-[#E50914] text-white shadow-xl hover:scale-110 active:scale-95 transition-all ring-2 sm:ring-4 ring-[#E50914]/30 backdrop-blur-md border border-white/20 cursor-pointer"
+            title={isPlaying ? 'Pause' : 'Play'}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? (
+              <Pause className="w-7 h-7 sm:w-9 sm:h-9 fill-current" />
+            ) : (
+              <Play className="w-7 h-7 sm:w-9 sm:h-9 fill-current ml-1" />
+            )}
+          </button>
 
-        {/* Forward 10s */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            seekRelative(10);
-          }}
-          className="p-3 sm:p-3.5 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white/90 hover:text-white hover:scale-110 active:scale-95 transition-all shadow-lg backdrop-blur-md cursor-pointer flex flex-col items-center justify-center relative"
-          title="Forward 10s"
-          aria-label="Forward 10 seconds"
-        >
-          <RotateCw className="w-5 h-5 sm:w-7 sm:h-7" />
-          <span className="text-[8px] sm:text-[9px] font-black absolute">10</span>
-        </button>
-      </div>
+          {/* Forward 10s */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              seekRelative(10);
+            }}
+            className="p-3 sm:p-3.5 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white/90 hover:text-white hover:scale-110 active:scale-95 transition-all shadow-lg backdrop-blur-md cursor-pointer flex flex-col items-center justify-center relative"
+            title="Forward 10s"
+            aria-label="Forward 10 seconds"
+          >
+            <RotateCw className="w-5 h-5 sm:w-7 sm:h-7" />
+            <span className="text-[8px] sm:text-[9px] font-black absolute">10</span>
+          </button>
+        </div>
+      )}
 
       {/* ------------------------------------------------------------- */}
       {/* 3. BOTTOM CONTROLS & TIMELINE TOOLBAR (Exact Video Match)       */}
       {/* ------------------------------------------------------------- */}
       <div
-        className={`absolute inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/95 via-black/80 to-transparent pt-10 pb-2.5 sm:pb-3 px-3 sm:px-6 transition-opacity duration-300 ${
-          isHudVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        className={`absolute inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/95 via-black/80 to-transparent pt-10 pb-2.5 sm:pb-3 px-3 sm:px-6 transition-opacity duration-300 pointer-events-none ${
+          isHudVisible ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        {/* Timeline Scrubber Bar with Left/Right Timestamps */}
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-xs font-mono font-bold text-zinc-300 min-w-[40px]">
-            {formatTime(currentTime)}
-          </span>
+        {/* Timeline Scrubber Bar with Left/Right Timestamps - Only for direct HTML5 video */}
+        {activeServer === 'direct' && (
+          <div className="flex items-center gap-3 mb-2 pointer-events-auto">
+            <span className="text-xs font-mono font-bold text-zinc-300 min-w-[40px]">
+              {formatTime(currentTime)}
+            </span>
 
-          <div
-            ref={progressBarRef}
-            onClick={handleSeek}
-            onMouseMove={handleTimelineMouseMove}
-            onMouseLeave={() => setHoverTime(null)}
-            className="relative flex-1 h-1.5 hover:h-2.5 bg-white/25 hover:bg-white/35 rounded-full cursor-pointer transition-all group/bar"
-          >
-            {hoverTime !== null && (
-              <div
-                style={{ left: `${hoverPosPercent}%` }}
-                className="absolute -top-7 -translate-x-1/2 px-2 py-0.5 rounded bg-black/90 border border-white/20 text-[10px] font-mono font-bold text-white shadow pointer-events-none"
-              >
-                {formatTime(hoverTime)}
-              </div>
-            )}
-
-            {/* Buffered Bar */}
             <div
-              style={{ width: `${bufferedPercent || Math.min(100, ((currentTime + 300) / effectiveDuration) * 100)}%` }}
-              className="absolute inset-y-0 left-0 bg-white/30 rounded-full"
-            />
-
-            {/* Current Played Progress */}
-            <div
-              style={{ width: `${effectiveDuration > 0 ? (currentTime / effectiveDuration) * 100 : 0}%` }}
-              className="absolute inset-y-0 left-0 bg-[#E50914] rounded-full relative"
+              ref={progressBarRef}
+              onClick={handleSeek}
+              onMouseMove={handleTimelineMouseMove}
+              onMouseLeave={() => setHoverTime(null)}
+              className="relative flex-1 h-1.5 hover:h-2.5 bg-white/25 hover:bg-white/35 rounded-full cursor-pointer transition-all group/bar"
             >
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full shadow-lg scale-0 group-hover/bar:scale-100 transition-transform -mr-1.5 ring-2 ring-[#E50914]" />
-            </div>
-          </div>
+              {hoverTime !== null && (
+                <div
+                  style={{ left: `${hoverPosPercent}%` }}
+                  className="absolute -top-7 -translate-x-1/2 px-2 py-0.5 rounded bg-black/90 border border-white/20 text-[10px] font-mono font-bold text-white shadow pointer-events-none"
+                >
+                  {formatTime(hoverTime)}
+                </div>
+              )}
 
-          <span className="text-xs font-mono font-bold text-zinc-400 min-w-[50px] text-right">
-            {formatTime(effectiveDuration)}
-          </span>
-        </div>
+              {/* Buffered Bar */}
+              <div
+                style={{ width: `${bufferedPercent || Math.min(100, ((currentTime + 300) / effectiveDuration) * 100)}%` }}
+                className="absolute inset-y-0 left-0 bg-white/30 rounded-full"
+              />
+
+              {/* Current Played Progress */}
+              <div
+                style={{ width: `${effectiveDuration > 0 ? (currentTime / effectiveDuration) * 100 : 0}%` }}
+                className="absolute inset-y-0 left-0 bg-[#E50914] rounded-full relative"
+              >
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full shadow-lg scale-0 group-hover/bar:scale-100 transition-transform -mr-1.5 ring-2 ring-[#E50914]" />
+              </div>
+            </div>
+
+            <span className="text-xs font-mono font-bold text-zinc-400 min-w-[50px] text-right">
+              {formatTime(effectiveDuration)}
+            </span>
+          </div>
+        )}
 
         {/* Bottom Toolbar: Speed, Best Quality, Lock, Fit Screen, Subtitles, Audio (red), Server, Full */}
-        <div className="flex items-center justify-around sm:justify-between pt-1.5 border-t border-white/10 text-zinc-300">
+        <div className="flex items-center justify-around sm:justify-between pt-1.5 border-t border-white/10 text-zinc-300 pointer-events-auto">
           {/* 1. SPEED */}
           <button
             onClick={(e) => {
@@ -1282,7 +1292,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* 4. STREAM RENDERING ENGINE: Direct HTML5 OR Server Epsilon     */}
+      {/* 4. STREAM RENDERING ENGINE: Direct HTML5 OR Embed Stream       */}
       {/* ------------------------------------------------------------- */}
       <div 
         className="w-full h-full relative overflow-hidden transition-all duration-300"
@@ -1316,8 +1326,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             }}
             onPause={() => setIsPlaying(false)}
             onError={() => {
-              setActiveServer('2embed');
-              showToast('⚡ Switched to Server Epsilon (2Embed)');
+              setActiveServer('vidlink');
+              showToast('⚡ Switched to Server 1 (VidLink)');
             }}
             className={`w-full h-full cursor-pointer transition-transform duration-300 ${
               fitMode === 'contain' ? 'object-contain' : fitMode === 'cover' ? 'object-cover scale-105' : 'object-fill'
@@ -1329,14 +1339,15 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             src={resolvedEmbedUrl}
             title={`${streamTitle} Stream`}
             allowFullScreen
-            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+            referrerPolicy="no-referrer"
+            allow="autoplay; fullscreen; encrypted-media; picture-in-picture; accelerometer; gyroscope"
             onLoad={() => {
               setIsLoading(false);
               setIsBuffering(false);
               setIsPlaying(true);
               resetControlsTimeout();
             }}
-            className={`w-full h-full border-0 absolute inset-0 z-0 bg-black transition-transform duration-300 ${
+            className={`w-full h-full border-0 absolute inset-0 z-10 bg-black transition-transform duration-300 ${
               fitMode === 'contain' ? 'scale-100' : fitMode === 'cover' ? 'scale-110 sm:scale-105' : 'scale-100'
             }`}
           />

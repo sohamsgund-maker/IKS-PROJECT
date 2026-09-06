@@ -17,22 +17,31 @@ export interface StreamingServer {
 
 export const STREAMING_SERVERS: StreamingServer[] = [
   {
-    id: '2embed',
-    name: 'Server Epsilon (2Embed - Dual Audio)',
-    badge: 'Multi-Stream',
+    id: 'vidlink',
+    name: 'Server 1: VidLink (Ultra Fast 4K • Multi-Audio)',
+    badge: 'Fastest 4K',
     hasHindiAudio: true,
-    hindiBadge: '🇮🇳 Dual Audio / Multi-Stream',
-    description: 'High-speed Dual Audio multi-stream server with instant Hindi audio playback',
+    hindiBadge: '⚡ Ultra Fast 4K',
+    description: 'Ultra high-speed bufferless stream with multi-language audio & subtitles',
     priority: 1
   },
   {
     id: 'peachify',
-    name: 'Peachify VIP (Hindi Audio Dub)',
+    name: 'Server 2: Peachify VIP (Hindi Audio Dub)',
     badge: 'Hindi Dub VIP',
     hasHindiAudio: true,
     hindiBadge: '🇮🇳 Real Hindi Dual Audio',
     description: 'Direct 1080p stream with native Hindi dual-audio track support',
     priority: 2
+  },
+  {
+    id: '2embed',
+    name: 'Server 3: 2Embed (Dual Audio Mirrors)',
+    badge: 'Multi-Stream',
+    hasHindiAudio: true,
+    hindiBadge: '🌐 Dual Audio / Multi-Stream',
+    description: 'High-speed Dual Audio multi-stream server with instant Hindi audio playback',
+    priority: 3
   },
   {
     id: 'direct',
@@ -41,7 +50,7 @@ export const STREAMING_SERVERS: StreamingServer[] = [
     hasHindiAudio: true,
     hindiBadge: '🌐 Native HTML5',
     description: 'Pure HTML5 MP4 / HLS player with zero ads and bufferless playback',
-    priority: 3
+    priority: 4
   },
 ];
 
@@ -86,6 +95,11 @@ export const getEmbedUrl = (
   const lang = audioLanguage || 'Hindi';
 
   switch (server) {
+    case 'vidlink':
+      return isSeries
+        ? `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=e50914&secondaryColor=141414`
+        : `https://vidlink.pro/movie/${tmdbId}?primaryColor=e50914&secondaryColor=141414`;
+
     case 'peachify':
       return isSeries
         ? `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}${lang.toLowerCase().includes('hindi') ? '?dub=Hindi' : ''}`

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
-  ArrowLeft, Film, ShieldCheck, Sparkles, Check
+  ArrowLeft, Film, ShieldCheck, Sparkles, Check, Server
 } from 'lucide-react';
 import type { Movie, MovieQuality, AudioTrack, StreamInfoResponse } from '../types/movie';
 import { api, getEmbedUrl, isHindiContentAvailable } from '../services/api';
-import { VideoPlayer, type StreamServerId } from '../components/VideoPlayer';
+import { VideoPlayer, type StreamServerId, STREAM_SERVERS } from '../components/VideoPlayer';
 
 interface WatchPageProps {
   movie: Movie;
@@ -24,7 +24,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
   const [activeServer, setActiveServer] = useState<StreamServerId>(() => {
     const origLang = (movie.originalLanguage || movie.language || 'English').toLowerCase();
     const isDubbedHindi = isHindiContentAvailable(movie) && !origLang.includes('hi') && !origLang.includes('hindi');
-    return isDubbedHindi ? 'peachify' : '2embed';
+    return isDubbedHindi ? 'peachify' : 'vidlink';
   });
   const [streamInfo, setStreamInfo] = useState<StreamInfoResponse | null>(null);
   const [selectedAudioTrack, setSelectedAudioTrack] = useState<AudioTrack | null>(null);
@@ -76,11 +76,8 @@ export const WatchPage: React.FC<WatchPageProps> = ({
   const fallbackEmbedUrl = useMemo(() => {
     if (streamInfo?.fallbackEmbedUrl) return streamInfo.fallbackEmbedUrl;
     const defaultLang = isHindiAvail ? 'Hindi' : (movie.language || 'English');
-    const origLang = (movie.originalLanguage || movie.language || 'English').toLowerCase();
-    const isDubbedHindi = isHindiAvail && !origLang.includes('hi') && !origLang.includes('hindi');
-    const serverToUse = isDubbedHindi ? 'peachify' : '2embed';
-    return getEmbedUrl(serverToUse, movie, currentSeason, currentEpisode, selectedAudioTrack?.name || defaultLang);
-  }, [streamInfo, movie, currentSeason, currentEpisode, selectedAudioTrack, isHindiAvail]);
+    return getEmbedUrl(activeServer, movie, currentSeason, currentEpisode, selectedAudioTrack?.name || defaultLang);
+  }, [streamInfo, movie, currentSeason, currentEpisode, selectedAudioTrack, isHindiAvail, activeServer]);
 
   // Detected Dynamic Audio Tracks
   const audioTracksList = useMemo(() => {
@@ -166,7 +163,7 @@ export const WatchPage: React.FC<WatchPageProps> = ({
           if (isDubbed && activeServer !== 'peachify') {
             setActiveServer('peachify');
           } else if (!isHindi && activeServer === 'peachify') {
-            setActiveServer('2embed');
+            setActiveServer('vidlink');
           }
           showToast(`Active Audio: ${track.name} ${track.flag || ''}`);
         }}
@@ -174,6 +171,34 @@ export const WatchPage: React.FC<WatchPageProps> = ({
         dynamicAudioTracks={audioTracksList}
         onBack={onBack}
       />
+
+      {/* QUICK SERVER SWITCHER PILLS (Instant 1-Tap Switching) */}
+      <div className="mt-3.5 flex items-center gap-2 overflow-x-auto pb-1 select-none scrollbar-none">
+        <span className="text-xs font-bold text-zinc-400 shrink-0 flex items-center gap-1.5 pr-1">
+          <Server className="w-3.5 h-3.5 text-amber-400" />
+          <span>Server:</span>
+        </span>
+        {STREAM_SERVERS.map((server) => {
+          const isSelected = activeServer === server.id;
+          return (
+            <button
+              key={server.id}
+              onClick={() => {
+                setActiveServer(server.id);
+                showToast(`⚡ Switched to ${server.name}`);
+              }}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
+                isSelected
+                  ? 'bg-[#E50914] border-[#E50914] text-white shadow-lg ring-2 ring-red-500/30'
+                  : 'bg-zinc-900/80 hover:bg-zinc-800 border-zinc-800 text-zinc-300'
+              }`}
+            >
+              <span>{server.badge || server.name}</span>
+              {isSelected && <Check className="w-3 h-3 text-white" />}
+            </button>
+          );
+        })}
+      </div>
 
       {/* 3. METADATA SECTION */}
       <div className="mt-6 sm:mt-8 space-y-6">
