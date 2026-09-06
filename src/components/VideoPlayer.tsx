@@ -156,6 +156,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Controls overlay visibility state: auto-hides after 2.5s of inactivity across both direct & embed modes
+  const isHudVisible = areControlsVisible && !isScreenLocked;
+
   // Accurate detection of Hindi content availability
   const isHindiAvail = useMemo(() => {
     return isHindiContentAvailable(movie);
@@ -225,11 +228,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return allAudioTracks[0];
   });
 
-  // 3. SERVER SELECTION: Defaults to Server Epsilon (2Embed) for instant Dual Audio & Hindi streaming
+  // 3. SERVER SELECTION: Defaults to Peachify VIP for South/dubbed Hindi films, otherwise Server Epsilon (2Embed)
   const [internalServer, setInternalServer] = useState<StreamServerId>(() => {
     if (propActiveServer) return propActiveServer;
     if (isDirectVideo(movie.videoUrl)) return 'direct';
-    return '2embed';
+    const origLang = (movie.originalLanguage || movie.language || 'English').toLowerCase();
+    const isDubbedHindi = isHindiContentAvailable(movie) && !origLang.includes('hi') && !origLang.includes('hindi');
+    return isDubbedHindi ? 'peachify' : '2embed';
   });
 
   const activeServer = propActiveServer || internalServer;
@@ -324,10 +329,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         break;
       case '2embed':
       default:
-        base = fallbackEmbedUrl || (isSeries
+        base = isSeries
           ? `https://www.2embed.cc/embedtv/${rawId}&s=${season}&e=${episode}`
-          : `https://www.2embed.cc/embed/${rawId}`);
+          : `https://www.2embed.cc/embed/${rawId}`;
         break;
+    }
+
+    if (!base && fallbackEmbedUrl) {
+      base = fallbackEmbedUrl;
     }
 
     if (savedPlaybackPosition.current > 0 && !base.includes('#t=')) {
@@ -420,7 +429,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }, [activeServer, isPlaying, effectiveDuration]);
 
   // -------------------------------------------------------------
-  // CONTROLS AUTO-HIDE LOGIC
+  // CONTROLS AUTO-HIDE LOGIC (Auto-fade after 2.5s of inactivity)
   // -------------------------------------------------------------
   const resetControlsTimeout = useCallback(() => {
     if (isScreenLocked) return;
@@ -428,19 +437,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);
     }
-    if (isPlaying && activeMenu === 'none') {
+    // Auto-fade controls after 2.5 seconds of inactivity whenever no modal menu is open
+    if (activeMenu === 'none') {
       controlsTimeoutRef.current = setTimeout(() => {
         setAreControlsVisible(false);
-      }, 3500);
+      }, 2500);
     }
-  }, [isPlaying, activeMenu, isScreenLocked]);
+  }, [activeMenu, isScreenLocked]);
 
   useEffect(() => {
     resetControlsTimeout();
     return () => {
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
     };
-  }, [resetControlsTimeout]);
+  }, [resetControlsTimeout, activeMenu]);
 
   // -------------------------------------------------------------
   // PLAY / PAUSE CONTROLS & HUD PULSE
@@ -715,8 +725,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       return;
     }
 
-    setAreControlsVisible((prev) => !prev);
-    resetControlsTimeout();
+    setAreControlsVisible((prev) => {
+      const next = !prev;
+      if (next) {
+        if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+        controlsTimeoutRef.current = setTimeout(() => {
+          setAreControlsVisible(false);
+        }, 2500);
+      } else {
+        if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+      }
+      return next;
+    });
   };
 
   // Top bar action handlers
@@ -772,10 +792,23 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
 
-  // Audio track switching
+  // Audio track switching with smart server auto-routing
   const handleSelectAudioLanguage = (track: AudioTrack) => {
     setSelectedAudioTrack(track);
     setActiveMenu('none');
+
+    const isHindi = track.id === 'hi' || track.name.toLowerCase().includes('hindi');
+    const origLang = (movie.originalLanguage || movie.language || 'English').toLowerCase();
+    const isNonHindiNative = !origLang.includes('hi') && !origLang.includes('hindi');
+
+    if (isHindi && isNonHindiNative && activeServer !== 'peachify' && activeServer !== 'direct') {
+      setActiveServer('peachify');
+      showToast('⚡ Switched to Peachify VIP (Hindi Audio Dub)');
+    } else if (!isHindi && activeServer === 'peachify') {
+      setActiveServer('2embed');
+      showToast(`⚡ Switched to Server Epsilon (2Embed) for ${track.name}`);
+    }
+
     if (onAudioChange) onAudioChange(track);
     showToast(`🎧 Audio Track: ${track.name} ${track.flag || ''}`);
   };
@@ -848,7 +881,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       className={`player-landscape-container relative w-full aspect-video bg-black rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-zinc-800/80 select-none group font-sans ${
-        !areControlsVisible && isPlaying ? 'cursor-none' : 'cursor-default'
+        !isHudVisible ? 'cursor-none' : 'cursor-default'
       }`}
     >
       {/* IN-PLAYER TOAST */}
@@ -951,7 +984,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* ------------------------------------------------------------- */}
       <div
         className={`absolute top-0 inset-x-0 z-30 flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3.5 bg-gradient-to-b from-black/95 via-black/60 to-transparent transition-opacity duration-300 ${
-          (areControlsVisible && !isScreenLocked) || !isPlaying ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          isHudVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
         {/* Back Arrow & Title */}
@@ -975,7 +1008,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               {streamTitle}
             </h2>
             <span className="hidden sm:inline-block text-[10px] text-zinc-400">
-              {movie.releaseYear || '2024'} • {movie.duration || '2h 15m'} • Server Epsilon (2Embed)
+              {movie.releaseYear || '2024'} • {movie.duration || '2h 15m'} • {activeServer === 'peachify' ? 'Peachify VIP (Hindi Dub)' : activeServer === 'direct' ? 'Direct HD' : 'Server Epsilon (2Embed)'}
             </span>
           </div>
         </div>
@@ -1036,8 +1069,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* 2. CENTER PLAYBACK CONTROLS (Rewind 10s, Play/Pause, Forward 10s) */}
       {/* ------------------------------------------------------------- */}
       <div
-        className={`absolute inset-0 z-30 flex items-center justify-center gap-8 sm:gap-16 pointer-events-none transition-opacity duration-300 ${
-          (areControlsVisible && !isScreenLocked) || !isPlaying ? 'opacity-100' : 'opacity-0'
+        className={`absolute inset-0 z-30 flex items-center justify-center gap-6 sm:gap-14 transition-opacity duration-300 ${
+          isHudVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
         {/* Rewind 10s */}
@@ -1046,28 +1079,28 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             e.stopPropagation();
             seekRelative(-10);
           }}
-          className="pointer-events-auto p-3 sm:p-4 rounded-full bg-black/50 hover:bg-black/80 border border-white/20 text-white hover:scale-110 active:scale-95 transition-all shadow-xl cursor-pointer flex flex-col items-center justify-center relative"
+          className="p-3 sm:p-3.5 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white/90 hover:text-white hover:scale-110 active:scale-95 transition-all shadow-lg backdrop-blur-md cursor-pointer flex flex-col items-center justify-center relative"
           title="Rewind 10s"
           aria-label="Rewind 10 seconds"
         >
-          <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8" />
-          <span className="text-[9px] font-black absolute">10</span>
+          <RotateCcw className="w-5 h-5 sm:w-7 sm:h-7" />
+          <span className="text-[8px] sm:text-[9px] font-black absolute">10</span>
         </button>
 
-        {/* Large Play/Pause Toggle */}
+        {/* Large Play/Pause Toggle - Sleek Semi-translucent */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             togglePlay();
           }}
-          className="pointer-events-auto p-5 sm:p-6 rounded-full bg-[#E50914] text-white shadow-2xl hover:scale-110 active:scale-95 transition-all ring-4 ring-[#E50914]/40 cursor-pointer"
+          className="p-4 sm:p-5 rounded-full bg-[#E50914]/85 hover:bg-[#E50914] text-white shadow-xl hover:scale-110 active:scale-95 transition-all ring-2 sm:ring-4 ring-[#E50914]/30 backdrop-blur-md border border-white/20 cursor-pointer"
           title={isPlaying ? 'Pause' : 'Play'}
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (
-            <Pause className="w-8 h-8 sm:w-10 sm:h-10 fill-current" />
+            <Pause className="w-7 h-7 sm:w-9 sm:h-9 fill-current" />
           ) : (
-            <Play className="w-8 h-8 sm:w-10 sm:h-10 fill-current ml-1" />
+            <Play className="w-7 h-7 sm:w-9 sm:h-9 fill-current ml-1" />
           )}
         </button>
 
@@ -1077,12 +1110,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             e.stopPropagation();
             seekRelative(10);
           }}
-          className="pointer-events-auto p-3 sm:p-4 rounded-full bg-black/50 hover:bg-black/80 border border-white/20 text-white hover:scale-110 active:scale-95 transition-all shadow-xl cursor-pointer flex flex-col items-center justify-center relative"
+          className="p-3 sm:p-3.5 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white/90 hover:text-white hover:scale-110 active:scale-95 transition-all shadow-lg backdrop-blur-md cursor-pointer flex flex-col items-center justify-center relative"
           title="Forward 10s"
           aria-label="Forward 10 seconds"
         >
-          <RotateCw className="w-6 h-6 sm:w-8 sm:h-8" />
-          <span className="text-[9px] font-black absolute">10</span>
+          <RotateCw className="w-5 h-5 sm:w-7 sm:h-7" />
+          <span className="text-[8px] sm:text-[9px] font-black absolute">10</span>
         </button>
       </div>
 
@@ -1091,7 +1124,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* ------------------------------------------------------------- */}
       <div
         className={`absolute inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/95 via-black/80 to-transparent pt-10 pb-2.5 sm:pb-3 px-3 sm:px-6 transition-opacity duration-300 ${
-          (areControlsVisible && !isScreenLocked) || !isPlaying ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          isHudVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
         {/* Timeline Scrubber Bar with Left/Right Timestamps */}
@@ -1300,6 +1333,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             onLoad={() => {
               setIsLoading(false);
               setIsBuffering(false);
+              setIsPlaying(true);
+              resetControlsTimeout();
             }}
             className={`w-full h-full border-0 absolute inset-0 z-0 bg-black transition-transform duration-300 ${
               fitMode === 'contain' ? 'scale-100' : fitMode === 'cover' ? 'scale-110 sm:scale-105' : 'scale-100'

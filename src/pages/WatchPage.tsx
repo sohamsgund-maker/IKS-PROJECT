@@ -21,7 +21,11 @@ export const WatchPage: React.FC<WatchPageProps> = ({
 }) => {
   const [currentSeason, setCurrentSeason] = useState<number>(1);
   const [currentEpisode, setCurrentEpisode] = useState<number>(1);
-  const [activeServer, setActiveServer] = useState<StreamServerId>(() => '2embed');
+  const [activeServer, setActiveServer] = useState<StreamServerId>(() => {
+    const origLang = (movie.originalLanguage || movie.language || 'English').toLowerCase();
+    const isDubbedHindi = isHindiContentAvailable(movie) && !origLang.includes('hi') && !origLang.includes('hindi');
+    return isDubbedHindi ? 'peachify' : '2embed';
+  });
   const [streamInfo, setStreamInfo] = useState<StreamInfoResponse | null>(null);
   const [selectedAudioTrack, setSelectedAudioTrack] = useState<AudioTrack | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -72,7 +76,10 @@ export const WatchPage: React.FC<WatchPageProps> = ({
   const fallbackEmbedUrl = useMemo(() => {
     if (streamInfo?.fallbackEmbedUrl) return streamInfo.fallbackEmbedUrl;
     const defaultLang = isHindiAvail ? 'Hindi' : (movie.language || 'English');
-    return getEmbedUrl('2embed', movie, currentSeason, currentEpisode, selectedAudioTrack?.name || defaultLang);
+    const origLang = (movie.originalLanguage || movie.language || 'English').toLowerCase();
+    const isDubbedHindi = isHindiAvail && !origLang.includes('hi') && !origLang.includes('hindi');
+    const serverToUse = isDubbedHindi ? 'peachify' : '2embed';
+    return getEmbedUrl(serverToUse, movie, currentSeason, currentEpisode, selectedAudioTrack?.name || defaultLang);
   }, [streamInfo, movie, currentSeason, currentEpisode, selectedAudioTrack, isHindiAvail]);
 
   // Detected Dynamic Audio Tracks
@@ -153,6 +160,14 @@ export const WatchPage: React.FC<WatchPageProps> = ({
         onQualityChange={onQualityChange}
         onAudioChange={(track) => {
           setSelectedAudioTrack(track);
+          const isHindi = track.id === 'hi' || track.name.toLowerCase().includes('hindi');
+          const origLang = (movie.originalLanguage || movie.language || 'English').toLowerCase();
+          const isDubbed = isHindi && !origLang.includes('hi') && !origLang.includes('hindi');
+          if (isDubbed && activeServer !== 'peachify') {
+            setActiveServer('peachify');
+          } else if (!isHindi && activeServer === 'peachify') {
+            setActiveServer('2embed');
+          }
           showToast(`Active Audio: ${track.name} ${track.flag || ''}`);
         }}
         fallbackEmbedUrl={fallbackEmbedUrl}
