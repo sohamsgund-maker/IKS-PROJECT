@@ -2,9 +2,9 @@
  * CineVault Application Version & Update Configuration
  */
 
-export const APP_VERSION = '2.5.8';
-export const APP_BUILD_CODE = 2580;
-export const APP_RELEASE_NAME = 'CineVault v2.5.8 Stable';
+export const APP_VERSION = '2.5.9';
+export const APP_BUILD_CODE = 2590;
+export const APP_RELEASE_NAME = 'CineVault v2.5.9 Stable';
 
 // Official distribution & update endpoints
 export const OFFICIAL_WEBSITE_URL = 'https://cinevaultapk.online/';

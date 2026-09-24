@@ -27,6 +27,8 @@ import {
   Volume1,
   Scan,
   Globe,
+  PictureInPicture,
+  Sliders,
 } from 'lucide-react';
 import {
   liveTvService,
@@ -79,11 +81,20 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
   const [activeGesture, setActiveGesture] = useState<'brightness' | 'volume' | null>(null);
   const [gestureValue, setGestureValue] = useState<number>(100);
 
+  // Advanced Player Layer State: PiP, Qualities & Quick Drawer
+  const [isPipActive, setIsPipActive] = useState<boolean>(false);
+  const [showQuickDrawer, setShowQuickDrawer] = useState<boolean>(false);
+  const [currentQuality, setCurrentQuality] = useState<string>('Auto');
+  const [availableQualities, setAvailableQualities] = useState<{ id: number; name: string }[]>([]);
+  const [showQualityMenu, setShowQualityMenu] = useState<boolean>(false);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gestureTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stallWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTapRef = useRef<{ time: number; x: number } | null>(null);
   const touchStartPosRef = useRef<{
     startX: number;
     startY: number;
@@ -184,35 +195,67 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
       hlsRef.current = null;
     }
 
+    // Synchronize PiP events
+    const onEnterPip = () => setIsPipActive(true);
+    const onLeavePip = () => setIsPipActive(false);
+    video.addEventListener('enterpictureinpicture', onEnterPip);
+    video.addEventListener('leavepictureinpicture', onLeavePip);
+
     // 1. Try HLS.js when supported (standard desktop & android browsers)
     if (Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
-        backBufferLength: 60,
+        backBufferLength: 30,
+        maxBufferLength: 30,
+        maxMaxBufferLength: 60,
+        maxBufferSize: 60 * 1000 * 1000,
+        maxBufferHole: 0.5,
+        highBufferWatchdogPeriod: 2,
+        nudgeOffset: 0.1,
+        nudgeMaxRetry: 5,
         manifestLoadingTimeOut: 10000,
+        manifestLoadingMaxRetry: 3,
         levelLoadingTimeOut: 10000,
+        levelLoadingMaxRetry: 3,
+        fragLoadingTimeOut: 15000,
+        fragLoadingMaxRetry: 4,
       });
       hlsRef.current = hls;
 
       hls.loadSource(currentLoadedUrl);
       hls.attachMedia(video);
 
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+        if (data.levels && data.levels.length > 0) {
+          const qs = data.levels.map((lvl, idx) => ({
+            id: idx,
+            name: lvl.height ? `${lvl.height}p` : `${Math.round(lvl.bitrate / 1000)}k`
+          }));
+          setAvailableQualities(qs);
+        }
         startAutoplay(video);
       });
 
       hls.on(Hls.Events.ERROR, (_, data) => {
+        if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+          if (video && !video.paused) {
+            try {
+              video.currentTime += 0.1;
+            } catch {}
+          }
+          return;
+        }
         if (data.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              if (retryAttempts < maxRetries) {
-                retryAttempts++;
-                hls.startLoad();
-              } else if (activeChannel.fallbackUrl && currentLoadedUrl !== activeChannel.fallbackUrl) {
+              if (activeChannel.fallbackUrl && currentLoadedUrl !== activeChannel.fallbackUrl) {
                 currentLoadedUrl = activeChannel.fallbackUrl;
                 retryAttempts = 0;
                 hls.loadSource(activeChannel.fallbackUrl);
+                hls.startLoad();
+              } else if (retryAttempts < maxRetries) {
+                retryAttempts++;
                 hls.startLoad();
               } else {
                 hls.destroy();
@@ -224,9 +267,15 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
               hls.recoverMediaError();
               break;
             default:
-              hls.destroy();
-              setError('Live broadcast temporarily unavailable. Tap Retry or switch channels.');
-              setIsLoading(false);
+              if (activeChannel.fallbackUrl && currentLoadedUrl !== activeChannel.fallbackUrl) {
+                currentLoadedUrl = activeChannel.fallbackUrl;
+                hls.loadSource(activeChannel.fallbackUrl);
+                hls.startLoad();
+              } else {
+                hls.destroy();
+                setError('Live broadcast temporarily unavailable. Tap Retry or switch channels.');
+                setIsLoading(false);
+              }
               break;
           }
         }
@@ -255,6 +304,8 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
     }
 
     return () => {
+      video.removeEventListener('enterpictureinpicture', onEnterPip);
+      video.removeEventListener('leavepictureinpicture', onLeavePip);
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
@@ -416,6 +467,97 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
       return next;
     });
   }, [showToast]);
+
+  // Picture-in-Picture (PiP) Mode Toggle
+  const togglePictureInPicture = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+        setIsPipActive(false);
+        showToast('Picture-in-Picture: Off');
+      } else if (document.pictureInPictureEnabled) {
+        await video.requestPictureInPicture();
+        setIsPipActive(true);
+        showToast('Picture-in-Picture: Active');
+      } else {
+        showToast('Picture-in-Picture not supported on this device');
+      }
+    } catch {
+      showToast('Picture-in-Picture not available for this stream');
+    }
+  }, [showToast]);
+
+  // Video Quality Level Selector
+  const handleSelectQuality = useCallback((levelId: number) => {
+    if (!hlsRef.current) return;
+    hlsRef.current.currentLevel = levelId;
+    if (levelId === -1) {
+      setCurrentQuality('Auto');
+      showToast('Quality: Auto (Adaptive)');
+    } else {
+      const q = availableQualities.find((item) => item.id === levelId);
+      setCurrentQuality(q ? q.name : `${levelId}`);
+      showToast(`Quality: ${q ? q.name : levelId}`);
+    }
+    setShowQualityMenu(false);
+  }, [availableQualities, showToast]);
+
+  // Video Buffer Watchdog & Stall Recovery
+  const handleVideoWaiting = useCallback(() => {
+    setIsLoading(true);
+    if (stallWatchdogRef.current) clearTimeout(stallWatchdogRef.current);
+    stallWatchdogRef.current = setTimeout(() => {
+      const v = videoRef.current;
+      if (v && !v.paused) {
+        try {
+          v.currentTime += 0.15;
+        } catch {}
+      }
+    }, 2500);
+  }, []);
+
+  const handleVideoPlaying = useCallback(() => {
+    setIsLoading(false);
+    setIsPlaying(true);
+    if (stallWatchdogRef.current) {
+      clearTimeout(stallWatchdogRef.current);
+      stallWatchdogRef.current = null;
+    }
+  }, []);
+
+  const handleVideoStalled = useCallback(() => {
+    const v = videoRef.current;
+    if (v && !v.paused) {
+      try {
+        v.currentTime += 0.1;
+      } catch {}
+    }
+  }, []);
+
+  // Double Tap Gestures on Player Layer: Left 30% Prev Channel, Right 30% Next Channel, Center Toggle Play
+  const handlePlayerTap = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const now = Date.now();
+    const rect = playerContainerRef.current?.getBoundingClientRect();
+    if (rect && lastTapRef.current && now - lastTapRef.current.time < 320) {
+      const x = e.clientX - rect.left;
+      const pct = x / rect.width;
+      if (pct < 0.32) {
+        handlePrevChannel();
+        showToast('◀ Previous Channel');
+      } else if (pct > 0.68) {
+        handleNextChannel();
+        showToast('Next Channel ▶');
+      } else {
+        togglePlayPause();
+      }
+      lastTapRef.current = null;
+      return;
+    }
+    lastTapRef.current = { time: now, x: e.clientX };
+    triggerShowControls();
+  }, [handlePrevChannel, handleNextChannel, togglePlayPause, triggerShowControls, showToast]);
 
   // Touch Gesture Handlers for Brightness (Left half) and Volume (Right half) in Fullscreen Landscape
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
@@ -625,11 +767,17 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
           <div
             ref={playerContainerRef}
             onMouseMove={triggerShowControls}
-            onClick={triggerShowControls}
+            onClick={handlePlayerTap}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onTouchCancel={handleTouchEnd}
+            style={{
+              transform: 'translate3d(0, 0, 0)',
+              WebkitTransform: 'translate3d(0, 0, 0)',
+              willChange: 'transform',
+              backfaceVisibility: 'hidden',
+            }}
             className={`relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-[#292E35] select-none ${
               isFullscreen ? 'fixed inset-0 z-50 rounded-none w-screen h-screen' : ''
             }`}
@@ -639,6 +787,11 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
               ref={videoRef}
               playsInline
               autoPlay
+              style={{
+                transform: 'translate3d(0, 0, 0)',
+                WebkitTransform: 'translate3d(0, 0, 0)',
+                willChange: 'transform',
+              }}
               className={`w-full h-full transition-[object-fit] duration-200 bg-black ${
                 fitMode === 'cover'
                   ? 'object-cover'
@@ -648,11 +801,9 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
               }`}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
-              onWaiting={() => setIsLoading(true)}
-              onPlaying={() => {
-                setIsLoading(false);
-                setIsPlaying(true);
-              }}
+              onWaiting={handleVideoWaiting}
+              onPlaying={handleVideoPlaying}
+              onStalled={handleVideoStalled}
             />
 
             {/* Toast Notification */}
@@ -812,12 +963,96 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 relative">
                   <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/10 text-white">
                     {activeChannel.quality}
                   </span>
+                  {availableQualities.length > 0 && (
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowQualityMenu((prev) => !prev);
+                        }}
+                        className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[#F0B429] text-[10px] font-mono font-bold cursor-pointer active:scale-95 transition-all"
+                        title="Stream Resolution"
+                      >
+                        <Sliders className="w-2.5 h-2.5" />
+                        <span>{currentQuality}</span>
+                      </button>
+
+                      {showQualityMenu && (
+                        <div
+                          className="absolute right-0 top-full mt-2 w-36 py-1.5 rounded-xl bg-[#15181D]/95 backdrop-blur-xl border border-white/20 shadow-[0_12px_36px_rgba(0,0,0,0.8)] z-50 animate-fade-in flex flex-col"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-gray-400 border-b border-white/10">
+                            Quality
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectQuality(-1)}
+                            className={`px-3 py-1.5 text-xs text-left font-mono font-bold flex items-center justify-between hover:bg-white/10 transition-colors ${
+                              currentQuality === 'Auto' ? 'text-[#F0B429]' : 'text-gray-200'
+                            }`}
+                          >
+                            <span>Auto</span>
+                            {currentQuality === 'Auto' && <span className="text-[10px]">✓</span>}
+                          </button>
+                          {availableQualities.map((q) => (
+                            <button
+                              key={q.id}
+                              type="button"
+                              onClick={() => handleSelectQuality(q.id)}
+                              className={`px-3 py-1.5 text-xs text-left font-mono font-bold flex items-center justify-between hover:bg-white/10 transition-colors ${
+                                currentQuality === q.name ? 'text-[#F0B429]' : 'text-gray-200'
+                              }`}
+                            >
+                              <span>{q.name}</span>
+                              {currentQuality === q.name && <span className="text-[10px]">✓</span>}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Quick Channel Carousel Drawer */}
+              {showQuickDrawer && (
+                <div
+                  className="w-full px-2 py-2 mb-2 bg-black/85 backdrop-blur-xl border border-white/15 rounded-2xl overflow-x-auto scrollbar-none flex items-center gap-2 animate-fade-in z-30"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {filteredChannels.slice(0, 45).map((ch) => {
+                    const isActive = ch.id === activeChannel.id;
+                    return (
+                      <button
+                        key={ch.id}
+                        type="button"
+                        onClick={() => handleSelectChannel(ch)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-left whitespace-nowrap transition-all shrink-0 cursor-pointer active:scale-95 border ${
+                          isActive
+                            ? 'bg-[#F0B429] text-[#0B0D10] border-[#F0B429] shadow-[0_2px_12px_rgba(240,180,41,0.4)] font-bold'
+                            : 'bg-white/5 text-white hover:bg-white/15 border-white/10'
+                        }`}
+                      >
+                        <div className="w-5 h-5 rounded-md bg-white/10 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
+                          <img src={ch.logo} alt="" className="w-full h-full object-contain" />
+                        </div>
+                        <span className="text-xs truncate max-w-[120px]">{ch.name}</span>
+                        {isActive && (
+                          <span className="text-[8px] font-mono uppercase bg-black/30 text-[#0B0D10] font-black px-1 rounded">
+                            PLAYING
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Bottom Controls Bar */}
               <div
@@ -939,26 +1174,55 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                   )}
                 </div>
 
-                {/* Right: Screen Fit & Fullscreen */}
+                {/* Right: Quick Drawer, PiP, Screen Fit & Fullscreen */}
                 <div className="flex items-center gap-2">
-                  {/* Screen Fit Toggle - Landscape/Fullscreen Only */}
-                  {isFullscreen && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        cycleFitMode();
-                      }}
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-black/60 hover:bg-black/80 border border-white/10 text-white text-xs font-semibold cursor-pointer active:scale-95 transition-all"
-                      title={`Screen Fit: ${fitMode === 'contain' ? 'Fit (Original)' : fitMode === 'cover' ? 'Zoom (Fill Screen)' : 'Stretch'}`}
-                      aria-label="Toggle Screen Fit"
-                    >
-                      <Scan className="w-3.5 h-3.5 text-[#F0B429]" />
-                      <span className="font-mono text-[10px] uppercase hidden sm:inline">
-                        {fitMode === 'contain' ? 'Fit' : fitMode === 'cover' ? 'Zoom' : 'Stretch'}
-                      </span>
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowQuickDrawer((prev) => !prev);
+                    }}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold cursor-pointer active:scale-95 transition-all ${
+                      showQuickDrawer
+                        ? 'bg-[#F0B429] text-[#0B0D10] border-[#F0B429] shadow-md'
+                        : 'bg-black/60 hover:bg-black/80 border-white/10 text-white'
+                    }`}
+                    title="Quick Channels Carousel"
+                  >
+                    <Tv className="w-3.5 h-3.5" />
+                    <span className="font-mono text-[10px] hidden sm:inline">Channels</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePictureInPicture();
+                    }}
+                    className={`w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center cursor-pointer active:scale-95 transition-all ${
+                      isPipActive ? 'text-[#F0B429] border border-[#F0B429]/40' : ''
+                    }`}
+                    title="Picture in Picture (PiP)"
+                  >
+                    <PictureInPicture className="w-3.5 h-3.5" />
+                  </button>
+
+                  {/* Universal Screen Fit Toggle - Portrait & Landscape */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      cycleFitMode();
+                    }}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-black/60 hover:bg-black/80 border border-white/10 text-white text-xs font-semibold cursor-pointer active:scale-95 transition-all"
+                    title={`Screen Fit: ${fitMode === 'contain' ? 'Fit (Original)' : fitMode === 'cover' ? 'Zoom (Fill Screen)' : 'Stretch'}`}
+                    aria-label="Toggle Screen Fit"
+                  >
+                    <Scan className="w-3.5 h-3.5 text-[#F0B429]" />
+                    <span className="font-mono text-[10px] uppercase hidden sm:inline">
+                      {fitMode === 'contain' ? 'Fit' : fitMode === 'cover' ? 'Zoom' : 'Stretch'}
+                    </span>
+                  </button>
 
                   <button
                     type="button"

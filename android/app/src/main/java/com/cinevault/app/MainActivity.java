@@ -612,16 +612,40 @@ public class MainActivity extends BridgeActivity {
                     boolean hasRange = request.getRequestHeaders() != null &&
                         request.getRequestHeaders().keySet().stream().anyMatch(k -> k != null && k.equalsIgnoreCase("Range"));
 
-                    boolean isVideoReq = hasRange || urlLower.contains(".mp4") || urlLower.contains(".m3u8") || urlLower.contains("tran-audio") ||
-                                         urlLower.contains("proxy_video") ||
-                                         (urlLower.contains("sign=") && (hostLower.contains("cdn") || hostLower.contains("bcdn") || hostLower.contains("hakunaymatata"))) ||
-                                         hostLower.contains("bcdn.biz") || hostLower.contains("bcdn.") ||
-                                         hostLower.contains("bytefuntimes") || hostLower.contains("funtimes") || hostLower.contains("wixx.me");
+                    boolean isMovieBoxDomain = hostLower.contains("hakunaymatata.com") ||
+                                               hostLower.contains("bcdn.biz") ||
+                                               hostLower.contains("bytefuntimes") ||
+                                               hostLower.contains("funtimes") ||
+                                               hostLower.contains("wixx.me") ||
+                                               hostLower.contains("aoneroom.com") ||
+                                               hostLower.contains("mzfi.me") ||
+                                               urlLower.contains("proxy_video");
 
-                    if (isVideoReq || hostLower.contains("hakunaymatata.com") || hostLower.contains("aoneroom.com") || hostLower.contains("mzfi.me")) {
+                    if (isMovieBoxDomain) {
                         WebResourceResponse proxied = proxyMovieBoxRequest(request);
                         if (proxied != null) {
                             return proxied;
+                        }
+                    }
+
+                    // Native Live TV Stream & HLS Proxy
+                    // Intercepts Live TV playlists (.m3u8), keys (serve.key), and transport stream segments (.ts/.m4s)
+                    // Solves CORS restrictions and missing Access-Control-Allow-Origin headers across Sony LIV, Akamai, CloudFront
+                    boolean isLiveTvReq = urlLower.contains(".m3u8") ||
+                                          urlLower.contains(".ts") ||
+                                          urlLower.contains(".m4s") ||
+                                          urlLower.contains("slivcdn.com") ||
+                                          urlLower.contains("cloudplay-sonyliv") ||
+                                          urlLower.contains("serve.key") ||
+                                          urlLower.contains("tangotv.in") ||
+                                          urlLower.contains("smartplaytv.in") ||
+                                          urlLower.contains("wiseplayout.com") ||
+                                          urlLower.contains("akamaized.net");
+
+                    if (isLiveTvReq) {
+                        WebResourceResponse liveProxied = proxyLiveTvRequest(request);
+                        if (liveProxied != null) {
+                            return liveProxied;
                         }
                     }
                 }
@@ -1101,6 +1125,165 @@ public class MainActivity extends BridgeActivity {
                 return new WebResourceResponse(
                     contentType.split(";")[0].trim(),
                     encoding,
+                    responseCode,
+                    reasonPhrase,
+                    responseHeaders,
+                    stream
+                );
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        private static WebResourceResponse proxyLiveTvRequest(WebResourceRequest request) {
+            try {
+                Uri uri = request.getUrl();
+                if (uri == null) return null;
+                String urlStr = uri.toString();
+                String urlLower = urlStr.toLowerCase();
+                String method = request.getMethod() != null ? request.getMethod().toUpperCase() : "GET";
+
+                // Fast response to CORS preflight OPTIONS
+                if ("OPTIONS".equals(method)) {
+                    Map<String, String> corsHeaders = new HashMap<>();
+                    corsHeaders.put("Access-Control-Allow-Origin", "*");
+                    corsHeaders.put("Access-Control-Allow-Methods", "GET, POST, OPTIONS, HEAD");
+                    corsHeaders.put("Access-Control-Allow-Headers", "*");
+                    corsHeaders.put("Access-Control-Max-Age", "86400");
+                    return new WebResourceResponse("text/plain", "UTF-8", 200, "OK", corsHeaders, new ByteArrayInputStream(new byte[0]));
+                }
+
+                URL url = new URL(urlStr);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod(method);
+                conn.setConnectTimeout(8000);
+                conn.setReadTimeout(15000);
+                conn.setInstanceFollowRedirects(true);
+
+                // Set modern standard User-Agent
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+                conn.setRequestProperty("Accept", "*/*");
+
+                // Forward client headers, preserving Range, but omitting conflicting origins
+                if (request.getRequestHeaders() != null) {
+                    for (Map.Entry<String, String> entry : request.getRequestHeaders().entrySet()) {
+                        String k = entry.getKey();
+                        if (k != null && !k.equalsIgnoreCase("Referer") && !k.equalsIgnoreCase("Origin") && !k.equalsIgnoreCase("Host")) {
+                            conn.setRequestProperty(k, entry.getValue());
+                        }
+                    }
+                }
+
+                int responseCode = conn.getResponseCode();
+                int redirects = 0;
+                while ((responseCode == 301 || responseCode == 302 || responseCode == 303 || responseCode == 307 || responseCode == 308) && redirects < 5) {
+                    String location = conn.getHeaderField("Location");
+                    if (location == null || location.isEmpty()) break;
+                    URL nextUrl = new URL(url, location);
+                    url = nextUrl;
+                    urlStr = url.toString();
+                    urlLower = urlStr.toLowerCase();
+                    try { conn.disconnect(); } catch (Exception ignored) {}
+
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod(method);
+                    conn.setConnectTimeout(8000);
+                    conn.setReadTimeout(15000);
+                    conn.setInstanceFollowRedirects(true);
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+                    conn.setRequestProperty("Accept", "*/*");
+                    if (request.getRequestHeaders() != null) {
+                        for (Map.Entry<String, String> entry : request.getRequestHeaders().entrySet()) {
+                            String k = entry.getKey();
+                            if (k != null && !k.equalsIgnoreCase("Referer") && !k.equalsIgnoreCase("Origin") && !k.equalsIgnoreCase("Host")) {
+                                conn.setRequestProperty(k, entry.getValue());
+                            }
+                        }
+                    }
+                    responseCode = conn.getResponseCode();
+                    redirects++;
+                }
+
+                // Determine precise media MIME type for Chromium's video pipeline
+                String mimeType;
+                if (urlLower.contains(".m3u8")) {
+                    mimeType = "application/vnd.apple.mpegurl";
+                } else if (urlLower.contains(".ts")) {
+                    mimeType = "video/mp2t";
+                } else if (urlLower.contains(".m4s") || urlLower.contains(".mp4")) {
+                    mimeType = "video/mp4";
+                } else if (urlLower.contains(".aac")) {
+                    mimeType = "audio/aac";
+                } else if (urlLower.contains("serve.key") || urlLower.contains(".key")) {
+                    mimeType = "application/octet-stream";
+                } else {
+                    String rawCt = conn.getContentType();
+                    if (rawCt != null && !rawCt.isEmpty()) {
+                        mimeType = rawCt.split(";")[0].trim();
+                    } else {
+                        mimeType = "application/octet-stream";
+                    }
+                }
+
+                Map<String, String> responseHeaders = new HashMap<>();
+                responseHeaders.put("Access-Control-Allow-Origin", "*");
+                responseHeaders.put("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+                responseHeaders.put("Access-Control-Allow-Headers", "*");
+                responseHeaders.put("Access-Control-Expose-Headers", "Content-Range, Content-Length, Accept-Ranges");
+                responseHeaders.put("Content-Type", mimeType);
+
+                long cl = conn.getContentLengthLong();
+                if (cl > 0) {
+                    responseHeaders.put("Content-Length", String.valueOf(cl));
+                }
+
+                String cr = conn.getHeaderField("Content-Range");
+                if (cr != null && !cr.isEmpty()) {
+                    responseHeaders.put("Content-Range", cr);
+                }
+
+                String ar = conn.getHeaderField("Accept-Ranges");
+                if (ar != null && !ar.isEmpty()) {
+                    responseHeaders.put("Accept-Ranges", ar);
+                }
+
+                InputStream rawStream = (responseCode >= 200 && responseCode < 400) 
+                    ? conn.getInputStream() 
+                    : conn.getErrorStream();
+
+                if (rawStream == null) {
+                    rawStream = new ByteArrayInputStream(new byte[0]);
+                }
+
+                final HttpURLConnection finalConn = conn;
+                InputStream stream = new java.io.FilterInputStream(rawStream) {
+                    private boolean isClosed = false;
+                    @Override
+                    public void close() throws java.io.IOException {
+                        if (!isClosed) {
+                            isClosed = true;
+                            try {
+                                super.close();
+                            } catch (Exception ignored) {}
+                            try {
+                                finalConn.disconnect();
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                };
+
+                String reasonPhrase;
+                if (responseCode == 200) {
+                    reasonPhrase = "OK";
+                } else if (responseCode == 206) {
+                    reasonPhrase = "Partial Content";
+                } else {
+                    reasonPhrase = conn.getResponseMessage() != null ? conn.getResponseMessage() : ("HTTP " + responseCode);
+                }
+
+                return new WebResourceResponse(
+                    mimeType,
+                    urlLower.contains(".m3u8") ? "UTF-8" : null,
                     responseCode,
                     reasonPhrase,
                     responseHeaders,
