@@ -2167,81 +2167,8 @@ public class MainActivity extends BridgeActivity {
                     @JavascriptInterface
                     public void downloadAndInstallApk(String urlStr) {
                         try {
-                            final String downloadUrl = (urlStr != null && !urlStr.trim().isEmpty())
-                                ? urlStr.trim()
-                                : "https://cinevaultapk.online/downloads/CineVault.apk";
-
-                            new Thread(() -> {
-                                try {
-                                    URL u = new URL(downloadUrl);
-                                    HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-                                    conn.setInstanceFollowRedirects(true);
-                                    conn.setConnectTimeout(8000);
-                                    conn.setReadTimeout(30000);
-                                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36");
-                                    conn.connect();
-
-                                    int respCode = conn.getResponseCode();
-                                    if (respCode == HttpURLConnection.HTTP_MOVED_PERM || respCode == HttpURLConnection.HTTP_MOVED_TEMP) {
-                                        String loc = conn.getHeaderField("Location");
-                                        if (loc != null) {
-                                            u = new URL(loc);
-                                            conn = (HttpURLConnection) u.openConnection();
-                                            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36");
-                                            conn.connect();
-                                        }
-                                    }
-
-                                    File dlDir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
-                                    if (dlDir == null) dlDir = getCacheDir();
-                                    File apkFile = new File(dlDir, "CineVault_update.apk");
-                                    if (apkFile.exists()) apkFile.delete();
-
-                                    long totalBytes = conn.getContentLengthLong();
-                                    long downloadedBytes = 0;
-
-                                    try (InputStream in = conn.getInputStream();
-                                         FileOutputStream out = new FileOutputStream(apkFile)) {
-                                        byte[] buf = new byte[65536];
-                                        int len;
-                                        while ((len = in.read(buf)) != -1) {
-                                            out.write(buf, 0, len);
-                                            downloadedBytes += len;
-                                            final int progress = totalBytes > 0 ? (int) ((downloadedBytes * 100) / totalBytes) : -1;
-                                            runOnUiThread(() -> {
-                                                if (webView != null) {
-                                                    webView.evaluateJavascript("if (window.onApkDownloadProgress) { window.onApkDownloadProgress(" + progress + "); }", null);
-                                                }
-                                            });
-                                        }
-                                        out.flush();
-                                    }
-
-                                    runOnUiThread(() -> {
-                                        try {
-                                            if (webView != null) {
-                                                webView.evaluateJavascript("if (window.onApkDownloadProgress) { window.onApkDownloadProgress(100); }", null);
-                                            }
-                                            android.content.Intent installIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
-                                            Uri contentUri = androidx.core.content.FileProvider.getUriForFile(
-                                                MainActivity.this,
-                                                getPackageName() + ".fileprovider",
-                                                apkFile
-                                            );
-                                            installIntent.setDataAndType(contentUri, "application/vnd.android.package-archive");
-                                            installIntent.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                            installIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
-                                            startActivity(installIntent);
-                                        } catch (Exception ex) {
-                                            openExternalUrl(downloadUrl);
-                                        }
-                                    });
-                                } catch (Exception e) {
-                                    runOnUiThread(() -> openExternalUrl(downloadUrl));
-                                }
-                            }).start();
-                        } catch (Exception e) {
-                            openExternalUrl(urlStr);
+                            openExternalUrl("https://cinevaultapk.online/");
+                        } catch (Exception ignored) {
                         }
                     }
                 }, "AndroidDevice");

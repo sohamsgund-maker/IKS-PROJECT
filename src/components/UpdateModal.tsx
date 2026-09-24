@@ -22,11 +22,9 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
 }) => {
   const isForceUpdate = Boolean(updateInfo.forceUpdate || isMandatory);
   const websiteUrl =
-    updateInfo.websiteUrl ||
-    updateInfo.apkDownloadUrl ||
-    updateInfo.apkUrl ||
-    OFFICIAL_WEBSITE_URL ||
-    'https://cinevaultapk.online/';
+    (updateInfo.websiteUrl && !updateInfo.websiteUrl.toLowerCase().endsWith('.apk'))
+      ? updateInfo.websiteUrl
+      : (OFFICIAL_WEBSITE_URL || 'https://cinevaultapk.online/');
 
   // Prevent background scrolling while modal is open
   useEffect(() => {
@@ -64,6 +62,13 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
 
   const handleUpdateClick = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
+    try {
+      const androidDevice = (window as any).AndroidDevice;
+      if (androidDevice && typeof androidDevice.openExternalUrl === 'function') {
+        const opened = androidDevice.openExternalUrl(websiteUrl);
+        if (opened) return;
+      }
+    } catch {}
     updateService.openUpdateUrl(websiteUrl);
   };
 
