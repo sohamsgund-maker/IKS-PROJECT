@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, memo } from 'react';
 import type { Movie, Season } from '../types/movie';
 import { movieboxService } from '../services/movieboxService';
 import { cacheService } from '../services/cacheService';
-import { Play, Star, X, Bookmark, Film, Tv, Clock, Calendar, Loader2, Download, Check, Share2 } from 'lucide-react';
+import { Play, X, Bookmark, Film, Tv, Clock, Calendar, Loader2, Download, Check, Share2 } from 'lucide-react';
 
 interface MovieDetailsModalProps {
   movie: Movie | null;
@@ -228,7 +228,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = memo(({
               backdropLoaded ? 'opacity-100' : 'opacity-0'
             }`}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#15181D] via-[#15181D]/60 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#15181D] via-transparent to-transparent pointer-events-none" />
         </div>
 
         {/* Main Info Body */}
@@ -265,12 +265,6 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = memo(({
 
               {/* Meta Badges */}
               <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-[#9A9FA8]">
-                {currentMovie.rating > 0 && (
-                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#1D2127] text-[#F0B429] font-semibold border border-[#292E35]">
-                    <Star className="w-3.5 h-3.5 fill-[#F0B429] text-[#F0B429]" />
-                    <span className="font-mono">{currentMovie.rating.toFixed(1)}</span>
-                  </div>
-                )}
                 {(currentMovie.releaseDate || currentMovie.release_year) && (
                   <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#1D2127] border border-[#292E35] font-mono">
                     <Calendar className="w-3.5 h-3.5" />

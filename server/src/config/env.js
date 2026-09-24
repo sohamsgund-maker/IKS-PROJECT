@@ -18,4 +18,12 @@ export const config = {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 mins
     max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
   },
+  scraper: {
+    enabled: process.env.SCRAPER_AUTO_START !== 'false',
+    intervalMinutes: parseInt(process.env.SCRAPER_INTERVAL_MINUTES || '360', 10), // 6 hours
+    startDelayMs: parseInt(process.env.SCRAPER_START_DELAY_MS || '5000', 10), // 5s initial delay
+    maxItems: parseInt(process.env.SCRAPER_MAX_ITEMS || '80', 10),
+    concurrency: parseInt(process.env.SCRAPER_CONCURRENCY || '3', 10),
+    dataPath: process.env.SCRAPER_DATA_PATH || './data/metadata_catalog.json',
+  },
 };

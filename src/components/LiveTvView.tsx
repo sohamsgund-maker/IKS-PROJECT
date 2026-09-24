@@ -16,8 +16,6 @@ import {
   Compass,
   Sparkles,
   Search,
-  SkipForward,
-  SkipBack,
   RotateCcw,
   Loader2,
   AlertCircle,
@@ -25,10 +23,7 @@ import {
   SunMedium,
   SunDim,
   Volume1,
-  Scan,
   Globe,
-  PictureInPicture,
-  Sliders,
 } from 'lucide-react';
 import {
   liveTvService,
@@ -54,7 +49,6 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
   const [reloadKey, setReloadKey] = useState<number>(0);
   const [needsUnmute, setNeedsUnmute] = useState<boolean>(false);
   const [showControls, setShowControls] = useState<boolean>(true);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const handleRetryStream = useCallback(() => {
     setError(null);
@@ -62,7 +56,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
     setReloadKey((prev) => prev + 1);
   }, []);
 
-  // Brightness, Fit Mode & Gesture Navigation State
+  // Screen Brightness & Gesture Navigation State (for Landscape)
   const [brightness, setBrightness] = useState<number>(() => {
     try {
       const saved = localStorage.getItem('cinevault_livetv_brightness');
@@ -71,30 +65,14 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
       return 1.0;
     }
   });
-  const [fitMode, setFitMode] = useState<'contain' | 'cover' | 'fill'>(() => {
-    try {
-      return (localStorage.getItem('cinevault_livetv_fit') as any) || 'contain';
-    } catch {
-      return 'contain';
-    }
-  });
   const [activeGesture, setActiveGesture] = useState<'brightness' | 'volume' | null>(null);
   const [gestureValue, setGestureValue] = useState<number>(100);
-
-  // Advanced Player Layer State: PiP, Qualities & Quick Drawer
-  const [isPipActive, setIsPipActive] = useState<boolean>(false);
-  const [showQuickDrawer, setShowQuickDrawer] = useState<boolean>(false);
-  const [currentQuality, setCurrentQuality] = useState<string>('Auto');
-  const [availableQualities, setAvailableQualities] = useState<{ id: number; name: string }[]>([]);
-  const [showQualityMenu, setShowQualityMenu] = useState<boolean>(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gestureTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const stallWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastTapRef = useRef<{ time: number; x: number } | null>(null);
   const touchStartPosRef = useRef<{
     startX: number;
     startY: number;
@@ -102,22 +80,6 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
     initialVal: number;
     hasMoved: boolean;
   } | null>(null);
-
-  // Restore Portrait Orientation Helper
-  const restorePortrait = useCallback(() => {
-    try {
-      if (typeof window !== 'undefined' && (window as any).AndroidDevice?.setOrientation) {
-        (window as any).AndroidDevice.setOrientation('portrait');
-        (window as any).AndroidDevice.setFullscreen(false);
-      }
-      if (typeof screen !== 'undefined' && (screen.orientation as any)?.unlock) {
-        (screen.orientation as any).unlock();
-      }
-      if (typeof screen !== 'undefined' && (screen.orientation as any)?.lock) {
-        (screen.orientation as any).lock('portrait').catch(() => {});
-      }
-    } catch {}
-  }, []);
 
   // Filtered Channels based on Category and Search Query
   const filteredChannels = useMemo(() => {
@@ -195,25 +157,18 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
       hlsRef.current = null;
     }
 
-    // Synchronize PiP events
-    const onEnterPip = () => setIsPipActive(true);
-    const onLeavePip = () => setIsPipActive(false);
-    video.addEventListener('enterpictureinpicture', onEnterPip);
-    video.addEventListener('leavepictureinpicture', onLeavePip);
-
     // 1. Try HLS.js when supported (standard desktop & android browsers)
     if (Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
-        backBufferLength: 30,
-        maxBufferLength: 30,
-        maxMaxBufferLength: 60,
-        maxBufferSize: 60 * 1000 * 1000,
+        startFragPrefetch: true,
+        liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: 5,
+        maxBufferLength: 10,
+        maxMaxBufferLength: 20,
+        maxBufferSize: 30 * 1000 * 1000,
         maxBufferHole: 0.5,
-        highBufferWatchdogPeriod: 2,
-        nudgeOffset: 0.1,
-        nudgeMaxRetry: 5,
         manifestLoadingTimeOut: 10000,
         manifestLoadingMaxRetry: 3,
         levelLoadingTimeOut: 10000,
@@ -226,24 +181,13 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
       hls.loadSource(currentLoadedUrl);
       hls.attachMedia(video);
 
-      hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-        if (data.levels && data.levels.length > 0) {
-          const qs = data.levels.map((lvl, idx) => ({
-            id: idx,
-            name: lvl.height ? `${lvl.height}p` : `${Math.round(lvl.bitrate / 1000)}k`
-          }));
-          setAvailableQualities(qs);
-        }
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
         startAutoplay(video);
       });
 
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
-          if (video && !video.paused) {
-            try {
-              video.currentTime += 0.1;
-            } catch {}
-          }
+          // Do not nudge currentTime; allow initial live buffer to naturally fill and decode
           return;
         }
         if (data.fatal) {
@@ -259,7 +203,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                 hls.startLoad();
               } else {
                 hls.destroy();
-                setError('Live stream connection failed. Tap Retry or switch channels.');
+                setError('Live stream connection failed. Tap Retry to reconnect.');
                 setIsLoading(false);
               }
               break;
@@ -273,7 +217,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                 hls.startLoad();
               } else {
                 hls.destroy();
-                setError('Live broadcast temporarily unavailable. Tap Retry or switch channels.');
+                setError('Live broadcast temporarily unavailable. Tap Retry to reconnect.');
                 setIsLoading(false);
               }
               break;
@@ -293,7 +237,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
           video.src = activeChannel.fallbackUrl;
           startAutoplay(video);
         } else {
-          setError('Live broadcast temporarily unavailable. Tap Retry or switch channels.');
+          setError('Live broadcast temporarily unavailable. Tap Retry to reconnect.');
           setIsLoading(false);
         }
       };
@@ -304,8 +248,6 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
     }
 
     return () => {
-      video.removeEventListener('enterpictureinpicture', onEnterPip);
-      video.removeEventListener('leavepictureinpicture', onLeavePip);
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
@@ -319,19 +261,6 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
     queueMicrotask(() => { if (navigator.vibrate) navigator.vibrate(8); });
     setActiveChannel(channel);
   }, [activeChannel.id]);
-
-  // Next / Previous Channel Navigation
-  const handleNextChannel = useCallback(() => {
-    const currentIndex = allChannels.findIndex((c) => c.id === activeChannel.id);
-    const nextIndex = (currentIndex + 1) % allChannels.length;
-    handleSelectChannel(allChannels[nextIndex]);
-  }, [allChannels, activeChannel.id, handleSelectChannel]);
-
-  const handlePrevChannel = useCallback(() => {
-    const currentIndex = allChannels.findIndex((c) => c.id === activeChannel.id);
-    const prevIndex = (currentIndex - 1 + allChannels.length) % allChannels.length;
-    handleSelectChannel(allChannels[prevIndex]);
-  }, [allChannels, activeChannel.id, handleSelectChannel]);
 
   // Play / Pause Toggle
   const togglePlayPause = useCallback(() => {
@@ -366,56 +295,79 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
 
   // Exit Fullscreen & Return to Portrait
   const exitFullscreenMode = useCallback(() => {
-    if (document.fullscreenElement && document.exitFullscreen) {
-      document.exitFullscreen().catch(() => {});
-    }
+    try {
+      if (typeof window !== 'undefined' && (window as any).AndroidDevice?.setOrientation) {
+        (window as any).AndroidDevice.setOrientation('portrait');
+        (window as any).AndroidDevice.setFullscreen(false);
+      }
+      const screenOrientation = window.screen?.orientation as any;
+      if (screenOrientation && typeof screenOrientation.unlock === 'function') {
+        screenOrientation.unlock();
+      }
+      if (screenOrientation && typeof screenOrientation.lock === 'function') {
+        screenOrientation.lock('portrait').catch(() => {});
+      }
+      if (document.fullscreenElement && typeof document.exitFullscreen === 'function') {
+        document.exitFullscreen().catch(() => {});
+      }
+    } catch {}
     setIsFullscreen(false);
-    restorePortrait();
-  }, [restorePortrait]);
+  }, []);
 
-  // Enter Fullscreen
+  // Enter Fullscreen & Landscape
   const enterFullscreenMode = useCallback(() => {
     const container = playerContainerRef.current;
-    if (!container) return;
-
-    if (container.requestFullscreen) {
-      container.requestFullscreen().catch(() => {});
-    }
     setIsFullscreen(true);
 
     try {
-      if ((window as any).AndroidDevice?.setOrientation) {
+      if (typeof window !== 'undefined' && (window as any).AndroidDevice?.setOrientation) {
         (window as any).AndroidDevice.setOrientation('landscape');
         (window as any).AndroidDevice.setFullscreen(true);
       }
-      (window.screen?.orientation as any)?.lock?.('landscape').catch(() => {});
+      const screenOrientation = window.screen?.orientation as any;
+      if (screenOrientation && typeof screenOrientation.lock === 'function') {
+        screenOrientation.lock('landscape').catch(() => {});
+      }
+      if (container && typeof container.requestFullscreen === 'function') {
+        container.requestFullscreen().catch(() => {});
+      }
     } catch {}
   }, []);
 
   // Fullscreen Handler Toggle
   const toggleFullscreen = useCallback(() => {
-    if (isFullscreen || document.fullscreenElement) {
-      exitFullscreenMode();
-    } else {
-      enterFullscreenMode();
-    }
-  }, [isFullscreen, exitFullscreenMode, enterFullscreenMode]);
-
-  // Sync fullscreen state from document events & clean up
-  useEffect(() => {
-    const handleFsChange = () => {
-      const isFs = Boolean(document.fullscreenElement);
-      setIsFullscreen(isFs);
-      if (!isFs) {
-        restorePortrait();
+    queueMicrotask(() => { if (navigator.vibrate) navigator.vibrate(8); });
+    setIsFullscreen((prev) => {
+      const next = !prev;
+      if (next) {
+        enterFullscreenMode();
+      } else {
+        exitFullscreenMode();
       }
+      return next;
+    });
+  }, [enterFullscreenMode, exitFullscreenMode]);
+
+  // Synchronize orientation state from window/screen events
+  useEffect(() => {
+    const handleOrientation = () => {
+      const isLandscape = window.innerWidth > window.innerHeight;
+      setIsFullscreen(isLandscape);
     };
-    document.addEventListener('fullscreenchange', handleFsChange);
+    window.addEventListener('resize', handleOrientation);
+    window.addEventListener('orientationchange', handleOrientation);
     return () => {
-      document.removeEventListener('fullscreenchange', handleFsChange);
-      restorePortrait();
+      window.removeEventListener('resize', handleOrientation);
+      window.removeEventListener('orientationchange', handleOrientation);
     };
-  }, [restorePortrait]);
+  }, []);
+
+  // Clean orientation release on unmount only
+  useEffect(() => {
+    return () => {
+      exitFullscreenMode();
+    };
+  }, [exitFullscreenMode]);
 
   // Handle Hardware Back Button while in Fullscreen
   useEffect(() => {
@@ -426,138 +378,45 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
       return true;
     };
 
-    const prevHandler = (window as any).handleAndroidBack;
     (window as any).handleAndroidBack = handleBack;
-
     return () => {
       if ((window as any).handleAndroidBack === handleBack) {
-        (window as any).handleAndroidBack = prevHandler;
+        delete (window as any).handleAndroidBack;
       }
     };
   }, [isFullscreen, exitFullscreenMode]);
 
-  // Toast message helper
-  const showToast = useCallback((msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage((curr) => (curr === msg ? null : curr));
-    }, 2200);
-  }, []);
-
-  // Screen Aspect Ratio Fit Cycler (Fit -> Zoom -> Stretch)
-  const cycleFitMode = useCallback(() => {
-    queueMicrotask(() => { if (navigator.vibrate) navigator.vibrate(8); });
-    setFitMode((prev) => {
-      let next: 'contain' | 'cover' | 'fill' = 'contain';
-      let label = '';
-      if (prev === 'contain') {
-        next = 'cover';
-        label = 'Screen Fit: Zoom / Fill (No Black Bars)';
-      } else if (prev === 'cover') {
-        next = 'fill';
-        label = 'Screen Fit: Stretch (Full Screen)';
-      } else {
-        next = 'contain';
-        label = 'Screen Fit: Original (Fit)';
-      }
-      try {
-        localStorage.setItem('cinevault_livetv_fit', next);
-      } catch {}
-      showToast(label);
-      return next;
-    });
-  }, [showToast]);
-
-  // Picture-in-Picture (PiP) Mode Toggle
-  const togglePictureInPicture = useCallback(async () => {
-    const video = videoRef.current;
-    if (!video) return;
-    try {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-        setIsPipActive(false);
-        showToast('Picture-in-Picture: Off');
-      } else if (document.pictureInPictureEnabled) {
-        await video.requestPictureInPicture();
-        setIsPipActive(true);
-        showToast('Picture-in-Picture: Active');
-      } else {
-        showToast('Picture-in-Picture not supported on this device');
-      }
-    } catch {
-      showToast('Picture-in-Picture not available for this stream');
-    }
-  }, [showToast]);
-
-  // Video Quality Level Selector
-  const handleSelectQuality = useCallback((levelId: number) => {
-    if (!hlsRef.current) return;
-    hlsRef.current.currentLevel = levelId;
-    if (levelId === -1) {
-      setCurrentQuality('Auto');
-      showToast('Quality: Auto (Adaptive)');
+  // Background Scroll Locking when in Fullscreen
+  useEffect(() => {
+    const origOverflow = document.body.style.overflow;
+    if (isFullscreen) {
+      document.body.style.overflow = 'hidden';
     } else {
-      const q = availableQualities.find((item) => item.id === levelId);
-      setCurrentQuality(q ? q.name : `${levelId}`);
-      showToast(`Quality: ${q ? q.name : levelId}`);
+      document.body.style.overflow = origOverflow;
     }
-    setShowQualityMenu(false);
-  }, [availableQualities, showToast]);
+    return () => {
+      document.body.style.overflow = origOverflow;
+    };
+  }, [isFullscreen]);
 
-  // Video Buffer Watchdog & Stall Recovery
+  // Video Buffer Event Handlers (No artificial currentTime nudges)
   const handleVideoWaiting = useCallback(() => {
     setIsLoading(true);
-    if (stallWatchdogRef.current) clearTimeout(stallWatchdogRef.current);
-    stallWatchdogRef.current = setTimeout(() => {
-      const v = videoRef.current;
-      if (v && !v.paused) {
-        try {
-          v.currentTime += 0.15;
-        } catch {}
-      }
-    }, 2500);
   }, []);
 
   const handleVideoPlaying = useCallback(() => {
     setIsLoading(false);
     setIsPlaying(true);
-    if (stallWatchdogRef.current) {
-      clearTimeout(stallWatchdogRef.current);
-      stallWatchdogRef.current = null;
-    }
   }, []);
 
   const handleVideoStalled = useCallback(() => {
-    const v = videoRef.current;
-    if (v && !v.paused) {
-      try {
-        v.currentTime += 0.1;
-      } catch {}
-    }
+    // Normal HTML5 video buffering event — do not artificially nudge currentTime
   }, []);
 
-  // Double Tap Gestures on Player Layer: Left 30% Prev Channel, Right 30% Next Channel, Center Toggle Play
-  const handlePlayerTap = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const now = Date.now();
-    const rect = playerContainerRef.current?.getBoundingClientRect();
-    if (rect && lastTapRef.current && now - lastTapRef.current.time < 320) {
-      const x = e.clientX - rect.left;
-      const pct = x / rect.width;
-      if (pct < 0.32) {
-        handlePrevChannel();
-        showToast('◀ Previous Channel');
-      } else if (pct > 0.68) {
-        handleNextChannel();
-        showToast('Next Channel ▶');
-      } else {
-        togglePlayPause();
-      }
-      lastTapRef.current = null;
-      return;
-    }
-    lastTapRef.current = { time: now, x: e.clientX };
+  // Player surface tap toggles controls visibility
+  const handlePlayerTap = useCallback(() => {
     triggerShowControls();
-  }, [handlePrevChannel, handleNextChannel, togglePlayPause, triggerShowControls, showToast]);
+  }, [triggerShowControls]);
 
   // Touch Gesture Handlers for Brightness (Left half) and Volume (Right half) in Fullscreen Landscape
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
@@ -779,10 +638,10 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
               backfaceVisibility: 'hidden',
             }}
             className={`relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-[#292E35] select-none ${
-              isFullscreen ? 'fixed inset-0 z-50 rounded-none w-screen h-screen' : ''
+              isFullscreen ? 'fixed inset-0 z-[9999] rounded-none w-screen h-screen' : ''
             }`}
           >
-            {/* HTML5 Video Tag */}
+            {/* HTML5 Video Tag — Default original fit (object-contain) */}
             <video
               ref={videoRef}
               playsInline
@@ -792,26 +651,13 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                 WebkitTransform: 'translate3d(0, 0, 0)',
                 willChange: 'transform',
               }}
-              className={`w-full h-full transition-[object-fit] duration-200 bg-black ${
-                fitMode === 'cover'
-                  ? 'object-cover'
-                  : fitMode === 'fill'
-                  ? 'object-fill'
-                  : 'object-contain'
-              }`}
+              className="w-full h-full object-contain bg-black"
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
               onWaiting={handleVideoWaiting}
               onPlaying={handleVideoPlaying}
               onStalled={handleVideoStalled}
             />
-
-            {/* Toast Notification */}
-            {toastMessage && (
-              <div className="absolute top-14 left-1/2 -translate-x-1/2 z-50 px-3.5 py-1.5 rounded-xl bg-[#F0B429] text-[#0B0D10] font-bold text-xs shadow-[0_4px_20px_rgba(240,180,41,0.4)] pointer-events-none animate-fade-in">
-                {toastMessage}
-              </div>
-            )}
 
             {/* Software Brightness Scrim */}
             <div
@@ -913,14 +759,6 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Retry Broadcast</span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleNextChannel}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1D2127] border border-[#292E35] text-white hover:text-[#F0B429] text-xs font-bold cursor-pointer press-feedback transition-colors"
-                  >
-                    <SkipForward className="w-3.5 h-3.5" />
-                    <span>Next Channel</span>
-                  </button>
                 </div>
               </div>
             )}
@@ -963,96 +801,12 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 relative">
+                <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/10 text-white">
                     {activeChannel.quality}
                   </span>
-                  {availableQualities.length > 0 && (
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowQualityMenu((prev) => !prev);
-                        }}
-                        className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[#F0B429] text-[10px] font-mono font-bold cursor-pointer active:scale-95 transition-all"
-                        title="Stream Resolution"
-                      >
-                        <Sliders className="w-2.5 h-2.5" />
-                        <span>{currentQuality}</span>
-                      </button>
-
-                      {showQualityMenu && (
-                        <div
-                          className="absolute right-0 top-full mt-2 w-36 py-1.5 rounded-xl bg-[#15181D]/95 backdrop-blur-xl border border-white/20 shadow-[0_12px_36px_rgba(0,0,0,0.8)] z-50 animate-fade-in flex flex-col"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <span className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-gray-400 border-b border-white/10">
-                            Quality
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleSelectQuality(-1)}
-                            className={`px-3 py-1.5 text-xs text-left font-mono font-bold flex items-center justify-between hover:bg-white/10 transition-colors ${
-                              currentQuality === 'Auto' ? 'text-[#F0B429]' : 'text-gray-200'
-                            }`}
-                          >
-                            <span>Auto</span>
-                            {currentQuality === 'Auto' && <span className="text-[10px]">✓</span>}
-                          </button>
-                          {availableQualities.map((q) => (
-                            <button
-                              key={q.id}
-                              type="button"
-                              onClick={() => handleSelectQuality(q.id)}
-                              className={`px-3 py-1.5 text-xs text-left font-mono font-bold flex items-center justify-between hover:bg-white/10 transition-colors ${
-                                currentQuality === q.name ? 'text-[#F0B429]' : 'text-gray-200'
-                              }`}
-                            >
-                              <span>{q.name}</span>
-                              {currentQuality === q.name && <span className="text-[10px]">✓</span>}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
-
-              {/* Quick Channel Carousel Drawer */}
-              {showQuickDrawer && (
-                <div
-                  className="w-full px-2 py-2 mb-2 bg-black/85 backdrop-blur-xl border border-white/15 rounded-2xl overflow-x-auto scrollbar-none flex items-center gap-2 animate-fade-in z-30"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {filteredChannels.slice(0, 45).map((ch) => {
-                    const isActive = ch.id === activeChannel.id;
-                    return (
-                      <button
-                        key={ch.id}
-                        type="button"
-                        onClick={() => handleSelectChannel(ch)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-left whitespace-nowrap transition-all shrink-0 cursor-pointer active:scale-95 border ${
-                          isActive
-                            ? 'bg-[#F0B429] text-[#0B0D10] border-[#F0B429] shadow-[0_2px_12px_rgba(240,180,41,0.4)] font-bold'
-                            : 'bg-white/5 text-white hover:bg-white/15 border-white/10'
-                        }`}
-                      >
-                        <div className="w-5 h-5 rounded-md bg-white/10 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
-                          <img src={ch.logo} alt="" className="w-full h-full object-contain" />
-                        </div>
-                        <span className="text-xs truncate max-w-[120px]">{ch.name}</span>
-                        {isActive && (
-                          <span className="text-[8px] font-mono uppercase bg-black/30 text-[#0B0D10] font-black px-1 rounded">
-                            PLAYING
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
 
               {/* Bottom Controls Bar */}
               <div
@@ -1062,20 +816,8 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                   paddingRight: 'max(8px, env(safe-area-inset-right, 8px))',
                 }}
               >
-                {/* Left: Play/Pause, Channel Surfers & Volume */}
+                {/* Left: Play/Pause, Mute & Landscape Controls */}
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePrevChannel();
-                    }}
-                    className="w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center cursor-pointer active:scale-95 transition-all"
-                    title="Previous Channel"
-                  >
-                    <SkipBack className="w-3.5 h-3.5" />
-                  </button>
-
                   <button
                     type="button"
                     onClick={(e) => {
@@ -1086,18 +828,6 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                     title={isPlaying ? 'Pause' : 'Play'}
                   >
                     {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleNextChannel();
-                    }}
-                    className="w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center cursor-pointer active:scale-95 transition-all"
-                    title="Next Channel"
-                  >
-                    <SkipForward className="w-3.5 h-3.5" />
                   </button>
 
                   <button
@@ -1174,56 +904,8 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                   )}
                 </div>
 
-                {/* Right: Quick Drawer, PiP, Screen Fit & Fullscreen */}
+                {/* Right: Fullscreen Toggle Only */}
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowQuickDrawer((prev) => !prev);
-                    }}
-                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold cursor-pointer active:scale-95 transition-all ${
-                      showQuickDrawer
-                        ? 'bg-[#F0B429] text-[#0B0D10] border-[#F0B429] shadow-md'
-                        : 'bg-black/60 hover:bg-black/80 border-white/10 text-white'
-                    }`}
-                    title="Quick Channels Carousel"
-                  >
-                    <Tv className="w-3.5 h-3.5" />
-                    <span className="font-mono text-[10px] hidden sm:inline">Channels</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      togglePictureInPicture();
-                    }}
-                    className={`w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center cursor-pointer active:scale-95 transition-all ${
-                      isPipActive ? 'text-[#F0B429] border border-[#F0B429]/40' : ''
-                    }`}
-                    title="Picture in Picture (PiP)"
-                  >
-                    <PictureInPicture className="w-3.5 h-3.5" />
-                  </button>
-
-                  {/* Universal Screen Fit Toggle - Portrait & Landscape */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      cycleFitMode();
-                    }}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-black/60 hover:bg-black/80 border border-white/10 text-white text-xs font-semibold cursor-pointer active:scale-95 transition-all"
-                    title={`Screen Fit: ${fitMode === 'contain' ? 'Fit (Original)' : fitMode === 'cover' ? 'Zoom (Fill Screen)' : 'Stretch'}`}
-                    aria-label="Toggle Screen Fit"
-                  >
-                    <Scan className="w-3.5 h-3.5 text-[#F0B429]" />
-                    <span className="font-mono text-[10px] uppercase hidden sm:inline">
-                      {fitMode === 'contain' ? 'Fit' : fitMode === 'cover' ? 'Zoom' : 'Stretch'}
-                    </span>
-                  </button>
-
                   <button
                     type="button"
                     onClick={(e) => {

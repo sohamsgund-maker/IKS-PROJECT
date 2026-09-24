@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import type { Movie } from '../types/movie';
-import { Star, Film, Tv } from 'lucide-react';
+import { Film, Tv } from 'lucide-react';
 
 interface MovieCardProps {
   movie: Movie;
@@ -61,14 +61,6 @@ export const MovieCard: React.FC<MovieCardProps> = memo(({ movie, onSelect, prio
             imageLoaded ? 'opacity-100' : 'opacity-0'
           }`}
         />
-
-        {/* Rating Badge */}
-        {movie.rating > 0 && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#0B0D10]/95 text-[11px] font-semibold text-[#F0B429] border border-[#292E35]/80 shadow-sm">
-            <Star className="w-3 h-3 fill-[#F0B429] text-[#F0B429]" />
-            <span className="font-mono">{movie.rating.toFixed(1)}</span>
-          </div>
-        )}
 
         {/* Media Type Badge */}
         <div className="absolute top-2 right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-[#0B0D10]/95 text-[10px] font-medium text-[#9A9FA8] border border-[#292E35]/80 shadow-sm">

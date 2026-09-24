@@ -135,6 +135,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = memo(({
   const resolvedSessionRef = useRef<string>('');
   const waitingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gestureTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const streamStartTimeRef = useRef<number>(Date.now());
   const touchStartPosRef = useRef<{
     startX: number;
     startY: number;
@@ -193,7 +194,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = memo(({
     );
     if (isOfflineTitle) return;
 
-    // Defer metadata fetch to not compete with stream resolution for CPU/network
+    // Defer metadata fetch to not compete with stream resolution for CPU/network (deferred to 6s)
     const deferTimer = setTimeout(() => {
       if (!isMounted || !currentMovie.id) return;
       movieboxService.getDetails(currentMovie.id, currentMovie.detailPath).then((d) => {
@@ -205,16 +206,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = memo(({
             return exists ? prev : (d.seasons?.[0]?.season_number || 1);
           });
         }
-        if (d.media_type) {
+        if (d.media_type && d.media_type !== currentMovie.media_type) {
           const mType = d.media_type;
-          setCurrentMovie((prev) => ({
-            ...prev,
-            media_type: mType,
-            seasons: d.seasons || prev.seasons,
-          }));
+          setCurrentMovie((prev) => {
+            if (prev.media_type === mType) return prev;
+            return {
+              ...prev,
+              media_type: mType,
+              seasons: d.seasons || prev.seasons,
+            };
+          });
         }
       });
-    }, 2000);
+    }, 6000);
 
     return () => {
       isMounted = false;
@@ -514,6 +518,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = memo(({
 
     if (directOfflineUrl) {
       resolvedSessionRef.current = sessionKey;
+      streamStartTimeRef.current = Date.now();
       setStreamInfo({
         streamUrl: directOfflineUrl,
         qualities: [{ quality: 'Offline HD', resolution: 'Original', url: directOfflineUrl }],
@@ -553,6 +558,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = memo(({
         clearTimeout(timeout);
         if (!isMounted) return;
         resolvedSessionRef.current = sessionKey;
+        streamStartTimeRef.current = Date.now();
         setStreamInfo(res);
         if (!res?.streamUrl) {
           setError('Direct stream unavailable for this title. Tap Retry to reconnect.');
@@ -807,7 +813,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = memo(({
       setCurrentTime(curr);
 
       // Save watch progress to local storage every 15 seconds to prevent I/O micro-stutters
-      if (currSec % 15 === 0 && video.duration > 0) {
+      // (Suppress during initial 5 seconds of stream startup to avoid main-thread disk write lag)
+      if (currSec > 5 && currSec % 15 === 0 && video.duration > 0) {
         cacheService.saveWatchedProgress(
           currentMovie,
           curr,
@@ -858,6 +865,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = memo(({
   const handleWaiting = () => {
     const video = videoRef.current;
     if (waitingTimerRef.current) clearTimeout(waitingTimerRef.current);
+    // Suppress buffering spinner during initial 3 seconds of stream handshake / decoder negotiation
+    if (Date.now() - streamStartTimeRef.current < 3000) {
+      return;
+    }
     // Debounce buffering spinner by 400ms — longer debounce prevents false spinner flashes from decoder hiccups
     // and micro-stalls during initial stream negotiation on mobile networks
     waitingTimerRef.current = setTimeout(() => {

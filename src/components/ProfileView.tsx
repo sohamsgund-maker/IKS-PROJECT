@@ -10,7 +10,6 @@ import {
   Play,
   Trash2,
   Settings,
-  Sliders,
   Film,
   RefreshCw,
   ExternalLink,
@@ -62,14 +61,6 @@ export const ProfileView: React.FC<ProfileViewProps> = memo(({
   const [updateStatusMessage, setUpdateStatusMessage] = useState<string | null>(null);
 
   // Settings State (persisted)
-  const [preferredQuality, setPreferredQuality] = useState<string>(() => {
-    try {
-      return localStorage.getItem('cinevault_preferred_quality') || 'Auto';
-    } catch {
-      return 'Auto';
-    }
-  });
-
   const [wifiOnly, setWifiOnly] = useState<boolean>(() => {
     try {
       return localStorage.getItem('cinevault_wifi_only') !== 'false';
@@ -128,14 +119,6 @@ export const ProfileView: React.FC<ProfileViewProps> = memo(({
     if (parts.length === 0) return 'CV';
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  };
-
-  const handleQualityChange = (q: string) => {
-    setPreferredQuality(q);
-    try {
-      localStorage.setItem('cinevault_preferred_quality', q);
-    } catch {}
-    showToast(`Default quality set to ${q}`);
   };
 
   const handleWifiToggle = () => {
@@ -449,33 +432,6 @@ export const ProfileView: React.FC<ProfileViewProps> = memo(({
       {/* TAB 2: SETTINGS */}
       {activeTab === 'settings' && (
         <div className="space-y-4 animate-fade-in">
-          {/* Playback Quality */}
-          <div className="bg-[#15181D] border border-[#292E35] rounded-2xl p-4 sm:p-5 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-bold text-[#F5F5F2]">
-              <Sliders className="w-4 h-4 text-[#F0B429]" />
-              <span>Default Playback Quality</span>
-            </div>
-            <p className="text-xs text-[#9A9FA8]">
-              Select your preferred streaming resolution. "Auto" will dynamically match your connection speed.
-            </p>
-            <div className="grid grid-cols-4 gap-2 pt-1">
-              {['Auto', '1080p', '720p', '480p'].map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => handleQualityChange(q)}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer text-center ${
-                    preferredQuality === q
-                      ? 'bg-[#F0B429] text-[#0B0D10] border-[#F0B429] shadow-sm font-bold'
-                      : 'bg-[#0B0D10] text-[#9A9FA8] border-[#292E35] hover:text-[#F5F5F2]'
-                  }`}
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Download & Storage Settings */}
           <div className="bg-[#15181D] border border-[#292E35] rounded-2xl p-4 sm:p-5 space-y-4">
             <div className="flex items-center gap-2 text-sm font-bold text-[#F5F5F2]">

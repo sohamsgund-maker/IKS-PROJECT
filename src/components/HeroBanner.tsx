@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import type { Movie } from '../types/movie';
-import { Play, Info, Star, Loader2 } from 'lucide-react';
+import { Play, Info, Loader2 } from 'lucide-react';
 import { movieboxService } from '../services/movieboxService';
 
 interface HeroBannerProps {
@@ -88,15 +88,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = memo(({ movie, onPlayMovie,
         style={{ willChange: 'opacity, transform' }}
       />
 
-      {/* Cinematic Vignette & Readability Gradients */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(circle at center, transparent 30%, rgba(11, 13, 16, 0.45) 65%, rgba(11, 13, 16, 0.98) 100%), linear-gradient(180deg, rgba(11, 13, 16, 0.25) 0%, transparent 40%, rgba(11, 13, 16, 1) 100%)',
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0B0D10] via-[#0B0D10]/85 to-transparent w-full md:w-3/4 pointer-events-none" />
+      {/* Crystal-Clear Bottom & Text Gradient (Vivid Backdrop Visibility) */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/35 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0B0D10]/75 via-[#0B0D10]/20 to-transparent w-full md:w-1/2 pointer-events-none" />
 
       {/* Hero Content */}
       <div className="relative z-10 h-full flex flex-col justify-end px-4 sm:px-8 md:px-12 pb-6 sm:pb-8 max-w-2xl lg:max-w-3xl">
@@ -105,12 +99,6 @@ export const HeroBanner: React.FC<HeroBannerProps> = memo(({ movie, onPlayMovie,
           <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#F0B429] text-[#0B0D10] font-mono shadow-sm">
             Featured Premiere
           </span>
-          {movie.rating > 0 && (
-            <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#15181D]/90 text-xs font-semibold text-[#F0B429] border border-[#292E35] backdrop-blur-sm">
-              <Star className="w-3.5 h-3.5 fill-[#F0B429] text-[#F0B429]" />
-              <span>{movie.rating.toFixed(1)}</span>
-            </div>
-          )}
           <span className="text-xs text-[#9A9FA8] font-medium font-mono">{movie.release_year || 2024}</span>
           {movie.duration && (
             <>

@@ -34,7 +34,7 @@ export class TmdbService {
       const response = await tmdbClient.get(endpoint, {
         params: {
           api_key: config.tmdb.apiKey,
-          append_to_response: 'credits,videos',
+          append_to_response: 'credits,videos,images',
         },
       });
       return response.data;
@@ -45,7 +45,7 @@ export class TmdbService {
           const tvResponse = await tmdbClient.get(`/tv/${id}`, {
             params: {
               api_key: config.tmdb.apiKey,
-              append_to_response: 'credits,videos',
+              append_to_response: 'credits,videos,images',
             },
           });
           return tvResponse.data;
