@@ -1,24 +1,17 @@
-// Re-export active CineVault components
-export { Header } from './Header';
-export { HeroSection } from './HeroSection';
+export { Navbar } from './Navbar';
+export { HeroBanner } from './HeroBanner';
 export { MovieCard } from './MovieCard';
-export { MovieGrid } from './MovieGrid';
-export { GenrePills } from './GenrePills';
-export { VideoPlayer } from './VideoPlayer';
+export { MovieRow } from './MovieRow';
 export { ErrorBoundary } from './ErrorBoundary';
-export { CinematicImage } from './CinematicImage';
-export { ContinueWatching } from './ContinueWatching';
 export {
   Shimmer,
   MovieCardSkeleton,
-  LandscapeCardSkeleton,
   MovieRowSkeleton,
   SearchResultsSkeleton,
   HeroBillboardSkeleton,
 } from './Skeletons';
-export { NetflixNavbar } from './NetflixNavbar';
-export { NetflixBillboard } from './NetflixBillboard';
-export { NetflixRow } from './NetflixRow';
-export { NetflixFooter } from './NetflixFooter';
-export { NetflixMobileNav } from './NetflixMobileNav';
-
+export { ProfileView } from './ProfileView';
+export { BottomNav } from './BottomNav';
+export { SplashScreen } from './SplashScreen';
+export { DownloadsView } from './DownloadsView';
+export { UpdateModal } from './UpdateModal';

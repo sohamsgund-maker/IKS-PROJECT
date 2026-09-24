@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CineVault Player • Dune: Part Two</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary-fixed-dim": "#a9c7ff",
+            "primary-fixed": "#ffdea6",
+            "on-tertiary-container": "#194278",
+            "text-secondary": "#9A9FA8",
+            "on-tertiary-fixed-variant": "#1f477d",
+            "on-error": "#690005",
+            "secondary-fixed-dim": "#c2c7d0",
+            "secondary-container": "#42474f",
+            "primary": "#f4c367",
+            "on-error-container": "#ffdad6",
+            "status-error": "#D66A6A",
+            "on-secondary-fixed-variant": "#42474f",
+            "surface-container-low": "#1a1c1f",
+            "on-secondary-container": "#b0b5bf",
+            "on-primary-fixed-variant": "#5e4200",
+            "surface-tint": "#f0bf64",
+            "on-tertiary": "#003063",
+            "inverse-on-surface": "#2f3034",
+            "secondary-fixed": "#dee3ec",
+            "on-primary-container": "#583e00",
+            "tertiary": "#afcbff",
+            "surface-container-highest": "#333538",
+            "error": "#ffb4ab",
+            "surface": "#111317",
+            "outline": "#9b8f7e",
+            "on-background": "#e2e2e6",
+            "inverse-primary": "#7c5800",
+            "surface-elevated": "#1D2127",
+            "surface-dim": "#111317",
+            "surface-container-high": "#282a2d",
+            "error-container": "#93000a",
+            "on-primary": "#412d00",
+            "background": "#111317",
+            "inverse-surface": "#e2e2e6",
+            "surface-variant": "#333538",
+            "outline-variant": "#4e4637",
+            "surface-container-lowest": "#0c0e11",
+            "on-secondary": "#2b3138",
+            "on-surface": "#e2e2e6",
+            "on-secondary-fixed": "#171c23",
+            "tertiary-container": "#8db0ed",
+            "primary-fixed-dim": "#f0bf64",
+            "on-surface-variant": "#d2c5b2",
+            "text-primary": "#F5F5F2",
+            "status-success": "#5FAF7B",
+            "secondary": "#c2c7d0",
+            "on-primary-fixed": "#271900",
+            "surface-base": "#15181D",
+            "border-subtle": "#292E35",
+            "surface-container": "#1e2023",
+            "surface-bright": "#37393d",
+            "on-tertiary-fixed": "#001b3d",
+            "primary-container": "#d6a84f",
+            "tertiary-fixed": "#d6e3ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "margin": "2.5rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "gutter": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-xl": "2.5rem"
+          },
+          "fontFamily": {
+            "label-sm": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "title-lg": ["Inter"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "body-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "display-md": ["Plus Jakarta Sans"],
+            "label-md": ["Inter"],
+            "display-md-mobile": ["Plus Jakarta Sans"],
+            "mono": ["JetBrains Mono", "monospace"]
+          },
+          "fontSize": {
+            "label-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "title-lg": ["18px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }],
+            "display-lg": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "display-md": ["44px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "display-md-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #15181D;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #292E35;
+      border-radius: 9999px;
+    }
+    .vignette-layer {
+      background: radial-gradient(circle at center, transparent 35%, rgba(11, 13, 16, 0.45) 70%, rgba(11, 13, 16, 0.92) 100%),
+                  linear-gradient(180deg, rgba(11, 13, 16, 0.85) 0%, transparent 22%, transparent 74%, rgba(11, 13, 16, 0.95) 100%);
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-text-primary min-h-screen flex items-center justify-center p-0 sm:p-4 select-none antialiased font-body-md overflow-x-hidden">
+<!-- Mobile Screen Frame (Task-Focused Player: Shell Suppressed per Design Mandate) -->
+<main class="relative w-full max-w-[430px] h-[932px] max-h-[100dvh] bg-[#0B0D10] overflow-hidden flex flex-col justify-between shadow-2xl sm:rounded-3xl border sm:border-border-subtle">
+<!-- 1. VIDEO VIEWPORT BACKGROUND -->
+<div class="absolute inset-0 w-full h-full z-0 overflow-hidden">
+<img alt="Dune: Part Two cinematic scene with giant sand creature" class="w-full h-full object-cover object-center scale-105 transform transition-transform duration-700 ease-out" src="https://lh3.googleusercontent.com/aida/AEtjO1U_a8ahiRQ526YW0kTos-Zu2M1fPNAcFz0wpYVo45rxaE0sg3M6a75KrMUdQyM9UyU0Aj1Tjn2sy3CgiyuadrVnwxwzM1tq633XBUQFhuSnv3HhZhXi7YOacQ96_lLYQ7tL8vW0xEmDvlD_n23wsdBgPknDJLx7haXGUkkd2FIxZplIXwWaf9j-FOr3uBn0vDj2_L1zg6om-lHUV6dvo1J_u35-H2lZMoa5bckRybzc0bMJpImg61dRZw"/>
+<!-- Cinematic Vignette & Lighting Gradients -->
+<div class="absolute inset-0 vignette-layer pointer-events-none"></div>
+</div>
+<!-- 2. TOP OVERLAY BAR (HUD HEADER) -->
+<header class="relative z-20 w-full px-5 pt-7 pb-4 flex items-center justify-between backdrop-blur-[12px] bg-gradient-to-b from-[#0B0D10]/90 to-transparent">
+<!-- Back Navigation Circle -->
+<button aria-label="Exit player" class="w-10 h-10 rounded-full bg-surface-base/90 border border-border-subtle flex items-center justify-center text-text-primary active:scale-95 hover:border-text-secondary transition-all duration-150 shadow-sm" type="button">
+<span class="material-symbols-outlined text-lg" data-icon="arrow_back">arrow_back</span>
+</button>
+<!-- Title & Metadata Center Info -->
+<div class="flex-1 px-3 text-center truncate">
+<div class="flex items-center justify-center gap-1.5 truncate">
+<h1 class="font-headline-sm text-headline-sm text-text-primary font-semibold tracking-tight truncate">Dune: Part Two</h1>
+<span class="font-label-sm text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-surface-elevated border border-border-subtle text-primary">IMAX</span>
+</div>
+<p class="font-label-md text-label-md text-text-secondary truncate mt-0.5">Chapter 4 • The Sandworm Ride</p>
+</div>
+<!-- Action Icons Cluster -->
+<div class="flex items-center gap-2">
+<button aria-label="Lock controls" class="w-9 h-9 rounded-full bg-surface-base/80 border border-border-subtle flex items-center justify-center text-text-secondary hover:text-text-primary active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-base" data-icon="lock">lock</span>
+</button>
+<button aria-label="Cast screen" class="w-9 h-9 rounded-full bg-surface-base/80 border border-border-subtle flex items-center justify-center text-text-secondary hover:text-text-primary active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-base" data-icon="cast">cast</span>
+</button>
+</div>
+</header>
+<!-- CENTER HUD PLAYBACK CONTROLS -->
+<section aria-label="Playback controls" class="relative z-20 flex items-center justify-center gap-8 my-auto pointer-events-auto">
+<!-- Rewind 10 Seconds -->
+<button aria-label="Rewind 10 seconds" class="group flex flex-col items-center justify-center w-12 h-12 rounded-full bg-surface-base/60 border border-border-subtle/80 backdrop-blur-md text-text-secondary hover:text-text-primary active:scale-90 transition-all duration-150" id="rewindBtn" type="button">
+<span class="material-symbols-outlined text-2xl group-hover:-rotate-12 transition-transform" data-icon="replay_10">replay_10</span>
+<span class="font-label-sm text-[9px] uppercase tracking-wider text-text-secondary mt-0.5">10s</span>
+</button>
+<!-- Central Pause/Play Button with Champagne Ring -->
+<button aria-label="Pause playback" class="relative w-18 h-18 w-[72px] h-[72px] rounded-full bg-surface-elevated border border-primary-container/60 shadow-[0_8px_30px_rgba(0,0,0,0.7)] flex items-center justify-center text-primary-container active:scale-95 hover:border-primary transition-all duration-200 group" id="playPauseBtn" type="button">
+<span class="absolute inset-0 rounded-full border border-primary/20 scale-110 pointer-events-none"></span>
+<span class="material-symbols-outlined text-3xl font-medium" data-icon="pause" style="font-variation-settings: 'FILL' 1;">pause</span>
+</button>
+<!-- Forward 10 Seconds -->
+<button aria-label="Forward 10 seconds" class="group flex flex-col items-center justify-center w-12 h-12 rounded-full bg-surface-base/60 border border-border-subtle/80 backdrop-blur-md text-text-secondary hover:text-text-primary active:scale-90 transition-all duration-150" id="forwardBtn" type="button">
+<span class="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform" data-icon="forward_10">forward_10</span>
+<span class="font-label-sm text-[9px] uppercase tracking-wider text-text-secondary mt-0.5">10s</span>
+</button>
+</section>
+<!-- BOTTOM INTERACTIVE HUD: SUBTITLE, SCRUBBER, DOCK -->
+<footer class="relative z-20 w-full px-5 pb-7 flex flex-col items-center bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/95 to-transparent pt-6">
+<!-- 4. FLOATING SUBTITLE PILL (Cinematic Lower-Third) -->
+<aside aria-label="Subtitle line" class="mb-4">
+<div class="px-5 py-2 rounded-full bg-surface-base/85 border border-border-subtle/70 backdrop-blur-md shadow-lg flex items-center gap-2 max-w-xs text-center">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<p class="font-title-lg text-sm text-text-primary italic tracking-wide font-normal truncate">
+            “May thy knife chip and shatter.”
+          </p>
+</div>
+</aside>
+<!-- 5. TIMELINE SCRUBBER & CHAPTER BAR -->
+<section aria-label="Timeline scrubber" class="w-full mb-3">
+<!-- Segmented Chapter Track with Chapter 4 Active -->
+<div class="relative w-full py-2 cursor-pointer group" id="timelineBar">
+<!-- Multi-segment Chapter Indicators Overlay (Chapters 1-7) -->
+<div class="flex w-full gap-[3px] h-[3px] absolute top-1/2 -translate-y-1/2 rounded-full overflow-hidden">
+<!-- Ch 1 (Past) -->
+<div class="h-full flex-1 bg-primary-container"></div>
+<!-- Ch 2 (Past) -->
+<div class="h-full flex-1 bg-primary-container"></div>
+<!-- Ch 3 (Past) -->
+<div class="h-full flex-1 bg-primary-container"></div>
+<!-- Ch 4 (Active chapter, 55% scrubbed) -->
+<div class="h-full flex-[1.4] bg-border-subtle relative">
+<div class="h-full bg-primary-container w-[58%]"></div>
+</div>
+<!-- Ch 5 (Future) -->
+<div class="h-full flex-1 bg-border-subtle"></div>
+<!-- Ch 6 (Future) -->
+<div class="h-full flex-1 bg-border-subtle"></div>
+<!-- Ch 7 (Future) -->
+<div class="h-full flex-1 bg-border-subtle"></div>
+</div>
+<!-- Active Scrubber Thumb PIP -->
+<div class="absolute top-1/2 left-[51%] -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-text-primary border-2 border-primary-container shadow-[0_0_12px_rgba(214,168,79,0.7)] group-hover:scale-125 transition-transform flex items-center justify-center">
+<span class="w-1 h-1 rounded-full bg-primary-container"></span>
+</div>
+</div>
+<!-- Time Stamps Display -->
+<div class="flex justify-between items-center mt-1 px-0.5">
+<span class="font-mono text-[11px] font-medium text-text-secondary tracking-wider">01:14:22</span>
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-[10px] tracking-wider text-text-secondary/70 uppercase">Ch. 4 / 7</span>
+</div>
+<span class="font-mono text-[11px] font-medium text-text-secondary tracking-wider">-01:31:38</span>
+</div>
+</section>
+<!-- CONTROL BUTTONS DOCK (Clean, High-End Minimalist) -->
+<section aria-label="Playback utilities" class="w-full flex items-center justify-between pt-1">
+<!-- Left: Volume & Speed -->
+<div class="flex items-center gap-2">
+<button aria-label="Mute audio" class="w-9 h-9 rounded-lg bg-surface-base border border-border-subtle text-text-secondary hover:text-text-primary flex items-center justify-center active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-lg" data-icon="volume_up">volume_up</span>
+</button>
+<button aria-label="Playback speed" class="h-9 px-2.5 rounded-lg bg-surface-base border border-border-subtle text-text-primary hover:border-text-secondary flex items-center justify-center active:scale-95 transition-all" type="button">
+<span class="font-label-sm text-[11px] font-semibold tracking-wider text-text-primary">1.0x</span>
+</button>
+</div>
+<!-- Center: Quality & Audio/Subtitles Trigger -->
+<div class="flex items-center gap-2">
+<!-- 4K HDR Badge -->
+<div class="h-8 px-2 rounded bg-surface-base border border-primary-container/40 flex items-center justify-center shadow-xs">
+<span class="font-label-sm text-[10px] font-bold tracking-widest text-primary-container">4K HDR</span>
+</div>
+<!-- Audio & Subtitles Selector Pill (Opens Modal Sheet) -->
+<button aria-expanded="false" aria-haspopup="dialog" class="h-9 px-3 rounded-lg bg-surface-base border border-border-subtle hover:border-primary/50 text-text-primary flex items-center gap-1.5 active:scale-95 transition-all group" id="openSheetBtn" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-primary group-hover:scale-125 transition-transform"></span>
+<span class="font-label-sm text-[11px] font-medium tracking-wide">Audio &amp; CC</span>
+<span class="material-symbols-outlined text-sm text-text-secondary group-hover:text-text-primary" data-icon="tune">tune</span>
+</button>
+</div>
+<!-- Right: PiP & Fullscreen -->
+<div class="flex items-center gap-2">
+<button aria-label="Picture in picture" class="w-9 h-9 rounded-lg bg-surface-base border border-border-subtle text-text-secondary hover:text-text-primary flex items-center justify-center active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-lg" data-icon="picture_in_picture_alt">picture_in_picture_alt</span>
+</button>
+<button aria-label="Fullscreen view" class="w-9 h-9 rounded-lg bg-surface-base border border-border-subtle text-text-secondary hover:text-text-primary flex items-center justify-center active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-lg" data-icon="fullscreen">fullscreen</span>
+</button>
+</div>
+</section>
+</footer>
+<!-- 6. INTERACTIVE AUDIO & SUBTITLES SHEET MODAL OVERLAY -->
+<div aria-labelledby="sheetTitle" aria-modal="true" class="absolute inset-0 z-50 bg-[#0B0D10]/75 backdrop-blur-sm transition-opacity duration-300 opacity-100 pointer-events-auto flex flex-col justify-end" id="modalOverlay" role="dialog">
+<!-- Backdrop click dismiss surface -->
+<div class="flex-1 w-full" id="backdropDismiss"></div>
+<!-- Bottom Sheet Card Structure -->
+<div class="w-full bg-surface-base border-t border-border-subtle rounded-t-2xl shadow-2xl p-5 transform transition-transform duration-300 ease-out translate-y-0 max-h-[82%] flex flex-col" id="sheetContent">
+<!-- Sheet Header with Drag Handle & Close Button -->
+<div class="flex items-center justify-between pb-4 border-b border-border-subtle">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-xl" data-icon="tune">tune</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary font-semibold tracking-tight" id="sheetTitle">Audio &amp; Subtitles</h2>
+</div>
+<button aria-label="Close audio settings" class="w-8 h-8 rounded-full bg-surface-elevated border border-border-subtle flex items-center justify-center text-text-secondary hover:text-text-primary active:scale-90 transition-all" id="closeSheetBtn" type="button">
+<span class="material-symbols-outlined text-base" data-icon="close">close</span>
+</button>
+</div>
+<!-- Sheet Body: Dual Columns (Audio Tracks & Subtitles) -->
+<div class="grid grid-cols-2 gap-4 pt-4 overflow-y-auto custom-scrollbar flex-1 pr-1">
+<!-- Column 1: Audio Tracks -->
+<section aria-label="Audio track selection" class="space-y-2">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-[10px] uppercase font-bold tracking-wider text-text-secondary">Audio Tracks</span>
+<span class="font-label-sm text-[9px] uppercase px-1.5 py-0.5 rounded bg-surface-elevated border border-border-subtle text-primary">Atmos</span>
+</div>
+<!-- Option 1 (Selected): Dolby Atmos -->
+<label class="group flex items-start gap-2.5 p-2.5 rounded-lg bg-surface-elevated border border-primary-container/40 cursor-pointer transition-all">
+<input checked="" class="sr-only" name="audioTrack" type="radio" value="en-atmos"/>
+<span class="material-symbols-outlined text-primary-container text-base shrink-0 mt-0.5" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div class="flex flex-col">
+<span class="font-label-md text-xs font-semibold text-text-primary leading-tight">English [Original]</span>
+<span class="font-label-sm text-[10px] text-primary-container/90 mt-0.5">Dolby Atmos 7.1 Master</span>
+</div>
+</label>
+<!-- Option 2: French (5.1) -->
+<label class="group flex items-start gap-2.5 p-2.5 rounded-lg bg-surface-container-low border border-border-subtle hover:border-text-secondary cursor-pointer transition-all">
+<input class="sr-only" name="audioTrack" type="radio" value="fr-51"/>
+<span class="w-4 h-4 rounded-full border border-border-subtle shrink-0 mt-0.5 group-hover:border-text-secondary transition-colors"></span>
+<div class="flex flex-col">
+<span class="font-label-md text-xs font-medium text-text-secondary group-hover:text-text-primary leading-tight">Français</span>
+<span class="font-label-sm text-[10px] text-text-secondary/70 mt-0.5">Dolby Surround 5.1</span>
+</div>
+</label>
+<!-- Option 3: Spanish (5.1) -->
+<label class="group flex items-start gap-2.5 p-2.5 rounded-lg bg-surface-container-low border border-border-subtle hover:border-text-secondary cursor-pointer transition-all">
+<input class="sr-only" name="audioTrack" type="radio" value="es-51"/>
+<span class="w-4 h-4 rounded-full border border-border-subtle shrink-0 mt-0.5 group-hover:border-text-secondary transition-colors"></span>
+<div class="flex flex-col">
+<span class="font-label-md text-xs font-medium text-text-secondary group-hover:text-text-primary leading-tight">Español</span>
+<span class="font-label-sm text-[10px] text-text-secondary/70 mt-0.5">Dolby Digital 5.1</span>
+</div>
+</label>
+<!-- Option 4: German -->
+<label class="group flex items-start gap-2.5 p-2.5 rounded-lg bg-surface-container-low border border-border-subtle hover:border-text-secondary cursor-pointer transition-all">
+<input class="sr-only" name="audioTrack" type="radio" value="de-51"/>
+<span class="w-4 h-4 rounded-full border border-border-subtle shrink-0 mt-0.5 group-hover:border-text-secondary transition-colors"></span>
+<div class="flex flex-col">
+<span class="font-label-md text-xs font-medium text-text-secondary group-hover:text-text-primary leading-tight">Deutsch</span>
+<span class="font-label-sm text-[10px] text-text-secondary/70 mt-0.5">Dolby Digital 5.1</span>
+</div>
+</label>
+</section>
+<!-- Column 2: Subtitles Selection -->
+<section aria-label="Subtitle track selection" class="space-y-2">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-[10px] uppercase font-bold tracking-wider text-text-secondary">Subtitles</span>
+<span class="font-label-sm text-[9px] uppercase px-1.5 py-0.5 rounded bg-surface-elevated border border-border-subtle text-text-secondary">CC</span>
+</div>
+<!-- Option 1: Off -->
+<label class="group flex items-center gap-2.5 p-2 rounded-lg bg-surface-container-low border border-border-subtle hover:border-text-secondary cursor-pointer transition-all">
+<input class="sr-only" name="subtitleTrack" type="radio" value="off"/>
+<span class="w-4 h-4 rounded-full border border-border-subtle shrink-0 group-hover:border-text-secondary transition-colors"></span>
+<span class="font-label-md text-xs font-medium text-text-secondary group-hover:text-text-primary">Off</span>
+</label>
+<!-- Option 2 (Selected): English [CC] -->
+<label class="group flex items-center justify-between p-2 rounded-lg bg-surface-elevated border border-primary-container/40 cursor-pointer transition-all">
+<div class="flex items-center gap-2">
+<input checked="" class="sr-only" name="subtitleTrack" type="radio" value="en-cc"/>
+<span class="material-symbols-outlined text-primary-container text-base shrink-0" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-md text-xs font-semibold text-text-primary">English [CC]</span>
+</div>
+<span class="font-label-sm text-[9px] text-primary-container uppercase tracking-wider font-bold">Active</span>
+</label>
+<!-- Option 3: Español -->
+<label class="group flex items-center gap-2.5 p-2 rounded-lg bg-surface-container-low border border-border-subtle hover:border-text-secondary cursor-pointer transition-all">
+<input class="sr-only" name="subtitleTrack" type="radio" value="es"/>
+<span class="w-4 h-4 rounded-full border border-border-subtle shrink-0 group-hover:border-text-secondary transition-colors"></span>
+<span class="font-label-md text-xs font-medium text-text-secondary group-hover:text-text-primary">Español</span>
+</label>
+<!-- Option 4: Français -->
+<label class="group flex items-center gap-2.5 p-2 rounded-lg bg-surface-container-low border border-border-subtle hover:border-text-secondary cursor-pointer transition-all">
+<input class="sr-only" name="subtitleTrack" type="radio" value="fr"/>
+<span class="w-4 h-4 rounded-full border border-border-subtle shrink-0 group-hover:border-text-secondary transition-colors"></span>
+<span class="font-label-md text-xs font-medium text-text-secondary group-hover:text-text-primary">Français</span>
+</label>
+<!-- Option 5: Arabic -->
+<label class="group flex items-center gap-2.5 p-2 rounded-lg bg-surface-container-low border border-border-subtle hover:border-text-secondary cursor-pointer transition-all">
+<input class="sr-only" name="subtitleTrack" type="radio" value="ar"/>
+<span class="w-4 h-4 rounded-full border border-border-subtle shrink-0 group-hover:border-text-secondary transition-colors"></span>
+<span class="font-label-md text-xs font-medium text-text-secondary group-hover:text-text-primary">العربية (Arabic)</span>
+</label>
+</section>
+</div>
+<!-- Sheet Footer with Quick Format Info -->
+<div class="mt-4 pt-3 border-t border-border-subtle flex items-center justify-between text-text-secondary font-label-sm text-[10px]">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs text-status-success" data-icon="check">check</span>
+<span>Bitrate: 28.4 Mbps (Direct Stream)</span>
+</div>
+<button class="px-4 py-1.5 rounded-lg bg-primary-container text-surface-container-lowest font-semibold hover:bg-primary transition-colors text-xs" id="applySheetBtn" type="button">
+            Done
+          </button>
+</div>
+</div>
+</div>
+</main>
+<script>
+    // Lightweight micro-interactions for modal sheet & player toggles
+    const modalOverlay = document.getElementById('modalOverlay');
+    const sheetContent = document.getElementById('sheetContent');
+    const openSheetBtn = document.getElementById('openSheetBtn');
+    const closeSheetBtn = document.getElementById('closeSheetBtn');
+    const applySheetBtn = document.getElementById('applySheetBtn');
+    const backdropDismiss = document.getElementById('backdropDismiss');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+
+    function openModal() {
+      modalOverlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+      modalOverlay.classList.add('opacity-100', 'pointer-events-auto');
+      sheetContent.classList.remove('translate-y-full');
+      sheetContent.classList.add('translate-y-0');
+      openSheetBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeModal() {
+      sheetContent.classList.remove('translate-y-0');
+      sheetContent.classList.add('translate-y-full');
+      modalOverlay.classList.remove('opacity-100', 'pointer-events-auto');
+      modalOverlay.classList.add('opacity-0', 'pointer-events-none');
+      openSheetBtn.setAttribute('aria-expanded', 'false');
+      setTimeout(() => {
+        modalOverlay.classList.add('hidden');
+      }, 300);
+    }
+
+    // Toggle Play/Pause Icon
+    let isPlaying = true;
+    playPauseBtn.addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      const icon = playPauseBtn.querySelector('.material-symbols-outlined');
+      if (isPlaying) {
+        icon.textContent = 'pause';
+        playPauseBtn.setAttribute('aria-label', 'Pause playback');
+      } else {
+        icon.textContent = 'play_arrow';
+        playPauseBtn.setAttribute('aria-label', 'Resume playback');
+      }
+    });
+
+    // Modal Sheet listeners
+    openSheetBtn.addEventListener('click', openModal);
+    closeSheetBtn.addEventListener('click', closeModal);
+    applySheetBtn.addEventListener('click', closeModal);
+    backdropDismiss.addEventListener('click', closeModal);
+  </script>
+</body></html>

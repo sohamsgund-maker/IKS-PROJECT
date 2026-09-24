@@ -2,40 +2,57 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="https://netplay-one.vercel.app/logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#E50914" />
+    <link rel="icon" type="image/png" href="/logo-user.png" />
+    <link rel="apple-touch-icon" href="/logo-user.png" />
+    <link rel="preload" as="image" href="/logo-user.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0B0D10" />
+    <meta name="color-scheme" content="dark" />
     <link rel="manifest" href="/manifest.json" />
-    <title>CineVault VIP MOD — 100% Ad-Free 4K Stream</title>
-    <meta name="description" content="CineVault VIP MOD - Ad-Free 4K Movies, Web Series, and Anime streaming." />
+    <title>CineVault — Curated Luxury Streaming</title>
+    <meta name="description" content="CineVault - Curated luxury streaming for movies and TV shows." />
     
-    <!-- VIP MOD: Anti-Ad & Popup Interception Shield -->
+    <!-- VIP MOD: Anti-Ad, Popup & Anti-Inspection Shield -->
     <script>
       (function() {
         try {
-          // Block window.open ad redirection attempts from embedded media players
-          window.open = function(url, target, features) {
-            console.warn('[CineVault VIP Shield] Suppressed unwanted popup/ad redirection:', url);
-            return null;
-          };
+          window.open = function(url, target, features) { return null; };
+          window.alert = function() { return null; };
+          window.confirm = function() { return false; };
+          // Disable right-click context menu & long-press inspection
+          document.addEventListener('contextmenu', function(e) { e.preventDefault(); }, false);
+          // Block common inspect key shortcuts
+          document.addEventListener('keydown', function(e) {
+            if (
+              e.key === 'F12' ||
+              (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+              (e.ctrlKey && (e.key === 'u' || e.key === 'U'))
+            ) {
+              e.preventDefault();
+              return false;
+            }
+          });
         } catch (e) {}
       })();
     </script>
     
     <!-- Performance Preconnect & DNS-Prefetch for Fast CDN & Image Loading -->
+    <link rel="preconnect" href="https://pbcdnw.aoneroom.com" crossorigin />
+    <link rel="dns-prefetch" href="https://pbcdnw.aoneroom.com" />
+    <link rel="preconnect" href="https://mzfi.me" crossorigin />
+    <link rel="dns-prefetch" href="https://mzfi.me" />
+    <link rel="preconnect" href="https://h5-api.aoneroom.com" crossorigin />
+    <link rel="dns-prefetch" href="https://h5-api.aoneroom.com" />
     <link rel="preconnect" href="https://image.tmdb.org" crossorigin />
     <link rel="dns-prefetch" href="https://image.tmdb.org" />
-    <link rel="preconnect" href="https://www.2embed.cc" />
-    <link rel="dns-prefetch" href="https://www.2embed.cc" />
-    <link rel="preconnect" href="https://peachify.top" />
-    <link rel="dns-prefetch" href="https://peachify.top" />
 
-    <!-- Google Fonts: Inter & Outfit -->
+    <!-- Google Fonts: Inter, Plus Jakarta Sans, JetBrains Mono, Outfit (Non-blocking) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@700&display=swap" rel="stylesheet" /></noscript>
   </head>
-  <body class="bg-[#141414] text-zinc-100 antialiased selection:bg-[#E50914] selection:text-white">
+  <body class="bg-[#0B0D10] text-[#F5F5F2] antialiased selection:bg-[#D6A84F] selection:text-[#0B0D10] overflow-x-hidden">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

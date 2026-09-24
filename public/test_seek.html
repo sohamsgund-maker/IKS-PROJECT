@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Seek Lifecycle Test</title>
+<style>
+body { background: #111; color: #eee; font-family: monospace; padding: 20px; }
+video { width: 640px; height: 360px; background: black; }
+#logs { max-height: 400px; overflow-y: auto; background: #222; padding: 10px; margin-top: 10px; font-size: 12px; }
+.btn { padding: 8px 16px; margin: 4px; background: #e5a93c; color: black; border: none; font-weight: bold; cursor: pointer; }
+</style>
+</head>
+<body>
+<h2>CineVault Seek Lifecycle Test</h2>
+<video id="vid" src="/api/proxy_video?url=https%3A//bcdnxw.hakunaymatata.com/bt/42f20c00203d4a58deb08f869062985a.mp4%3Fsign%3Da141e787f68c5298e0d0a57a00b14f90%26t%3D1789832027" controls playsinline preload="metadata"></video>
+<div>
+  <button class="btn" onclick="seekTo(1361)">Set 22:41</button>
+  <button class="btn" onclick="seekTo(1800)">Seek 30:00</button>
+  <button class="btn" onclick="seekTo(2400)">Seek 40:00</button>
+  <button class="btn" onclick="seekTo(3600)">Seek 60:00</button>
+  <button class="btn" onclick="seekTo(1200)">Seek 20:00</button>
+  <button class="btn" onclick="rapidScrub()">Rapid Scrub</button>
+  <button class="btn" onclick="testFullscreen()">Seek & Fullscreen</button>
+</div>
+<div id="status" style="margin-top: 10px; font-weight: bold; color: #ffeb3b;">Status: Initializing</div>
+<div id="logs"></div>
+
+<script>
+const v = document.getElementById('vid');
+const logs = document.getElementById('logs');
+const status = document.getElementById('status');
+window.__EVENTS__ = [];
+
+function log(msg) {
+  const t = (performance.now() / 1000).toFixed(3);
+  const entry = `[${t}s] ${msg} | cur=${v.currentTime.toFixed(1)} ready=${v.readyState} net=${v.networkState} paused=${v.paused} seeking=${v.seeking} buf=${getBuf()}`;
+  console.log(entry);
+  window.__EVENTS__.push(entry);
+  const div = document.createElement('div');
+  div.innerText = entry;
+  logs.appendChild(div);
+  logs.scrollTop = logs.scrollHeight;
+}
+
+function getBuf() {
+  const b = [];
+  for (let i = 0; i < v.buffered.length; i++) {
+    b.push(`${v.buffered.start(i).toFixed(1)}-${v.buffered.end(i).toFixed(1)}`);
+  }
+  return b.join(', ') || 'none';
+}
+
+['loadstart', 'loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'seeking', 'seeked', 'waiting', 'playing', 'pause', 'stalled', 'suspend', 'progress', 'error'].forEach(evt => {
+  v.addEventListener(evt, () => {
+    log(`EVENT: ${evt}`);
+    status.innerText = `Last Event: ${evt} | Ready: ${v.readyState} | Buffered: ${getBuf()}`;
+  });
+});
+
+function seekTo(target) {
+  log(`>>> COMMENCE SEEK to ${target}s`);
+  v.currentTime = target;
+}
+
+window.seekTo = seekTo;
+
+window.rapidScrub = function() {
+  log(`>>> RAPID SCRUB START`);
+  const targets = [1361, 1500, 1800, 2100, 2400];
+  targets.forEach((t, idx) => {
+    setTimeout(() => {
+      log(`>>> SCRUB NUDGE to ${t}s`);
+      v.currentTime = t;
+    }, idx * 100);
+  });
+};
+
+window.testFullscreen = function() {
+  log(`>>> TEST FULLSCREEN`);
+  seekTo(2400);
+  if (v.requestFullscreen) {
+    v.requestFullscreen().catch(() => {});
+  }
+};
+</script>
+</body>
+</html>

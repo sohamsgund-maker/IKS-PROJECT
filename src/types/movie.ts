@@ -1,83 +1,107 @@
-export interface MovieQuality {
-  quality: '480p' | '720p' | '1080p' | '4K';
-  videoUrl: string;
-  downloadUrl?: string;
-  fileSize?: string;
-}
-
-export interface Subtitle {
-  language: string;
-  src: string;
-  label: string;
-}
-
-export interface AudioTrack {
-  id: string;
-  name: string;
-  language: string;
-  nativeName?: string;
-  flag?: string;
-  url?: string;
-  isDefault?: boolean;
-}
-
-export interface StreamInfoResponse {
-  tmdbId: number | string;
-  title: string;
-  defaultLanguage: string;
-  isHindiAvailable?: boolean;
-  audioTracks: AudioTrack[];
-  qualities: MovieQuality[];
-  subtitles: Subtitle[];
-  directStreamUrl?: string;
-  fallbackEmbedUrl?: string;
-}
-
 export interface Episode {
-  season: number;
-  episode: number;
+  episode_number: number;
   title: string;
-  duration?: string;
-  videoUrl?: string;
+  overview?: string;
+  thumbnail?: string;
+}
+
+export interface Season {
+  season_number: number;
+  name: string;
+  episode_count: number;
+  episodes: Episode[];
+}
+
+export interface CastMember {
+  name: string;
+  character?: string;
+  avatar?: string;
 }
 
 export interface Movie {
-  _id?: string;
-  id?: string;
-  tmdbId?: number | string;
-  imdbId?: string;
+  id: string;
   title: string;
-  slug: string;
-  description: string;
-  posterUrl: string;
-  backdropUrl?: string;
-  trailerUrl?: string;
-  releaseYear: number;
-  language: string;
-  originalLanguage?: string;
-  genres: string[];
-  duration: string;
+  detailPath: string;
+  overview: string;
+  poster: string;
+  backdrop: string;
+  release_year: number;
+  releaseDate?: string;
   rating: number;
-  director: string;
-  cast: string[];
-  type: 'movie' | 'series';
-  featured?: boolean;
-  trending?: boolean;
-  qualities: MovieQuality[];
-  videoUrl: string;
-  downloadUrl?: string;
-  subtitles?: Subtitle[];
-  audioTracks?: AudioTrack[];
-  episodes?: Episode[];
-  source?: string;
-  subjectId?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  genres: string[];
+  duration?: string;
+  media_type: 'movie' | 'tv' | 'series';
+  trailer_url?: string;
+  streamUrl?: string;
+  seasons?: Season[];
+  cast?: (string | CastMember)[];
 }
 
-export interface AuthUser {
+export interface MovieShelf {
   id: string;
-  username: string;
-  email: string;
-  role: 'user' | 'admin';
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  items: Movie[];
 }
+
+export interface HomeCatalogResponse {
+  featured: Movie | null;
+  rows: MovieShelf[];
+  total_titles: number;
+}
+
+export interface StreamQuality {
+  quality: string;
+  resolution: string;
+  url: string;
+  size_mb?: number;
+  isHls?: boolean;
+}
+
+export interface StreamResponse {
+  streamUrl: string;
+  qualities: StreamQuality[];
+  webPlayerUrl: string;
+  isDirect: boolean;
+}
+
+export interface DownloadItem {
+  id: string;
+  movieId: string;
+  title: string;
+  poster: string;
+  backdrop?: string;
+  detailPath: string;
+  mediaType: 'movie' | 'tv' | 'series';
+  season?: number;
+  episode?: number;
+  quality: string;
+  streamUrl: string;
+  localPath?: string;
+  status: 'pending' | 'downloading' | 'completed' | 'failed' | 'paused';
+  progress: number; // 0 - 100
+  downloadedBytes?: number;
+  totalBytes?: number;
+  createdAt: number;
+  nativeDownloadId?: number;
+  movie: Movie;
+  sizeFormatted?: string;
+}
+
+export interface CachedMovie {
+  movie: Movie;
+  lastWatchedAt: number;
+  lastSeason?: number;
+  lastEpisode?: number;
+  progressSeconds: number;
+  durationSeconds: number;
+  progressPercent: number;
+  streamUrl?: string;
+  timestamp?: number;
+  season?: number;
+  episode?: number;
+  savedPosition?: number;
+  duration?: number;
+}
+

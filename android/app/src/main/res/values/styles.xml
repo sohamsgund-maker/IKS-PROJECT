@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- CineVault Dark Theme Colors -->
+    <color name="colorPrimary">#D6A84F</color>
+    <color name="colorPrimaryDark">#0B0D10</color>
+    <color name="colorAccent">#D6A84F</color>
+    <color name="cinevault_dark">#0B0D10</color>
+    <color name="cinevault_surface">#15181D</color>
+
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
@@ -13,10 +20,22 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Edge-to-edge dark system bars -->
+        <item name="android:statusBarColor">@color/cinevault_dark</item>
+        <item name="android:navigationBarColor">@color/cinevault_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
 
-
+    <!-- Android 12+ SplashScreen API theme -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">@drawable/splash</item>
+        <item name="android:background">@color/cinevault_dark</item>
+        <item name="windowSplashScreenBackground">@color/cinevault_dark</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+        <!-- Dark status/nav bar during splash -->
+        <item name="android:statusBarColor">@color/cinevault_dark</item>
+        <item name="android:navigationBarColor">@color/cinevault_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

@@ -10,8 +10,8 @@ const config: CapacitorConfig = {
     allowNavigation: [
       '*.tmdb.org',
       '*.themoviedb.org',
-      '*.2embed.cc',
-      '*.peachify.top',
+      '*.aoneroom.com',
+      '*.mzfi.me',
       '*.supabase.co',
       '*.googleapis.com',
       '*'

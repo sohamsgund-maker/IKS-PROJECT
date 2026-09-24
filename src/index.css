@@ -2,89 +2,129 @@
 
 @layer base {
   :root {
-    --bg-base: #101014;
-    --bg-surface: #18181e;
-    --bg-surface-hover: #22222a;
-    --bg-card: #1c1c24;
-    --text-primary: #f5f5f7;
-    --text-secondary: #a1a1aa;
-    --text-muted: #71717a;
-    --accent: #E50914;
-    --accent-hover: #b80710;
-    --accent-glow: rgba(229, 9, 20, 0.35);
-    --accent-emerald: #46d369;
-    --border: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(255, 255, 255, 0.18);
-    --overlay: rgba(0, 0, 0, 0.75);
+    /* CineVault Premium Cinematic Dark Color System */
+    --bg-base: #0B0D10;
+    --bg-surface: #15181D;
+    --bg-surface-elevated: #1D2127;
+    --bg-card: #15181D;
+    --bg-card-hover: #1D2127;
+    
+    /* Text Hierarchy */
+    --text-primary: #F5F5F2;
+    --text-secondary: #9A9FA8;
+    --text-muted: #6B7280;
+    
+    /* Primary Accent: Vibrant Electric Gold */
+    --accent: #F0B429;
+    --accent-hover: #F7C948;
+    --accent-active: #D99E0B;
+    --accent-muted: rgba(240, 180, 41, 0.12);
+    --accent-glow: rgba(240, 180, 41, 0.35);
+    
+    /* Borders & Dividers */
+    --border: #292E35;
+    --border-hover: rgba(240, 180, 41, 0.4);
+    --overlay: rgba(11, 13, 16, 0.9);
 
-    /* Netflix palette aliases */
-    --netflix-red: #E50914;
-    --netflix-red-hover: #B81D24;
-    --netflix-black: #141414;
-    --netflix-dark: #181818;
-    --netflix-card: #202020;
-    --netflix-light: #e5e5e5;
+    /* Semantic Status */
+    --status-success: #5FAF7B;
+    --status-error: #D66A6A;
+    --gold-star: #F0B429;
+
+    /* === Design Tokens: Spacing Scale === */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-base: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+
+    /* === Design Tokens: Border Radius === */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-full: 9999px;
+
+    /* === Design Tokens: Shadows === */
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(41, 46, 53, 0.5);
+    --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(240, 180, 41, 0.3);
+    --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.6);
+    --shadow-button: 0 2px 8px rgba(240, 180, 41, 0.25);
+    --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.7);
+
+    /* === Design Tokens: Transitions === */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --duration-fast: 120ms;
+    --duration-normal: 200ms;
+    --duration-smooth: 300ms;
   }
 
   html {
     scroll-behavior: smooth;
+    background-color: #0B0D10;
   }
 
   body {
-    background-color: #101014;
-    color: #f5f5f7;
+    background-color: #0B0D10;
+    color: #F5F5F2;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, .font-display {
-    font-family: 'Inter', 'Bebas Neue', 'Outfit', sans-serif;
+  h1, h2, h3, h4, .font-display, .font-headline {
+    font-family: 'Plus Jakarta Sans', 'Outfit', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.02em;
   }
 
   :focus-visible {
-    outline: 2px solid #E50914;
+    outline: 2px solid #F0B429;
     outline-offset: 2px;
   }
 }
 
-/* High Performance Card Transformations */
-.netflix-card-hover {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease, border-color 200ms ease;
+/* ============================================================
+   CineVault Card Hover & Elevation
+   Zero GPU layer overhead on mobile to prevent compositor drop
+   ============================================================ */
+.cinevault-card-hover {
+  transition: transform var(--duration-fast) var(--ease-out-expo),
+              box-shadow var(--duration-fast) var(--ease-out-expo),
+              border-color var(--duration-fast) var(--ease-out-expo);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .netflix-card-hover:hover {
-    transform: scale(1.04) translateY(-2px);
-    z-index: 30;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.9), 0 0 1px rgba(255, 255, 255, 0.15);
+  .cinevault-card-hover:hover {
+    transform: scale(1.03) translateY(-3px);
+    z-index: 20;
+    box-shadow: var(--shadow-card-hover);
   }
 }
 
-.img-smooth {
-  transform: translateZ(0);
-}
 
-/* Custom Minimal Cinematic Scrollbar */
+/* ============================================================
+   Custom Minimal CineVault Gold Scrollbar
+   ============================================================ */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #101014;
+  background: #0B0D10;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2a32;
+  background: #1D2127;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #E50914;
+  background: #F0B429;
 }
 
 .scrollbar-none::-webkit-scrollbar {
@@ -95,58 +135,336 @@
   scrollbar-width: none;
 }
 
-/* Animation Keyframes */
+
+/* ============================================================
+   Animation Keyframes (60FPS Hardware-Accelerated)
+   ============================================================ */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
+@keyframes slideUpSmooth {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sweep {
+  0% { transform: translate3d(-100%, 0, 0); }
+  100% { transform: translate3d(300%, 0, 0); }
+}
+
+@keyframes pulseGlowSmooth {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+/* Missing keyframes that were referenced but not defined */
 @keyframes shimmer {
-  100% { transform: translateX(100%); }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
 }
 
-@keyframes pulseRipple {
-  0% { transform: scale(0.85); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.85; }
-  100% { transform: scale(1); opacity: 1; }
+@keyframes progress {
+  0% { transform: translateX(-100%); width: 40%; }
+  50% { width: 60%; }
+  100% { transform: translateX(250%); width: 40%; }
 }
 
+/* View Transition Animations */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translate3d(30px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes slideOutToBottom {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes staggerFadeIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Utility Animation Classes */
 .animate-fade-in {
-  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.16s var(--ease-out-expo) forwards;
 }
 
-.animate-pulse-ripple {
-  animation: pulseRipple 0.3s ease-out forwards;
+.animate-slide-up-smooth {
+  animation: slideUpSmooth 0.18s var(--ease-out-expo) forwards;
 }
 
-/* Text outline for Netflix Top 10 giant numbers */
-.netflix-rank-number {
-  -webkit-text-stroke: 3px #3f3f46;
-  color: #101014;
-  font-weight: 900;
-  font-family: 'Impact', 'Bebas Neue', sans-serif;
+.animate-backdrop-fade {
+  animation: backdropFadeIn 0.16s ease-out forwards;
 }
 
-/* Mobile Safe Area & Touch Optimizations */
+.animate-sweep {
+  animation: sweep 1.4s ease-in-out infinite;
+}
+
+.animate-slide-in-bottom {
+  animation: slideInFromBottom 0.3s var(--ease-out-expo) forwards;
+}
+
+.animate-slide-out-bottom {
+  animation: slideOutToBottom 0.25s ease-in forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s var(--ease-out-expo) forwards;
+}
+
+.animate-stagger-in {
+  animation: staggerFadeIn 0.3s var(--ease-out-expo) both;
+}
+
+/* View transition wrapper — smooth tab switching */
+.view-transition-enter {
+  animation: fadeIn 0.2s var(--ease-out-expo) forwards;
+}
+
+
+/* ============================================================
+   Android-Native Ripple Effect
+   ============================================================ */
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(240, 180, 41, 0.15) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity var(--duration-fast) ease-out;
+  pointer-events: none;
+}
+
+.ripple-effect:active::after {
+  opacity: 1;
+}
+
+/* Press feedback for interactive elements — GPU-composited, zero layout cost */
+.press-feedback {
+  will-change: transform;
+  transition: transform 80ms var(--ease-out-expo);
+}
+
+.press-feedback:active {
+  transform: scale(0.97);
+}
+
+
+/* ============================================================
+   GPU Optimization for ALL Touch / Mobile Devices
+   Uses capability queries instead of width breakpoints so
+   landscape phones & tablets with no hover also benefit.
+   ============================================================ */
+@media (hover: none), (pointer: coarse) {
+  /* Replace GPU-intensive backdrop blur on all touch devices */
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Disable expensive box-shadow blurs on mobile cards */
+  .cinevault-card-hover {
+    box-shadow: none !important;
+    transition: transform 100ms ease-out !important;
+  }
+
+  /* Faster transitions on all interactive elements for instant feel */
+  .press-feedback {
+    transition: transform 60ms ease-out;
+  }
+}
+
+/* Content-visibility optimization for off-screen sections */
+.cv-lazy-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
+
+/* ============================================================
+   Mobile Safe Area & Accessible Touch Targets
+   ============================================================ */
 .pb-safe {
-  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.bottom-nav-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Android minimum 48dp touch targets */
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.touch-target-sm {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 * {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Mobile Landscape Video Player Styling */
-@media (orientation: landscape) and (max-height: 500px) {
-  .player-landscape-container {
-    height: 100vh !important;
-    max-height: 100vh !important;
-    border-radius: 0 !important;
-    border: none !important;
+/* Scroll-snap utilities for horizontal carousels */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.scroll-snap-start {
+  scroll-snap-align: start;
+}
+
+.scroll-snap-center {
+  scroll-snap-align: center;
+}
+
+
+/* ============================================================
+   True Edge-to-Edge Mobile Landscape & Fullscreen Player
+   Forces the player to fill the ENTIRE physical screen with
+   zero padding, zero safe-area insets, and zero border-radius.
+   ============================================================ */
+.player-fullscreen-mode {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  width: 100dvw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  z-index: 9999 !important;
+  overflow: hidden !important;
+  background: #000 !important;
+}
+
+/* Video element inside fullscreen MUST fill the entire container.
+   object-fit is inherited from Tailwind classes (object-contain / object-cover / object-fill)
+   so the Screen Fit toggle continues to work correctly. */
+.player-fullscreen-mode video {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  /* Default fallback — Tailwind classes override this when the fit mode toggle is used */
+  object-fit: contain;
+}
+
+/* Landscape-specific: additional insurance for device rotation */
+@media (orientation: landscape) {
+  .player-fullscreen-mode {
+    /* Override any residual safe-area padding from inline styles */
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .player-fullscreen-mode video {
+    /* Stay within the container instead of overflowing to viewport units */
+    width: 100% !important;
+    height: 100% !important;
   }
 }
 
-/* Accessibility: Reduced Motion */
+
+/* ============================================================
+   Accessibility: Reduced Motion
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
@@ -156,12 +474,15 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .netflix-card-hover:hover {
+  .cinevault-card-hover:hover {
     transform: none !important;
   }
 }
 
-/* Anti-Ad Shield Rules */
+
+/* ============================================================
+   Anti-Ad Shield Rules
+   ============================================================ */
 iframe[src*="doubleclick"],
 iframe[src*="googlesyndication"],
 iframe[src*="adservice"],
@@ -181,3 +502,34 @@ ins.adsbygoogle,
   height: 0 !important;
   width: 0 !important;
 }
+
+/* ============================================================
+   WebKit Native Media Controls Suppression (Clean Single Layer)
+   ============================================================ */
+video::-webkit-media-controls,
+video::-webkit-media-controls-enclosure,
+video::-webkit-media-controls-panel,
+video::-webkit-media-controls-overlay-play-button,
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* ============================================================
+   Device Performance & 60-120 FPS Compositor Smoothness
+   Virtualizes off-screen shelves to eliminate GPU memory pressure
+   ============================================================ */
+/* NOTE: cv-lazy-section already defined above (line ~340) — removed duplicate */
+
+/* Instant touch responsiveness without 300ms mobile delay */
+button, [role="button"], a {
+  touch-action: manipulation;
+}
+
+/* NOTE: scroll-snap-x already defined above (line ~383) — removed duplicate */
+
+

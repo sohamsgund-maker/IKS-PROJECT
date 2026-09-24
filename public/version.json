@@ -1,0 +1,23 @@
+{
+  "latestVersionCode": 2580,
+  "latestVersionName": "2.5.8",
+  "websiteUrl": "https://cinevaultapk.online/",
+  "apkDownloadUrl": "https://cinevaultapk.online/",
+  "directApkUrl": "https://cinevaultapk.online/downloads/CineVault.apk",
+  "updateMessage": "Fixed Telegram button to launch channel directly",
+  "forceUpdate": true,
+  "version": "2.5.8",
+  "versionCode": 2580,
+  "releaseDate": "2026-09-24",
+  "changelog": [
+    "Fixed Telegram button to launch channel directly",
+    "Overhauled Live TV with 109 active 100% verified streams",
+    "Added Retry Stream & Next Channel controls"
+  ],
+  "apkUrl": "https://cinevaultapk.online/",
+  "mandatory": true,
+  "minVersion": "2.0.0",
+  "sha256": "326225eb27adc5d0f2fb60c785e7355be39554c1fc95c941a2bc8f3f67358c05",
+  "fileSizeBytes": 9175440,
+  "fileSizeMB": "8.8MB"
+}

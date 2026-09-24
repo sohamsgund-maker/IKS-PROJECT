@@ -1,42 +1,240 @@
-import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
-import type { Movie, MovieQuality, AuthUser } from './types/movie';
-import { api, FALLBACK_MOVIES } from './services/api';
-import { NetflixNavbar } from './components/NetflixNavbar';
-import { NetflixBillboard } from './components/NetflixBillboard';
-import { NetflixRow } from './components/NetflixRow';
-import { NetflixFooter } from './components/NetflixFooter';
-import { NetflixMobileNav } from './components/NetflixMobileNav';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { CinematicImage } from './components/CinematicImage';
-import { SearchResultsSkeleton, HeroBillboardSkeleton } from './components/Skeletons';
-import { ContinueWatching } from './components/ContinueWatching';
-import type { WatchProgressItem } from './components/ContinueWatching';
-import { syncCloudWatchlist, syncCloudHistory } from './services/supabaseClient';
-import { CheckCircle2, Bookmark, Play, Check, Search, Info, Sparkles, ArrowLeft, Star, Film, Crown, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
+import type { Movie, HomeCatalogResponse } from './types/movie';
+import { movieboxService } from './services/movieboxService';
+import {
+  Navbar,
+  HeroBanner,
+  MovieRow,
+  ErrorBoundary,
+  MovieRowSkeleton,
+  HeroBillboardSkeleton,
+  ProfileView,
+  BottomNav,
+  SplashScreen,
+  DownloadsView,
+  UpdateModal,
+} from './components';
+import { updateService, type UpdateInfo } from './services/updateService';
+import { APP_VERSION, APP_BUILD_CODE } from './config/version';
+import { Film } from 'lucide-react';
+import { cacheService } from './services/cacheService';
+import { AdultHomeView } from './components/AdultHomeView';
+import { ADULT_HOME_CATALOG, isAdultContent } from './data/adultCatalog';
 
-const WatchPage = lazy(() => import('./pages/WatchPage').then(m => ({ default: m.WatchPage })));
-const NetflixInfoModal = lazy(() => import('./components/NetflixInfoModal').then(m => ({ default: m.NetflixInfoModal })));
-const SettingsModal = lazy(() => import('./components/SettingsModal').then(m => ({ default: m.SettingsModal })));
+import { SearchModal } from './components/SearchModal';
+import type { UserProfile } from './components/ProfileView';
+
+// Code-splitting for heavy modals, media player & Live TV to minimize initial bundle size and memory
+const MovieDetailsModal = lazy(() => import('./components/MovieDetailsModal').then((m) => ({ default: m.MovieDetailsModal })));
+const VideoPlayer = lazy(() => import('./components/VideoPlayer').then((m) => ({ default: m.VideoPlayer })));
+const LiveTvView = lazy(() => import('./components/LiveTvView').then((m) => ({ default: m.LiveTvView })));
+
+const DEFAULT_PROFILE: UserProfile = {
+  name: 'Julian Vance',
+  title: 'Patron of Cinema • Archive Fellow',
+  memberId: '#CV-88292-2M',
+  sinceYear: '2021',
+};
 
 export const App: React.FC = () => {
-  const [movies, setMovies] = useState<Movie[]>(() => FALLBACK_MOVIES);
-  const [activeTab, setActiveTab] = useState<string>('home');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  
-  // Navigation / View State
-  const [selectedMovieForInfo, setSelectedMovieForInfo] = useState<Movie | null>(null);
-  const [watchMovie, setWatchMovie] = useState<{ movie: Movie; quality: MovieQuality } | null>(null);
-  const [exploredCategory, setExploredCategory] = useState<{ title: string; movies: Movie[] } | null>(null);
+  // Splash Screen State
+  const [showSplash, setShowSplash] = useState<boolean>(true);
 
-  // Toast feedback state
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  // 18+ Vault Mode (Secretly toggled by clicking the logo at the top left)
+  const [isAdultMode, setIsAdultMode] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('cinevault_adult_mode') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 2500);
-  };
+  // Instant 0ms Cold-Start: Hydrate immediately from stored cache if present
+  const [catalog, setCatalog] = useState<HomeCatalogResponse | null>(() => {
+    return movieboxService.getStoredHomeCatalog();
+  });
+  const [loading, setLoading] = useState<boolean>(() => {
+    return !movieboxService.getStoredHomeCatalog();
+  });
+  const [activeView, setActiveViewRaw] = useState<'home' | 'livetv' | 'downloads' | 'profile'>('home');
+  const mainRef = useRef<HTMLElement>(null);
 
-  // Watchlist (My List) state
+  // Scroll to top + push history on view change
+  const setActiveView = useCallback((view: typeof activeView) => {
+    setActiveViewRaw((prev) => {
+      if (prev !== view) {
+        // Scroll main content to top
+        mainRef.current?.scrollTo({ top: 0 });
+        window.scrollTo({ top: 0 });
+        // Push history entry for proper Android back navigation
+        try {
+          window.history.pushState({ view }, '', '');
+        } catch {}
+      }
+      return view;
+    });
+  }, []);
+
+  const toggleAdultMode = useCallback(() => {
+    if (navigator.vibrate) navigator.vibrate(12);
+    setIsAdultMode((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('cinevault_adult_mode', String(next));
+      } catch {}
+      return next;
+    });
+    setActiveView('home');
+  }, [setActiveView]);
+  const [isStartingPlay, setIsStartingPlay] = useState<boolean>(false);
+  const [downloadCount, setDownloadCount] = useState<number>(() => {
+    try {
+      return cacheService.getDownloads().length;
+    } catch {
+      return 0;
+    }
+  });
+
+  // Keep download count updated (15s interval — downloads are long operations, 15s is sufficient)
+  useEffect(() => {
+    const updateCount = () => {
+      try {
+        setDownloadCount(cacheService.getDownloads().length);
+      } catch {}
+    };
+    updateCount();
+    const interval = setInterval(updateCount, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // In-App Update State - instantly initialized from persistent cache if an update was detected
+  const [availableUpdate, setAvailableUpdate] = useState<UpdateInfo | null>(() => {
+    return updateService.getCachedPendingUpdate();
+  });
+  const [isMandatoryUpdate, setIsMandatoryUpdate] = useState<boolean>(() => {
+    const cached = updateService.getCachedPendingUpdate();
+    return Boolean(cached?.forceUpdate);
+  });
+  // Hold splash briefly for the startup parallel update check so update screen shows directly
+  const [isCheckingInitialUpdate, setIsCheckingInitialUpdate] = useState<boolean>(() => {
+    return !updateService.getCachedPendingUpdate();
+  });
+
+  // Real-time remote update detection (Immediate startup + 20s background polling + Resume/Focus/Online triggers)
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkAppUpdate = async (force = false) => {
+      try {
+        const result = await updateService.checkForUpdate(force);
+        if (isMounted) {
+          if (result.hasUpdate && result.updateInfo) {
+            setAvailableUpdate(result.updateInfo);
+            setIsMandatoryUpdate(result.isMandatory);
+            setShowSplash(false);
+            if (result.isMandatory) {
+              setPlayingMovie(null);
+            }
+          } else {
+            // App is up to date, clear any stale cached update
+            updateService.clearCachedUpdate();
+            setAvailableUpdate(null);
+          }
+        }
+      } catch (err) {
+        console.warn('[CineVault] Remote update check:', err);
+      } finally {
+        if (isMounted) {
+          setIsCheckingInitialUpdate(false);
+        }
+      }
+    };
+
+    // Expose global bridge for native onResume call
+    (window as any).checkCineVaultUpdate = (force = true) => checkAppUpdate(force);
+
+    // Initial check (bypassing cache for instant response)
+    checkAppUpdate(true);
+
+    // Periodic live background check every 20 seconds so user NEVER has to refresh
+    const pollInterval = setInterval(() => {
+      checkAppUpdate(true);
+    }, 20000);
+
+    // Immediate check whenever user switches back to app / resumes / reconnects online
+    const handleActiveResume = () => {
+      if (document.visibilityState === 'visible') {
+        checkAppUpdate(true);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleActiveResume);
+    window.addEventListener('focus', handleActiveResume);
+    window.addEventListener('online', handleActiveResume);
+
+    // Safety fallback: after 1200ms, release splash if network is offline or unreachable
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) {
+        setIsCheckingInitialUpdate(false);
+      }
+    }, 1200);
+
+    return () => {
+      isMounted = false;
+      delete (window as any).checkCineVaultUpdate;
+      clearInterval(pollInterval);
+      document.removeEventListener('visibilitychange', handleActiveResume);
+      window.removeEventListener('focus', handleActiveResume);
+      window.removeEventListener('online', handleActiveResume);
+      clearTimeout(safetyTimer);
+    };
+  }, []);
+
+  // Pre-warm VideoPlayer & DetailsModal chunks eagerly so clicking play has 0ms JS compile delay
+  useEffect(() => {
+    const idlePreload = () => {
+      import('./components/VideoPlayer').catch(() => {});
+      import('./components/MovieDetailsModal').catch(() => {});
+      import('./components/LiveTvView').catch(() => {});
+    };
+    const timer = setTimeout(idlePreload, 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // User Profile State (Persisted in localStorage)
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+    try {
+      const saved = localStorage.getItem('cinevault_user_profile');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return DEFAULT_PROFILE;
+  });
+
+  const handleUpdateProfile = useCallback((newProfile: UserProfile) => {
+    setUserProfile(newProfile);
+    try {
+      localStorage.setItem('cinevault_user_profile', JSON.stringify(newProfile));
+    } catch {}
+  }, []);
+
+  const userInitials = useMemo(() => {
+    const parts = (userProfile.name || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'CV';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }, [userProfile.name]);
+
+  // Modal / Navigation States
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [playingMovie, setPlayingMovie] = useState<{
+    movie: Movie;
+    season?: number;
+    episode?: number;
+  } | null>(null);
+  const [isPlayerMinimized, setIsPlayerMinimized] = useState<boolean>(false);
+
+  // Watchlist (Stored in localStorage)
   const [watchlist, setWatchlist] = useState<Movie[]>(() => {
     try {
       const saved = localStorage.getItem('cinevault_watchlist');
@@ -47,940 +245,418 @@ export const App: React.FC = () => {
   });
 
   const watchlistIds = useMemo(() => {
-    const set = new Set<string | number>();
-    watchlist.forEach((m) => {
-      if (m.id) set.add(m.id);
-      if (m.tmdbId) set.add(m.tmdbId);
-    });
-    return set;
+    return new Set(watchlist.map((m) => m.id));
   }, [watchlist]);
 
-  // Watch History state
-  const [history, setHistory] = useState<Movie[]>(() => {
-    try {
-      const saved = localStorage.getItem('cinevault_history');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  // Map history with saved playback progress
-  const continueWatchingItems = useMemo<WatchProgressItem[]>(() => {
-    return history.map((m) => {
-      const key = `cinevault_progress_${m.id || m.tmdbId || m.title}`;
-      let playbackPosition: number | undefined;
-      let duration: number | undefined;
+  const toggleWatchlist = useCallback((movie: Movie) => {
+    setWatchlist((prev) => {
+      const exists = prev.some((m) => m.id === movie.id);
+      const next = exists ? prev.filter((m) => m.id !== movie.id) : [movie, ...prev];
       try {
-        const saved = localStorage.getItem(key);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          playbackPosition = parsed.currentTime || undefined;
-          duration = parsed.duration || undefined;
-        }
+        localStorage.setItem('cinevault_watchlist', JSON.stringify(next));
       } catch {}
-      return {
-        movie: m,
-        playbackPosition,
-        duration,
-      };
+      return next;
     });
-  }, [history]);
+  }, []);
 
-  // Modals & User state
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [currentUser] = useState<AuthUser | null>(() => {
-    try {
-      const saved = localStorage.getItem('cinevault_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
-
+  // Fetch MovieBox Home Catalog (Background refresh with smooth cache transition)
   useEffect(() => {
-    try {
-      localStorage.removeItem('cinevault_scraped_cache');
-    } catch {}
-
     let isMounted = true;
-    api.getMovies().then((data) => {
-      if (isMounted) setMovies(data);
-    });
 
-    // Silent background scraper synchronization
-    api.syncMovieBoxScraper().then((res) => {
-      if (isMounted && res.count > 0) {
-        api.getMovies().then((data) => {
-          if (isMounted) setMovies(data);
-        });
-      }
-    }).catch(() => {});
+    movieboxService
+      .getHomeCatalog()
+      .then((data) => {
+        if (isMounted && data) {
+          setCatalog(data);
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
 
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const handleToggleWatchlist = (movie: Movie) => {
-    setWatchlist((prev) => {
-      const exists = prev.some((m) => m.id === movie.id || m.tmdbId === movie.tmdbId);
-      const updated = exists
-        ? prev.filter((m) => m.id !== movie.id && m.tmdbId !== movie.tmdbId)
-        : [...prev, movie];
-      try {
-        localStorage.setItem('cinevault_watchlist', JSON.stringify(updated));
-        if (currentUser?.id) {
-          syncCloudWatchlist(currentUser.id, movie, !exists);
-        }
-      } catch {}
-      showToast(exists ? `Removed "${movie.title}" from My List` : `Added "${movie.title}" to My List!`);
-      return updated;
-    });
-  };
+  // Safe catalog: filters out ALL adult/18+ content from main home page
+  const safeCatalog = useMemo(() => {
+    if (!catalog) return null;
+    const safeFeatured = catalog.featured && !isAdultContent(catalog.featured) ? catalog.featured : null;
+    const safeRows = catalog.rows
+      .map((shelf) => ({
+        ...shelf,
+        items: shelf.items.filter((m) => !isAdultContent(m)),
+      }))
+      .filter((shelf) => shelf.items.length > 0);
+    return { ...catalog, featured: safeFeatured, rows: safeRows };
+  }, [catalog]);
 
-  const handlePlayMovie = (movie: Movie, quality?: MovieQuality, resumePosition?: number) => {
-    const defaultQuality = quality || movie.qualities?.[0] || { quality: '1080p', videoUrl: movie.videoUrl };
-    setWatchMovie({ movie, quality: defaultQuality });
-    setSelectedMovieForInfo(null);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Save to History (Local & Cloud)
-    setHistory((prev) => {
-      const filtered = prev.filter((m) => m.id !== movie.id && m.tmdbId !== movie.tmdbId);
-      const updated = [movie, ...filtered].slice(0, 20);
-      try {
-        localStorage.setItem('cinevault_history', JSON.stringify(updated));
-        if (currentUser?.id) {
-          syncCloudHistory(currentUser.id, movie, resumePosition || 0);
-        }
-      } catch {}
-      return updated;
-    });
-  };
-
-  // Primary Billboard Hero Movie
-  const heroMovie = useMemo(() => {
-    return (
-      movies.find((m) => m.title.includes('Toxic') || m.title.includes('Spider-Man')) ||
-      movies[0]
-    );
-  }, [movies]);
-
-  // Full Unfiltered Category Arrays for Explore All
-  const allTrendingMovies = useMemo(() => movies.filter((m) => m.trending || m.featured), [movies]);
-  
-  const allBollywoodMovies = useMemo(() => {
-    return movies.filter((m) => 
-      m.genres?.includes('Bollywood') || 
-      m.language?.toLowerCase().includes('hindi')
-    );
-  }, [movies]);
-
-  const allSouthIndianMovies = useMemo(() => {
-    return movies.filter(
-      (m) =>
-        m.genres?.includes('South Indian') ||
-        m.language?.toLowerCase().includes('telugu') ||
-        m.language?.toLowerCase().includes('tamil') ||
-        m.language?.toLowerCase().includes('kannada') ||
-        m.language?.toLowerCase().includes('malayalam') ||
-        m.language?.toLowerCase().includes('south')
-    );
-  }, [movies]);
-
-  const allHollywoodMovies = useMemo(() => {
-    return movies.filter(
-      (m) =>
-        m.genres?.includes('Hollywood') ||
-        (!m.genres?.includes('Bollywood') &&
-          !m.genres?.includes('South Indian') &&
-          !m.genres?.includes('Anime') &&
-          !m.genres?.includes('K-Drama') &&
-          m.type === 'movie')
-    );
-  }, [movies]);
-
-  const allKdramaMovies = useMemo(() => {
-    return movies.filter(
-      (m) =>
-        m.genres?.includes('K-Drama') ||
-        m.language?.toLowerCase().includes('korean') ||
-        m.title.toLowerCase().includes('squid game') ||
-        m.title.toLowerCase().includes('queen of tears') ||
-        m.title.toLowerCase().includes('vincenzo') ||
-        m.title.toLowerCase().includes('glory') ||
-        m.title.toLowerCase().includes('sweet home') ||
-        m.title.toLowerCase().includes('all of us are dead')
-    );
-  }, [movies]);
-
-  const allAnimeMovies = useMemo(() => {
-    return movies.filter(
-      (m) => 
-        m.genres?.includes('Anime') || 
-        m.language?.toLowerCase().includes('japanese')
-    );
-  }, [movies]);
-
-  const allWebSeries = useMemo(() => {
-    return movies.filter(
-      (m) => m.type === 'series' && !m.genres?.includes('Anime')
-    );
-  }, [movies]);
-
-  const allMovieBoxMovies = useMemo(() => {
-    return movies.filter(
-      (m) =>
-        m.source === 'MovieBox' ||
-        m.genres?.includes('MovieBox VIP') ||
-        m.videoUrl?.includes('moviebox') ||
-        Boolean(m.subjectId)
-    );
-  }, [movies]);
-
-  // Sliced Preview Arrays for Lightweight Horizontal Homepage Rows
-  const top10Trending = useMemo(() => allTrendingMovies.slice(0, 10), [allTrendingMovies]);
-  const bollywoodMovies = useMemo(() => allBollywoodMovies.slice(0, 16), [allBollywoodMovies]);
-  const southIndianMovies = useMemo(() => allSouthIndianMovies.slice(0, 16), [allSouthIndianMovies]);
-  const hollywoodMovies = useMemo(() => allHollywoodMovies.slice(0, 16), [allHollywoodMovies]);
-  const kdramaList = useMemo(() => allKdramaMovies.slice(0, 16), [allKdramaMovies]);
-  const animeList = useMemo(() => allAnimeMovies.slice(0, 16), [allAnimeMovies]);
-  const webSeries = useMemo(() => allWebSeries.slice(0, 16), [allWebSeries]);
-
-  const handleOpenExploreCategory = (title: string, categoryMovies: Movie[]) => {
-    setExploredCategory({ title, movies: categoryMovies });
-    setWatchMovie(null);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Instant & Debounced Search Results
-  const [searchResults, setSearchResults] = useState<Movie[]>([]);
-  const [isSearching, setIsSearching] = useState<boolean>(false);
-
+  // Global Keyboard Shortcuts (Esc to close/minimize, Ctrl+K for search)
   useEffect(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) {
-      setSearchResults([]);
-      setIsSearching(false);
-      return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      } else if (e.key === 'Escape') {
+        if (isSearchOpen) {
+          setIsSearchOpen(false);
+        } else if (selectedMovie) {
+          setSelectedMovie(null);
+        } else if (playingMovie && !isPlayerMinimized) {
+          setIsPlayerMinimized(true);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSearchOpen, selectedMovie, playingMovie, isPlayerMinimized]);
+
+  // Android Hardware & Browser Back Button Handling
+  useEffect(() => {
+    const handlePopState = () => {
+      if (playingMovie && !isPlayerMinimized) {
+        setIsPlayerMinimized(true);
+      } else if (isSearchOpen) {
+        setIsSearchOpen(false);
+      } else if (selectedMovie) {
+        setSelectedMovie(null);
+      } else if (playingMovie && isPlayerMinimized) {
+        setPlayingMovie(null);
+        setIsPlayerMinimized(false);
+      } else if (activeView === 'livetv' || activeView === 'downloads' || activeView === 'profile') {
+        setActiveView('home');
+      }
+    };
+
+    const handleNativeBack = () => {
+      if (isSearchOpen) {
+        setIsSearchOpen(false);
+        return true;
+      }
+      if (selectedMovie) {
+        setSelectedMovie(null);
+        return true;
+      }
+      if (playingMovie && !isPlayerMinimized) {
+        setIsPlayerMinimized(true);
+        return true;
+      }
+      if (playingMovie && isPlayerMinimized) {
+        setPlayingMovie(null);
+        setIsPlayerMinimized(false);
+        return true;
+      }
+      if (activeView === 'livetv' || activeView === 'downloads' || activeView === 'profile') {
+        setActiveView('home');
+        return true;
+      }
+      return false;
+    };
+
+    (window as any).handleAndroidBackFallback = handleNativeBack;
+    if (!(window as any).handleAndroidBack) {
+      (window as any).handleAndroidBack = handleNativeBack;
     }
 
-    // 1. Instant 0ms Local Matching (No latency)
-    const localMatches = movies.filter(
-      (m) =>
-        m.title.toLowerCase().includes(q) ||
-        m.genres?.some((g) => g.toLowerCase().includes(q)) ||
-        m.language?.toLowerCase().includes(q)
-    );
-    setSearchResults(localMatches);
-    setIsSearching(true);
-
-    const controller = new AbortController();
-
-    // 2. Debounced 300ms background global search across TMDB & MovieBox with AbortSignal
-    const debounceTimer = setTimeout(async () => {
-      try {
-        const onlineResults = await api.search(q, controller.signal);
-        if (onlineResults && onlineResults.length > 0) {
-          const map = new Map<string | number, Movie>();
-          [...localMatches, ...onlineResults].forEach((m) => {
-            const key = m.tmdbId || m.id || m._id || m.title;
-            if (key && !map.has(key)) map.set(key, m);
-          });
-          setSearchResults(Array.from(map.values()));
-        }
-      } catch (err: unknown) {
-        if (err && typeof err === 'object' && 'name' in err && (err as { name: string }).name === 'AbortError') {
-          return;
-        }
-        console.error('Search error:', err);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 300);
-
+    window.addEventListener('popstate', handlePopState);
     return () => {
-      clearTimeout(debounceTimer);
-      controller.abort();
+      window.removeEventListener('popstate', handlePopState);
+      if ((window as any).handleAndroidBack === handleNativeBack) {
+        delete (window as any).handleAndroidBack;
+      }
     };
-  }, [searchQuery, movies]);
+  }, [playingMovie, isPlayerMinimized, isSearchOpen, selectedMovie, activeView]);
+
+  // Handlers
+  const handleOpenSearch = useCallback(() => {
+    setIsSearchOpen(true);
+  }, []);
+
+  const handleCloseSearch = useCallback(() => {
+    setIsSearchOpen(false);
+  }, []);
+
+  const handleSelectMovie = useCallback((movie: Movie) => {
+    setSelectedMovie(movie);
+    // Pre-warm stream in background after modal renders so tap response is instantaneous
+    if (movie?.id) {
+      setTimeout(() => {
+        movieboxService
+          .getStreams(
+            movie.id,
+            movie.detailPath,
+            movie.media_type,
+            movie.media_type === 'tv' ? 1 : undefined,
+            movie.media_type === 'tv' ? 1 : undefined,
+            movie.title
+          )
+          .catch(() => {});
+      }, 350);
+    }
+  }, []);
+
+  const handleCloseDetails = useCallback(() => {
+    setSelectedMovie(null);
+  }, []);
+
+  const handlePlayMovie = useCallback((movie: Movie, season?: number, episode?: number) => {
+    if (availableUpdate) return; // Streaming blocked when update is required
+    if (isStartingPlay) return;
+    setIsStartingPlay(true);
+    setSelectedMovie(null); // Close details modal when playback starts
+    setPlayingMovie({ movie, season, episode });
+    setIsPlayerMinimized(false);
+    setTimeout(() => {
+      setIsStartingPlay(false);
+    }, 150);
+  }, [availableUpdate, isStartingPlay]);
+
+  const handleBackFromPlayer = useCallback(() => {
+    setPlayingMovie(null);
+    setIsPlayerMinimized(false);
+  }, []);
+
+  const handleMinimizePlayer = useCallback(() => {
+    setIsPlayerMinimized(true);
+  }, []);
+
+  const handleRestorePlayer = useCallback(() => {
+    setIsPlayerMinimized(false);
+  }, []);
+
+  const handleEpisodeChange = useCallback((s: number, ep: number) => {
+    setPlayingMovie((prev) => (prev ? { ...prev, season: s, episode: ep } : null));
+  }, []);
+
+  const handleMovieChange = useCallback((m: Movie) => {
+    setPlayingMovie((prev) => (prev ? { ...prev, movie: m } : null));
+  }, []);
+
+  // When an update is detected, directly show the update screen with zero delay (no home screen flash)
+  if (availableUpdate) {
+    const isMandatory = Boolean(isMandatoryUpdate || availableUpdate.forceUpdate || availableUpdate.mandatory);
+    return (
+      <ErrorBoundary>
+        <UpdateModal
+          updateInfo={availableUpdate}
+          currentVersion={APP_VERSION}
+          currentVersionCode={APP_BUILD_CODE}
+          isMandatory={isMandatory}
+          onClose={isMandatory ? undefined : () => setAvailableUpdate(null)}
+          onLater={
+            isMandatory
+              ? undefined
+              : () => {
+                  updateService.dismissForSession(availableUpdate.latestVersionCode);
+                  setAvailableUpdate(null);
+                }
+          }
+        />
+      </ErrorBoundary>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#141414] text-white font-sans selection:bg-[#E50914] selection:text-white antialiased relative pb-16 lg:pb-0">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded bg-[#181818] border border-[#E50914] text-white text-xs font-bold shadow-2xl animate-fade-in">
-          <CheckCircle2 className="w-4 h-4 text-[#E50914]" />
-          <span>{toastMessage}</span>
-        </div>
+    <ErrorBoundary>
+      {/* Startup Splash Screen with Uncropped Logo */}
+      {showSplash && (
+        <SplashScreen
+          onComplete={() => setShowSplash(false)}
+          isReady={Boolean((catalog || !loading) && !isCheckingInitialUpdate)}
+        />
       )}
 
-      {/* Netflix Top Navigation Bar */}
-      <NetflixNavbar
-        activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          setWatchMovie(null);
-          setSelectedMovieForInfo(null);
-          setExploredCategory(null);
-        }}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        currentUser={currentUser}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        watchlistCount={watchlist.length}
-      />
+      <div className="min-h-screen bg-[#0B0D10] text-[#F5F5F2] flex flex-col selection:bg-[#F0B429] selection:text-[#0B0D10]">
+        {/* Navigation Bar */}
+        {!playingMovie || isPlayerMinimized ? (
+          <Navbar
+            onOpenSearch={handleOpenSearch}
+            activeView={activeView}
+            onNavigate={(view) => setActiveView(view)}
+            userName={userProfile.name}
+            userInitials={userInitials}
+            isAdultMode={isAdultMode}
+            onToggleAdultMode={toggleAdultMode}
+          />
+        ) : null}
 
-      {/* Main Streaming View */}
-      {watchMovie ? (
-        /* Dedicated Simple & Clean Video Player Page */
-        <div className="pt-16 sm:pt-20 px-3 sm:px-8 max-w-7xl mx-auto">
-          <ErrorBoundary>
-            <Suspense fallback={
-              <div className="w-full aspect-video bg-[#141414] rounded-2xl flex items-center justify-center">
-                <div className="w-10 h-10 border-2 border-zinc-700 border-t-[#E50914] rounded-full animate-spin" />
-              </div>
-            }>
-              <WatchPage
-                movie={watchMovie.movie}
-                selectedQuality={watchMovie.quality}
-                onBack={() => setWatchMovie(null)}
-                onQualityChange={(q) => setWatchMovie({ movie: watchMovie.movie, quality: q })}
+        {/* Main Content Area */}
+        <main
+          ref={mainRef}
+          className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-12"
+          style={playingMovie && !isPlayerMinimized ? { display: 'none' } : undefined}
+        >
+          {activeView === 'home' && (
+            isAdultMode ? (
+              <AdultHomeView
+                onPlayMovie={handlePlayMovie}
+                onSelectMovie={handleSelectMovie}
+                onExitAdultMode={() => {
+                  setIsAdultMode(false);
+                  try {
+                    localStorage.setItem('cinevault_adult_mode', 'false');
+                  } catch {}
+                }}
               />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-      ) : searchQuery.trim().length > 0 ? (
-        /* Netflix Global Search Results Grid */
-        <div className="pt-28 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto space-y-6">
-          <div className="flex items-center justify-between flex-wrap gap-3 pb-2 border-b border-zinc-800">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-zinc-300">
-                Explore titles related to: <span className="text-white font-extrabold font-display">"{searchQuery}"</span>
-              </h1>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                {isSearching
-                  ? 'Searching entire catalog & global servers...'
-                  : `Found ${searchResults.length} matching titles`}
-              </p>
-            </div>
-
-            <button
-              onClick={() => setSearchQuery('')}
-              className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors cursor-pointer border border-zinc-700"
-            >
-              Clear Search
-            </button>
-          </div>
-
-          {searchResults.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-              {searchResults.map((m) => (
-                <div
-                  key={m.id || m.tmdbId}
-                  onClick={() => setSelectedMovieForInfo(m)}
-                  className="bg-[#202020] rounded-md overflow-hidden netflix-card-hover cursor-pointer shadow-md group relative"
-                >
-                  <div className="aspect-[2/3] relative overflow-hidden bg-zinc-900">
-                    <CinematicImage
-                      src={m.posterUrl || m.backdropUrl}
-                      fallbackSrc={m.backdropUrl}
-                      alt={m.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      aspectRatio="2/3"
-                    />
-
-                    {/* Top Quality Badge */}
-                    <div className="absolute top-1.5 left-1.5 z-10 pointer-events-none">
-                      <span className="px-1.5 py-0.2 rounded bg-black/80 text-[8px] sm:text-[9px] font-black text-white border border-white/20">
-                        4K UHD
-                      </span>
-                    </div>
-
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePlayMovie(m);
-                        }}
-                        className="p-3 rounded-full bg-white text-black hover:scale-110 transition-transform shadow-lg cursor-pointer"
-                        title="Play"
-                      >
-                        <Play className="w-4 h-4 fill-current ml-0.5" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedMovieForInfo(m);
-                        }}
-                        className="p-3 rounded-full bg-black/60 border border-white/70 text-white hover:scale-110 transition-transform cursor-pointer"
-                        title="More Info"
-                      >
-                        <Info className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="p-2 sm:p-2.5 space-y-1 bg-[#181818]">
-                    <h4 className="text-xs font-bold text-white truncate font-display">{m.title}</h4>
-                    <div className="flex items-center justify-between text-[10px] text-zinc-400 font-semibold">
-                      <span className="text-[#46d369] font-bold">
-                        {m.rating ? `${(m.rating * 10).toFixed(0)}% Match` : '98% Match'}
-                      </span>
-                      <span>{m.releaseYear || '2024'}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : isSearching ? (
-            /* Cinematic Skeleton Loading Grid */
-            <div className="space-y-4 py-4">
-              <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <div className="w-2 h-2 rounded-full bg-[#E50914] animate-ping" />
-                <span>Searching global database and multi-region servers for "{searchQuery}"...</span>
-              </div>
-              <SearchResultsSkeleton count={12} />
-            </div>
-          ) : (
-            /* User Requested: "Sorry for inconvenience" Friendly Empty State */
-            <div className="space-y-10 py-6">
-              <div className="py-12 px-6 max-w-xl mx-auto text-center space-y-5 bg-[#181818]/70 border border-zinc-800 rounded-2xl shadow-2xl animate-fade-in">
-                <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center mx-auto text-[#E50914] shadow-inner">
-                  <Search className="w-8 h-8" />
-                </div>
-                
-                <div className="space-y-2">
-                  <h2 className="text-2xl sm:text-3xl font-black text-white font-display">
-                    Sorry for the Inconvenience!
-                  </h2>
-                  <p className="text-sm text-zinc-300 max-w-md mx-auto leading-relaxed">
-                    We couldn't find any movie, anime, or series matching "<span className="text-[#E50914] font-bold">{searchQuery}</span>" across the entire catalog or global servers.
-                  </p>
-                </div>
-
-                <div className="bg-[#121212] border border-zinc-800/90 rounded-xl p-4 text-xs text-zinc-400 text-left space-y-2 max-w-md mx-auto">
-                  <p className="font-bold text-zinc-200 flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-amber-400" />
-                    <span>Helpful Suggestions:</span>
-                  </p>
-                  <ul className="list-disc list-inside space-y-1 text-zinc-400">
-                    <li>Check your spelling or try different keywords</li>
-                    <li>Try searching with a shorter title (e.g. "KGF", "Pushpa", "Spider")</li>
-                    <li>Search by main actor, director, or original language title</li>
-                    <li>Browse our categorized tabs above (South Indian, Bollywood, Hollywood, Anime, K-Dramas)</li>
-                  </ul>
-                </div>
-
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="px-6 py-2.5 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-sm transition-all cursor-pointer shadow-lg active:scale-95 inline-flex items-center gap-2"
-                >
-                  <span>Explore Trending Titles</span>
-                  <span>›</span>
-                </button>
-              </div>
-
-              {/* Recommended Top Blockbusters so user is never stuck */}
-              <div className="pt-2">
-                <NetflixRow
-                  title="🔥 Trending Blockbusters You Might Like"
-                  movies={top10Trending}
-                  onSelectMovie={setSelectedMovieForInfo}
-                  onPlayMovie={handlePlayMovie}
-                  onToggleWatchlist={handleToggleWatchlist}
-                  watchlistIds={watchlistIds}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      ) : exploredCategory ? (
-        /* DEDICATED FULL CATEGORY EXPLORE GRID VIEW (Showing Number of Movies) */
-        <div className="pt-24 sm:pt-28 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto space-y-6 animate-fade-in">
-          {/* Header Strip with Back Button, Category Title, and Total Movie Count */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-zinc-800">
-            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <button
-                onClick={() => setExploredCategory(null)}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 hover:text-white text-xs font-bold transition-all active:scale-95 cursor-pointer flex-shrink-0"
-              >
-                <ArrowLeft className="w-4 h-4 text-[#E50914]" />
-                <span>Back to Home</span>
-              </button>
-
-              <div className="min-w-0">
-                <h1 className="text-xl sm:text-3xl font-black text-white font-display truncate">
-                  {exploredCategory.title}
-                </h1>
-                <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5 font-semibold">
-                  <span className="text-[#46d369] font-bold">Verified HD/4K Streams</span>
-                  <span>•</span>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30 text-[11px] flex items-center gap-1">
-                    <Film className="w-3 h-3" />
-                    <span>{exploredCategory.movies.length} Movies & Shows Available</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setExploredCategory(null)}
-              className="px-4 py-2 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white text-xs font-bold transition-colors cursor-pointer"
-            >
-              Browse All Categories
-            </button>
-          </div>
-
-          {/* Responsive Full Grid of All Movies in Category */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-            {exploredCategory.movies.map((m) => (
-              <div
-                key={m.id || m.tmdbId}
-                onClick={() => setSelectedMovieForInfo(m)}
-                className="bg-[#202020] rounded-md overflow-hidden netflix-card-hover cursor-pointer shadow-md group relative flex flex-col justify-between"
-              >
-                <div className="aspect-[2/3] relative overflow-hidden bg-zinc-900">
-                  <CinematicImage
-                    src={m.posterUrl || m.backdropUrl}
-                    fallbackSrc={m.backdropUrl}
-                    alt={m.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    aspectRatio="2/3"
+            ) : (
+              <div className="view-transition-enter">
+                {/* Featured Hero Banner */}
+                {loading ? (
+                  <HeroBillboardSkeleton />
+                ) : (
+                  <HeroBanner
+                    movie={safeCatalog?.featured || null}
+                    onPlayMovie={(m) => handlePlayMovie(m)}
+                    onSelectMovie={(m) => handleSelectMovie(m)}
                   />
+                )}
 
-                  {/* Top Badges */}
-                  <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between z-10 pointer-events-none">
-                    <span className="px-1.5 py-0.2 rounded bg-black/85 text-[8px] sm:text-[9px] font-black text-white border border-white/20">
-                      4K UHD
-                    </span>
-                    <span className="px-1.5 py-0.2 rounded bg-black/85 text-[8px] sm:text-[9px] font-black text-amber-400 border border-amber-500/30 flex items-center gap-0.5">
-                      <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
-                      {m.rating ? m.rating.toFixed(1) : '8.5'}
-                    </span>
-                  </div>
-
-                  {/* Hover Overlay Actions */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePlayMovie(m);
-                      }}
-                      className="p-3 rounded-full bg-white text-black hover:scale-110 transition-transform shadow-lg cursor-pointer"
-                      title="Play Now"
-                    >
-                      <Play className="w-4 h-4 fill-current ml-0.5" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedMovieForInfo(m);
-                      }}
-                      className="p-3 rounded-full bg-black/60 border border-white/70 text-white hover:scale-110 transition-transform cursor-pointer"
-                      title="Details"
-                    >
-                      <Info className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-2 sm:p-2.5 space-y-1 bg-[#181818]">
-                  <h4 className="text-xs font-bold text-white truncate font-display">{m.title}</h4>
-                  <div className="flex items-center justify-between text-[10px] text-zinc-400 font-semibold">
-                    <span className="text-[#46d369] font-bold">
-                      {m.rating ? `${(m.rating * 10).toFixed(0)}% Match` : '98% Match'}
-                    </span>
-                    <span>{m.releaseYear || '2024'}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : activeTab === 'watchlist' ? (
-        /* My List View */
-        <div className="pt-28 px-4 sm:px-8 lg:px-12 max-w-[1720px] mx-auto space-y-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white font-display flex items-center gap-2">
-            <Bookmark className="w-7 h-7 text-[#E50914]" />
-            <span>My List ({watchlist.length})</span>
-          </h1>
-
-          {watchlist.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {watchlist.map((m) => (
-                <div
-                  key={m.id || m.tmdbId}
-                  onClick={() => setSelectedMovieForInfo(m)}
-                  className="bg-[#202020] rounded overflow-hidden netflix-card-hover cursor-pointer shadow-md group"
-                >
-                  <div className="aspect-[2/3] relative overflow-hidden bg-zinc-900">
-                    <CinematicImage
-                      src={m.posterUrl || m.backdropUrl}
-                      fallbackSrc={m.backdropUrl}
-                      alt={m.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      aspectRatio="2/3"
-                    />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                {/* Categorized Shelves (Progressively revealed) — adult content filtered out */}
+                <div className="mt-4 sm:mt-6 space-y-2">
+                  {loading ? (
+                    <>
+                      <MovieRowSkeleton count={6} />
+                      <MovieRowSkeleton count={6} />
+                      <MovieRowSkeleton count={6} />
+                    </>
+                  ) : safeCatalog?.rows && safeCatalog.rows.length > 0 ? (
+                    safeCatalog.rows.map((shelf, idx) => (
+                      <MovieRow
+                        key={shelf.id}
+                        shelf={shelf}
+                        onSelectMovie={handleSelectMovie}
+                        priorityRow={idx < 2}
+                      />
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-24 text-center px-6">
+                      <div className="w-16 h-16 rounded-2xl bg-[#15181D] border border-[#292E35] flex items-center justify-center mb-4">
+                        <Film className="w-8 h-8 text-[#292E35]" />
+                      </div>
+                      <h3 className="text-lg font-bold text-[#F5F5F2] font-headline">No Content Available</h3>
+                      <p className="text-sm text-[#9A9FA8] mt-2 max-w-xs leading-relaxed">
+                        Unable to reach stream catalog. Check your connection and try again.
+                      </p>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePlayMovie(m);
-                        }}
-                        className="p-3 rounded-full bg-white text-black hover:scale-110 transition-transform shadow-lg cursor-pointer"
+                        type="button"
+                        onClick={() => window.location.reload()}
+                        className="mt-6 px-6 py-3 rounded-xl bg-[#F0B429] text-[#0B0D10] font-bold text-sm cursor-pointer press-feedback shadow-[var(--shadow-button)] min-h-[48px]"
                       >
-                        <Play className="w-4 h-4 fill-current ml-0.5" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleWatchlist(m);
-                        }}
-                        className="p-3 rounded-full bg-black/60 border border-white text-white hover:scale-110 transition-transform cursor-pointer"
-                        title="Remove from My List"
-                      >
-                        <Check className="w-4 h-4 text-[#E50914]" />
+                        Reload App
                       </button>
                     </div>
-                  </div>
-
-                  <div className="p-2.5 bg-[#181818]">
-                    <h4 className="text-xs font-bold text-white truncate">{m.title}</h4>
-                    <span className="text-[10px] text-zinc-400">{m.releaseYear} • {m.duration}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-24 bg-[#181818] rounded-xl border border-zinc-800 space-y-3">
-              <Bookmark className="w-12 h-12 text-zinc-600 mx-auto" />
-              <h3 className="text-lg font-bold text-white">Your List is Empty</h3>
-              <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-                Explore movies and series, and click the "+" icon to add titles to your personal list.
-              </p>
-            </div>
-          )}
-        </div>
-      ) : activeTab === 'moviebox' ? (
-        /* MovieBox Scraped VIP Movies View */
-        <div className="space-y-4">
-          <NetflixBillboard
-            movies={allMovieBoxMovies.length > 0 ? allMovieBoxMovies.slice(0, 6) : movies.slice(0, 6)}
-            onPlay={handlePlayMovie}
-            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
-            onToggleWatchlist={handleToggleWatchlist}
-          />
-          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🎬 MovieBox VIP Scraped Catalog" movies={allMovieBoxMovies.length > 0 ? allMovieBoxMovies : movies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🎬 MovieBox VIP Scraped Catalog", allMovieBoxMovies.length > 0 ? allMovieBoxMovies : movies)} />
-            <NetflixRow title="🔥 MovieBox Trending Hits" movies={allTrendingMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 MovieBox Trending Hits", allTrendingMovies)} />
-            <NetflixRow title="🇮🇳 MovieBox Hindi & Regional Dubs" movies={allBollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🇮🇳 MovieBox Hindi & Regional Dubs", allBollywoodMovies)} />
-          </div>
-        </div>
-      ) : activeTab === 'south' ? (
-        /* South Indian View with Dedicated Hero Banner */
-        <div className="space-y-4">
-          <NetflixBillboard
-            movies={allSouthIndianMovies.slice(0, 6)}
-            onPlay={handlePlayMovie}
-            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
-            onToggleWatchlist={handleToggleWatchlist}
-          />
-          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Trending South Indian Pan-India Hits" movies={allSouthIndianMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Trending South Indian Pan-India Hits", allSouthIndianMovies)} />
-            <NetflixRow title="⚡ High-Octane Action & Mass Masala" movies={allSouthIndianMovies.filter(m => m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("⚡ High-Octane Action & Mass Masala", allSouthIndianMovies.filter(m => m.genres?.includes('Action')))} />
-            <NetflixRow title="🏹 Epic Fantasy, Sci-Fi & Mythological" movies={allSouthIndianMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Fantasy') || m.genres?.includes('Mythology'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🏹 Epic Fantasy, Sci-Fi & Mythological", allSouthIndianMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Fantasy') || m.genres?.includes('Mythology')))} />
-            <NetflixRow title="🕵️ Crime, Mystery & Suspense Thrillers" movies={allSouthIndianMovies.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Thriller') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🕵️ Crime, Mystery & Suspense Thrillers", allSouthIndianMovies.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Thriller') || m.genres?.includes('Mystery')))} />
-          </div>
-        </div>
-      ) : activeTab === 'bollywood' ? (
-        /* Bollywood View with Dedicated Hero Banner */
-        <div className="space-y-4">
-          <NetflixBillboard
-            movies={allBollywoodMovies.slice(0, 6)}
-            onPlay={handlePlayMovie}
-            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
-            onToggleWatchlist={handleToggleWatchlist}
-          />
-          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Trending Bollywood Blockbusters" movies={allBollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Trending Bollywood Blockbusters", allBollywoodMovies)} />
-            <NetflixRow title="😂 Non-Stop Comedy & Family Entertainers" movies={allBollywoodMovies.filter(m => m.genres?.includes('Comedy'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("😂 Non-Stop Comedy & Family Entertainers", allBollywoodMovies.filter(m => m.genres?.includes('Comedy')))} />
-            <NetflixRow title="🎭 Drama, Romance & Emotional Superhits" movies={allBollywoodMovies.filter(m => m.genres?.includes('Drama') || m.genres?.includes('Romance'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🎭 Drama, Romance & Emotional Superhits", allBollywoodMovies.filter(m => m.genres?.includes('Drama') || m.genres?.includes('Romance')))} />
-            <NetflixRow title="🩸 Dark Thrillers, Action & Crime" movies={allBollywoodMovies.filter(m => m.genres?.includes('Action') || m.genres?.includes('Horror') || m.genres?.includes('Thriller'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🩸 Dark Thrillers, Action & Crime", allBollywoodMovies.filter(m => m.genres?.includes('Action') || m.genres?.includes('Horror') || m.genres?.includes('Thriller')))} />
-          </div>
-        </div>
-      ) : activeTab === 'movies' ? (
-        /* Hollywood & Global Movies View with Dedicated Hero Banner */
-        <div className="space-y-4">
-          <NetflixBillboard
-            movies={allHollywoodMovies.slice(0, 6)}
-            onPlay={handlePlayMovie}
-            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
-            onToggleWatchlist={handleToggleWatchlist}
-          />
-          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Hollywood Mega Blockbusters" movies={allHollywoodMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Hollywood Mega Blockbusters", allHollywoodMovies)} />
-            <NetflixRow title="🚀 Sci-Fi, Marvel & Multiverse Spectaculars" movies={allHollywoodMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🚀 Sci-Fi, Marvel & Multiverse Spectaculars", allHollywoodMovies.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Action')))} />
-            <NetflixRow title="🎨 Animated & Family Hits" movies={allHollywoodMovies.filter(m => m.genres?.includes('Animation') || m.genres?.includes('Family'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🎨 Animated & Family Hits", allHollywoodMovies.filter(m => m.genres?.includes('Animation') || m.genres?.includes('Family')))} />
-            <NetflixRow title="🏆 Award-Winning & Critically Acclaimed" movies={allHollywoodMovies.filter(m => m.rating >= 8.0)} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🏆 Award-Winning & Critically Acclaimed", allHollywoodMovies.filter(m => m.rating >= 8.0))} />
-          </div>
-        </div>
-      ) : activeTab === 'kdrama' ? (
-        /* K-Dramas & Korean Cinema View with Dedicated Hero Banner */
-        <div className="space-y-4">
-          <NetflixBillboard
-            movies={allKdramaMovies.slice(0, 6)}
-            onPlay={handlePlayMovie}
-            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
-            onToggleWatchlist={handleToggleWatchlist}
-          />
-          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Top Trending K-Dramas" movies={allKdramaMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Top Trending K-Dramas", allKdramaMovies)} />
-            <NetflixRow title="❤️ Romantic & Heartwarming K-Dramas" movies={allKdramaMovies.filter(m => m.genres?.includes('Romance') || m.genres?.includes('Comedy'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("❤️ Romantic & Heartwarming K-Dramas", allKdramaMovies.filter(m => m.genres?.includes('Romance') || m.genres?.includes('Comedy')))} />
-            <NetflixRow title="🧟 Thriller, Zombie & Dark Fantasy K-Dramas" movies={allKdramaMovies.filter(m => m.genres?.includes('Thriller') || m.genres?.includes('Horror') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🧟 Thriller, Zombie & Dark Fantasy K-Dramas", allKdramaMovies.filter(m => m.genres?.includes('Thriller') || m.genres?.includes('Horror') || m.genres?.includes('Mystery')))} />
-          </div>
-        </div>
-      ) : activeTab === 'anime' ? (
-        /* Anime View with Dedicated Hero Banner */
-        <div className="space-y-4">
-          <NetflixBillboard
-            movies={allAnimeMovies.slice(0, 6)}
-            onPlay={handlePlayMovie}
-            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
-            onToggleWatchlist={handleToggleWatchlist}
-          />
-          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Trending Shonen & Dark Fantasy Anime" movies={allAnimeMovies} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Trending Shonen & Dark Fantasy Anime", allAnimeMovies)} />
-            <NetflixRow title="⚡ Action, Superpowers & Battles" movies={allAnimeMovies.filter(m => m.genres?.includes('Action'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("⚡ Action, Superpowers & Battles", allAnimeMovies.filter(m => m.genres?.includes('Action')))} />
-            <NetflixRow title="🌸 Supernatural, Isekai & Adventure" movies={allAnimeMovies.filter(m => m.genres?.includes('Supernatural') || m.genres?.includes('Fantasy') || m.genres?.includes('Adventure'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🌸 Supernatural, Isekai & Adventure", allAnimeMovies.filter(m => m.genres?.includes('Supernatural') || m.genres?.includes('Fantasy') || m.genres?.includes('Adventure')))} />
-            <NetflixRow title="🎬 Masterpiece Anime Movies" movies={allAnimeMovies.filter(m => m.type === 'movie')} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🎬 Masterpiece Anime Movies", allAnimeMovies.filter(m => m.type === 'movie'))} />
-          </div>
-        </div>
-      ) : activeTab === 'series' ? (
-        /* TV Series View with Dedicated Hero Banner */
-        <div className="space-y-4">
-          <NetflixBillboard
-            movies={allWebSeries.slice(0, 6)}
-            onPlay={handlePlayMovie}
-            onMoreInfo={(m) => setSelectedMovieForInfo(m)}
-            onToggleWatchlist={handleToggleWatchlist}
-          />
-          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            <NetflixRow title="🔥 Binge-Worthy TV Shows" movies={allWebSeries} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🔥 Binge-Worthy TV Shows", allWebSeries)} />
-            <NetflixRow title="🚀 Sci-Fi, Mystery & Supernatural Series" movies={allWebSeries.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Mystery'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("🚀 Sci-Fi, Mystery & Supernatural Series", allWebSeries.filter(m => m.genres?.includes('Sci-Fi') || m.genres?.includes('Mystery')))} />
-            <NetflixRow title="💥 Crime, Thrillers & Drama Series" movies={allWebSeries.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Drama'))} onSelectMovie={setSelectedMovieForInfo} onPlayMovie={handlePlayMovie} onToggleWatchlist={handleToggleWatchlist} watchlistIds={watchlistIds} onExploreAll={() => handleOpenExploreCategory("💥 Crime, Thrillers & Drama Series", allWebSeries.filter(m => m.genres?.includes('Crime') || m.genres?.includes('Drama')))} />
-          </div>
-        </div>
-      ) : (
-        /* NETFLIX HOMEPAGE (Full Netflix Experience with Auto-Rotating Hero Carousel) */
-        <div className="space-y-4">
-          {/* 1. Massive Netflix Billboard Hero with Multi-Banner Auto-Rotation */}
-          {movies.length === 0 ? (
-            <HeroBillboardSkeleton />
-          ) : (
-            <NetflixBillboard
-              movies={movies.filter(m => m.featured || m.trending).slice(0, 8)}
-              movie={heroMovie}
-              onPlay={handlePlayMovie}
-              onMoreInfo={(m) => setSelectedMovieForInfo(m)}
-              onToggleWatchlist={handleToggleWatchlist}
-              isWatchlisted={Boolean((heroMovie?.id && watchlistIds.has(heroMovie.id)) || (heroMovie?.tmdbId && watchlistIds.has(heroMovie.tmdbId)))}
-            />
-          )}
-
-          <div className="relative z-20 -mt-16 sm:-mt-24 lg:-mt-32 space-y-4">
-            {/* VIP MOD Active Status Banner */}
-            <div className="px-4 sm:px-8 lg:px-12">
-              <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-zinc-900/60 border border-amber-500/40 backdrop-blur-md shadow-lg shadow-amber-500/10">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 text-black flex items-center justify-center font-black shadow">
-                    <Crown className="w-4 h-4 fill-current" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wide">
-                        CineVault VIP MOD Activated
-                      </span>
-                      <span className="px-1.5 py-0.2 rounded bg-amber-400 text-black text-[9px] font-black uppercase">
-                        Lifetime 4K
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-zinc-400 hidden sm:block">
-                      100% Ad-Free • Bufferless 4K Streaming • All VIP Servers Unlocked
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setIsSettingsOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/40 hover:bg-emerald-500/30 transition-all cursor-pointer"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Ad-Shield Active (0 Ads)</span>
-                  </button>
+                  )}
                 </div>
               </div>
+            )
+          )}
+
+          {activeView === 'livetv' && (
+            /* Dedicated Live TV Section - Auto-plays live streams with instant channel swapping */
+            <div className="view-transition-enter">
+              <Suspense
+                fallback={
+                  <div className="w-full min-h-[50vh] flex flex-col items-center justify-center p-8 text-center">
+                    <div className="w-10 h-10 rounded-full border-2 border-[#F0B429] border-t-transparent animate-spin mb-3" />
+                    <p className="text-sm font-semibold text-[#F0B429]">Connecting to Live TV Network...</p>
+                  </div>
+                }
+              >
+                <LiveTvView />
+              </Suspense>
             </div>
+          )}
 
-            {/* 2. Top 10 in India Today (Numbered Rank Row) */}
-            <NetflixRow
-              title="Top 10 in India Today"
-              movies={top10Trending}
-              isTop10={true}
-              onSelectMovie={setSelectedMovieForInfo}
-              onPlayMovie={handlePlayMovie}
-              onToggleWatchlist={handleToggleWatchlist}
-              watchlistIds={watchlistIds}
-              onExploreAll={() => handleOpenExploreCategory("Top 10 in India Today", allTrendingMovies)}
-            />
-
-            {/* MovieBox VIP High-Speed Streams */}
-            <NetflixRow
-              title="🎬 MovieBox VIP High-Speed Streams"
-              movies={allMovieBoxMovies.length > 0 ? allMovieBoxMovies : movies.slice(0, 16)}
-              onSelectMovie={setSelectedMovieForInfo}
-              onPlayMovie={handlePlayMovie}
-              onToggleWatchlist={handleToggleWatchlist}
-              watchlistIds={watchlistIds}
-              onExploreAll={() => handleOpenExploreCategory("🎬 MovieBox VIP High-Speed Streams", allMovieBoxMovies.length > 0 ? allMovieBoxMovies : movies)}
-            />
-
-            {/* 3. Continue Watching with Resume Timestamp & Progress */}
-            {history.length > 0 && (
-              <ContinueWatching
-                items={continueWatchingItems}
-                onSelect={setSelectedMovieForInfo}
-                onWatchNow={(m, resumePos) => handlePlayMovie(m, undefined, resumePos)}
+          {activeView === 'downloads' && (
+            /* Offline Downloads & Storage Vault */
+            <div className="view-transition-enter">
+              <DownloadsView
+                onPlayMovie={handlePlayMovie}
+                onExploreMovies={() => setActiveView('home')}
               />
-            )}
+            </div>
+          )}
 
-            {/* 4. 🏹 South Indian Pan-India Blockbusters */}
-            <NetflixRow
-              title="🏹 South Indian Pan-India Blockbusters"
-              movies={southIndianMovies}
-              onSelectMovie={setSelectedMovieForInfo}
-              onPlayMovie={handlePlayMovie}
-              onToggleWatchlist={handleToggleWatchlist}
-              watchlistIds={watchlistIds}
-              onExploreAll={() => handleOpenExploreCategory("🏹 South Indian Pan-India Blockbusters", allSouthIndianMovies)}
-            />
+          {activeView === 'profile' && (
+            /* VIP Patron Profile View */
+            <div className="view-transition-enter">
+              <ProfileView
+                watchlist={watchlist}
+                profile={userProfile}
+                onUpdateProfile={handleUpdateProfile}
+                onPlayMovie={(m) => handlePlayMovie(m)}
+                onSelectMovie={handleSelectMovie}
+                onRemoveFromWatchlist={toggleWatchlist}
+                onNavigateHome={() => setActiveView('home')}
+                onShowUpdateModal={(info) => {
+                  setAvailableUpdate(info);
+                  setIsMandatoryUpdate(false);
+                }}
+              />
+            </div>
+          )}
+        </main>
 
-            {/* 5. 🇮🇳 Bollywood Hits (Hindi Cinema) */}
-            <NetflixRow
-              title="🇮🇳 Bollywood Hits (Hindi Cinema)"
-              movies={bollywoodMovies}
-              onSelectMovie={setSelectedMovieForInfo}
-              onPlayMovie={handlePlayMovie}
-              onToggleWatchlist={handleToggleWatchlist}
-              watchlistIds={watchlistIds}
-              onExploreAll={() => handleOpenExploreCategory("🇮🇳 Bollywood Hits (Hindi Cinema)", allBollywoodMovies)}
-            />
+        {/* Mobile Navigation Dock */}
+        {!playingMovie || isPlayerMinimized ? (
+          <BottomNav
+            activeView={activeView}
+            onNavigate={(v) => setActiveView(v)}
+            onOpenSearch={handleOpenSearch}
+            downloadCount={downloadCount}
+          />
+        ) : null}
 
-            {/* 6. 🌍 Hollywood Action & Sci-Fi Blockbusters */}
-            <NetflixRow
-              title="🌍 Hollywood Blockbusters & Marvel Hits"
-              movies={hollywoodMovies}
-              onSelectMovie={setSelectedMovieForInfo}
-              onPlayMovie={handlePlayMovie}
-              onToggleWatchlist={handleToggleWatchlist}
-              watchlistIds={watchlistIds}
-              onExploreAll={() => handleOpenExploreCategory("🌍 Hollywood Blockbusters & Marvel Hits", allHollywoodMovies)}
-            />
+        {/* Search Modal (Instant zero-lag render with pre-loaded initial catalog) */}
+        {isSearchOpen && (
+          <SearchModal
+            isOpen={isSearchOpen}
+            onClose={handleCloseSearch}
+            onSelectMovie={handleSelectMovie}
+            isAdultMode={isAdultMode}
+            initialMovies={
+              isAdultMode
+                ? (ADULT_HOME_CATALOG.rows[0]?.items || [])
+                : (safeCatalog?.rows?.[0]?.items || [])
+            }
+          />
+        )}
 
-            {/* 7. 🇰🇷 K-Dramas & Korean Cinema */}
-            <NetflixRow
-              title="🇰🇷 Trending K-Dramas & Korean Cinema"
-              movies={kdramaList}
-              onSelectMovie={setSelectedMovieForInfo}
-              onPlayMovie={handlePlayMovie}
-              onToggleWatchlist={handleToggleWatchlist}
-              watchlistIds={watchlistIds}
-              onExploreAll={() => handleOpenExploreCategory("🇰🇷 Trending K-Dramas & Korean Cinema", allKdramaMovies)}
-            />
-
-            {/* 8. ⚔️ Anime Spotlight */}
-            <NetflixRow
-              title="⚔️ Popular Anime Series & Movies"
-              movies={animeList}
-              onSelectMovie={setSelectedMovieForInfo}
-              onPlayMovie={handlePlayMovie}
-              onToggleWatchlist={handleToggleWatchlist}
-              watchlistIds={watchlistIds}
-              onExploreAll={() => handleOpenExploreCategory("⚔️ Popular Anime Series & Movies", allAnimeMovies)}
-            />
-
-            {/* 9. 📺 Binge-Worthy TV Shows */}
-            <NetflixRow
-              title="📺 Binge-Worthy TV Series & Web Shows"
-              movies={webSeries}
-              onSelectMovie={setSelectedMovieForInfo}
-              onPlayMovie={handlePlayMovie}
-              onToggleWatchlist={handleToggleWatchlist}
-              watchlistIds={watchlistIds}
-              onExploreAll={() => handleOpenExploreCategory("📺 Binge-Worthy TV Series & Web Shows", allWebSeries)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Netflix Footer */}
-      <NetflixFooter />
-
-      {/* Netflix More Info Detailed Modal */}
-      {selectedMovieForInfo && (
-        <ErrorBoundary>
+        {/* Movie Details Modal */}
+        {selectedMovie && (
           <Suspense fallback={null}>
-            <NetflixInfoModal
-              movie={selectedMovieForInfo}
-              allMovies={movies}
-              onClose={() => setSelectedMovieForInfo(null)}
+            <MovieDetailsModal
+              movie={selectedMovie}
+              onClose={handleCloseDetails}
               onPlay={handlePlayMovie}
-              onSelectMovie={(m) => setSelectedMovieForInfo(m)}
-              onToggleWatchlist={handleToggleWatchlist}
-              isWatchlisted={Boolean((selectedMovieForInfo.id && watchlistIds.has(selectedMovieForInfo.id)) || (selectedMovieForInfo.tmdbId && watchlistIds.has(selectedMovieForInfo.tmdbId)))}
+              isWatchlisted={watchlistIds.has(selectedMovie.id)}
+              onToggleWatchlist={toggleWatchlist}
             />
           </Suspense>
-        </ErrorBoundary>
-      )}
+        )}
 
-      {/* Settings Modal */}
-      <ErrorBoundary>
-        <Suspense fallback={null}>
-          <SettingsModal
-            isOpen={isSettingsOpen}
-            onClose={() => setIsSettingsOpen(false)}
-            onClearCache={() => {
-              localStorage.clear();
-              showToast('All local storage & history reset');
-              setIsSettingsOpen(false);
-              window.location.reload();
-            }}
-          />
-        </Suspense>
-      </ErrorBoundary>
+        {/* Video Player Modal/Screen & Floating Mini-Player */}
+        {playingMovie && (
+          <Suspense fallback={null}>
+            <VideoPlayer
+              movie={playingMovie.movie}
+              season={playingMovie.season}
+              episode={playingMovie.episode}
+              isMinimized={isPlayerMinimized}
+              onMinimize={handleMinimizePlayer}
+              onRestore={handleRestorePlayer}
+              onBack={handleBackFromPlayer}
+              onEpisodeChange={handleEpisodeChange}
+              onMovieChange={handleMovieChange}
+            />
+          </Suspense>
+        )}
 
-      {/* Netflix Mobile Native Bottom Navigation Bar */}
-      <NetflixMobileNav
-        activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          setWatchMovie(null);
-          setSelectedMovieForInfo(null);
-          setSearchQuery('');
-          setExploredCategory(null);
-        }}
-        watchlistCount={watchlist.length}
-        onOpenSearch={() => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          const searchInput = document.querySelector('header input') as HTMLInputElement | null;
-          if (searchInput) {
-            searchInput.focus();
-          }
-        }}
-      />
-    </div>
+
+      </div>
+    </ErrorBoundary>
   );
 };
 

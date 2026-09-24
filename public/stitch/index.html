@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineVault — Premium Cinema Streaming UI (Created with Stitch)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            vault: {
+              black: '#0B0D10',
+              dark: '#0B0D10',
+              surface: '#15181D',
+              surfaceHigh: '#1D2127',
+              gold: '#D6A84F',
+              goldLight: '#E5C07A',
+              goldMuted: '#9A9FA8',
+              goldDark: '#8A6D33',
+              text: '#F5F5F2',
+              muted: '#9A9FA8',
+              border: '#292E35',
+              success: '#5FAF7B',
+              error: '#D66A6A'
+            }
+          },
+          fontFamily: {
+            headline: ['"Plus Jakarta Sans"', 'sans-serif'],
+            body: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0D10;
+      color: #F5F5F2;
+      font-family: 'Inter', sans-serif;
+    }
+    .gold-glow {
+      box-shadow: 0 0 35px rgba(214, 168, 79, 0.25);
+    }
+    .device-mockup {
+      box-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(214, 168, 79, 0.2);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0D10;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1D2127;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #D6A84F;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#0B0D10] text-[#F5F5F2]">
+
+  <!-- Top Navigation Header -->
+  <header class="h-16 border-b border-vault-border/60 bg-[#0B0D10]/95 backdrop-blur-lg sticky top-0 z-50 px-6 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-vault-gold/15 border border-vault-gold/40 flex items-center justify-center text-vault-gold font-bold">
+          <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">lock</span>
+        </div>
+        <div>
+          <span class="font-headline font-extrabold tracking-[0.2em] text-lg uppercase text-vault-gold">CineVault</span>
+          <span class="text-[10px] tracking-widest text-vault-muted ml-2 uppercase font-mono px-2 py-0.5 rounded bg-vault-surface border border-vault-border/50">Stitch UI</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen Navigation Switcher -->
+    <nav class="hidden md:flex items-center gap-1 bg-vault-surface/80 p-1 rounded-xl border border-vault-border/50">
+      <button onclick="switchScreen('home')" id="nav-home" class="screen-tab px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 bg-vault-gold text-vault-dark font-semibold shadow-sm">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">home</span>
+          Home
+        </span>
+      </button>
+      <button onclick="switchScreen('details')" id="nav-details" class="screen-tab px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 text-vault-muted hover:text-vault-text hover:bg-vault-surfaceHigh">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">movie</span>
+          Movie Details
+        </span>
+      </button>
+      <button onclick="switchScreen('player')" id="nav-player" class="screen-tab px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 text-vault-muted hover:text-vault-text hover:bg-vault-surfaceHigh">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">play_circle</span>
+          Video Player
+        </span>
+      </button>
+      <button onclick="switchScreen('explore_search')" id="nav-explore_search" class="screen-tab px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 text-vault-muted hover:text-vault-text hover:bg-vault-surfaceHigh">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">search</span>
+          Search & Explore
+        </span>
+      </button>
+      <button onclick="switchScreen('profile')" id="nav-profile" class="screen-tab px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 text-vault-muted hover:text-vault-text hover:bg-vault-surfaceHigh">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">person</span>
+          VIP Profile
+        </span>
+      </button>
+      <button onclick="toggleTokensModal()" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 text-vault-gold hover:bg-vault-gold/10 ml-2 border border-vault-gold/30">
+        <span class="flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">palette</span>
+          Design Tokens
+        </span>
+      </button>
+    </nav>
+
+    <!-- Mode & View Controls -->
+    <div class="flex items-center gap-3">
+      <!-- Device Selector -->
+      <div class="flex items-center bg-vault-surface p-1 rounded-lg border border-vault-border/50 text-xs">
+        <button onclick="setViewport('mobile')" id="vp-mobile" title="Mobile (390px)" class="p-1.5 rounded text-vault-gold bg-vault-surfaceHigh transition">
+          <span class="material-symbols-outlined text-base">smartphone</span>
+        </button>
+        <button onclick="setViewport('tablet')" id="vp-tablet" title="Tablet (768px)" class="p-1.5 rounded text-vault-muted hover:text-vault-text transition">
+          <span class="material-symbols-outlined text-base">tablet</span>
+        </button>
+        <button onclick="setViewport('desktop')" id="vp-desktop" title="Desktop / Widescreen (100%)" class="p-1.5 rounded text-vault-muted hover:text-vault-text transition">
+          <span class="material-symbols-outlined text-base">desktop_windows</span>
+        </button>
+      </div>
+
+      <!-- Render Mode Toggle (HTML / Render Image) -->
+      <div class="flex items-center bg-vault-surface p-1 rounded-lg border border-vault-border/50 text-xs">
+        <button onclick="setRenderMode('html')" id="mode-html" class="px-2.5 py-1 rounded text-vault-gold font-medium bg-vault-surfaceHigh transition">
+          Live HTML
+        </button>
+        <button onclick="setRenderMode('image')" id="mode-image" class="px-2.5 py-1 rounded text-vault-muted font-medium hover:text-vault-text transition">
+          Stitch Shot
+        </button>
+      </div>
+
+      <!-- Open in New Tab -->
+      <a id="btn-open-external" href="home_screen.html" target="_blank" title="Open Current Screen in New Window" class="w-8 h-8 rounded-lg bg-vault-surface border border-vault-border/60 flex items-center justify-center text-vault-muted hover:text-vault-gold hover:border-vault-gold/40 transition">
+        <span class="material-symbols-outlined text-base">open_in_new</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Mobile Bottom Tab Bar for small screens -->
+  <div class="md:hidden flex items-center justify-around bg-vault-surface border-b border-vault-border p-2">
+    <button onclick="switchScreen('home')" class="text-xs p-2 text-vault-gold">Home</button>
+    <button onclick="switchScreen('details')" class="text-xs p-2 text-vault-muted">Details</button>
+    <button onclick="switchScreen('player')" class="text-xs p-2 text-vault-muted">Player</button>
+    <button onclick="switchScreen('explore_search')" class="text-xs p-2 text-vault-muted">Search</button>
+    <button onclick="switchScreen('profile')" class="text-xs p-2 text-vault-muted">Profile</button>
+  </div>
+
+  <!-- Main Showcase Workspace -->
+  <main class="flex-1 flex overflow-hidden relative">
+
+    <!-- Screen Info Sidebar -->
+    <aside class="w-80 border-r border-vault-border bg-[#15181D] p-5 hidden lg:flex flex-col justify-between overflow-y-auto shrink-0">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-[11px] font-bold uppercase tracking-widest text-vault-gold font-mono">Current Screen</span>
+          <span id="screen-id-tag" class="text-[10px] text-vault-muted font-mono bg-vault-surfaceHigh px-1.5 py-0.5 rounded border border-vault-border">b5a4ef34...</span>
+        </div>
+
+        <h2 id="screen-title" class="font-headline text-xl font-bold text-vault-text mb-2">Home Screen</h2>
+        <p id="screen-desc" class="text-xs text-vault-muted leading-relaxed mb-6">
+          Boutique streaming home showcasing featured premiere ("Dune: Part Two"), continuing playback queue with champagne gold progress tracking, curated spotlight selections, and auteur masterwork retrospectives.
+        </p>
+
+        <!-- Screen Component Specs -->
+        <div class="space-y-4">
+          <div class="p-3.5 rounded-xl bg-vault-surfaceHigh/60 border border-vault-border">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-vault-gold block mb-2 font-mono">Core Highlights</span>
+            <ul id="screen-features" class="text-xs space-y-2 text-vault-text/90">
+              <li class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-vault-gold text-sm mt-0.5">check_circle</span>
+                <span>Champagne Gold (#D6A84F) primary CTA & active badges</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-vault-gold text-sm mt-0.5">check_circle</span>
+                <span>Continue watching cards with time remaining pill</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-vault-gold text-sm mt-0.5">check_circle</span>
+                <span>Floating minimalist bottom navigation bar</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-vault-surfaceHigh/60 border border-vault-border">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-vault-gold block mb-2 font-mono">Stitch Generation Metadata</span>
+            <div class="text-[11px] space-y-1.5 font-mono text-vault-muted">
+              <div class="flex justify-between">
+                <span>Tool:</span>
+                <span class="text-vault-gold">StitchMCP</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Theme:</span>
+                <span class="text-vault-text">Champagne Gold</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Color Mode:</span>
+                <span class="text-vault-text">DARK (Tonal Spot)</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Typography:</span>
+                <span class="text-vault-text">Plus Jakarta / Inter</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Project ID:</span>
+                <span class="text-vault-gold">1619430104688...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="pt-6 border-t border-vault-border space-y-2">
+        <a id="btn-download-html" href="home_screen.html" download="cinevault_home.html" class="w-full py-2 px-3 rounded-lg bg-vault-surface hover:bg-vault-surfaceHigh border border-vault-border text-xs flex items-center justify-center gap-2 text-vault-text transition">
+          <span class="material-symbols-outlined text-sm text-vault-gold">download</span>
+          Download Screen HTML
+        </a>
+        <a id="btn-download-png" href="home_screenshot.png" download="cinevault_home.png" class="w-full py-2 px-3 rounded-lg bg-vault-surface hover:bg-vault-surfaceHigh border border-vault-border text-xs flex items-center justify-center gap-2 text-vault-text transition">
+          <span class="material-symbols-outlined text-sm text-vault-gold">image</span>
+          Download High-Res PNG
+        </a>
+      </div>
+    </aside>
+
+    <!-- Canvas Preview Stage -->
+    <section class="flex-1 flex items-center justify-center p-4 md:p-8 overflow-y-auto bg-[#0B0D10]">
+      <div id="viewport-container" class="w-[390px] h-[844px] transition-all duration-300 relative rounded-[40px] overflow-hidden device-mockup bg-vault-dark border-4 border-neutral-800 flex flex-col">
+        
+        <!-- Mobile Dynamic Island / Notch -->
+        <div id="device-notch" class="h-7 w-full bg-[#0B0D10] flex items-center justify-between px-6 shrink-0 z-30 select-none">
+          <span class="text-[11px] font-semibold text-neutral-300 font-mono">9:41</span>
+          <div class="w-24 h-4 rounded-full bg-black/90 mx-auto"></div>
+          <div class="flex items-center gap-1.5 text-neutral-300 text-xs">
+            <span class="material-symbols-outlined text-[14px]">signal_cellular_4_bar</span>
+            <span class="material-symbols-outlined text-[14px]">wifi</span>
+            <span class="material-symbols-outlined text-[14px]">battery_full</span>
+          </div>
+        </div>
+
+        <!-- HTML Frame View -->
+        <iframe id="screen-iframe" src="home_screen.html" class="w-full flex-1 border-none bg-vault-dark"></iframe>
+
+        <!-- Static Image View (Hidden by default) -->
+        <div id="screen-image-wrapper" class="w-full flex-1 overflow-y-auto hidden bg-vault-dark">
+          <img id="screen-image" src="home_screenshot.png" alt="Stitch Screen Artwork" class="w-full h-auto object-cover">
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Design Tokens Modal -->
+  <div id="tokens-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-6">
+    <div class="bg-[#15181D] border border-vault-border rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-vault-border/60 pb-4 mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded bg-vault-gold/20 flex items-center justify-center text-vault-gold">
+            <span class="material-symbols-outlined text-base">palette</span>
+          </div>
+          <div>
+            <h3 class="font-headline font-bold text-lg text-vault-text">CineVault Champagne Gold Design System</h3>
+            <span class="text-xs text-vault-muted font-mono">Stitch Asset ID: assets/14106233785029870162</span>
+          </div>
+        </div>
+        <button onclick="toggleTokensModal()" class="w-8 h-8 rounded-full bg-vault-surfaceHigh hover:bg-vault-surfaceHigh/80 flex items-center justify-center text-vault-muted hover:text-white transition">
+          <span class="material-symbols-outlined text-base">close</span>
+        </button>
+      </div>
+
+      <!-- Colors Grid -->
+      <div class="space-y-6 text-xs">
+        <div>
+          <h4 class="font-headline font-bold text-sm text-vault-gold uppercase tracking-wider mb-3">Color Palette</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div class="p-3 rounded-lg bg-[#0B0D10] border border-vault-border">
+              <div class="w-full h-10 rounded bg-[#0B0D10] border border-neutral-700 mb-2"></div>
+              <span class="font-semibold block text-white font-mono text-[11px]">#0B0D10</span>
+              <span class="text-neutral-400 text-[10px]">Main Background</span>
+            </div>
+            <div class="p-3 rounded-lg bg-[#15181D] border border-vault-border">
+              <div class="w-full h-10 rounded bg-[#15181D] border border-neutral-700 mb-2"></div>
+              <span class="font-semibold block text-white font-mono text-[11px]">#15181D</span>
+              <span class="text-neutral-400 text-[10px]">Cards / Surfaces</span>
+            </div>
+            <div class="p-3 rounded-lg bg-[#1D2127] border border-vault-border">
+              <div class="w-full h-10 rounded bg-[#1D2127] border border-neutral-700 mb-2"></div>
+              <span class="font-semibold block text-white font-mono text-[11px]">#1D2127</span>
+              <span class="text-neutral-400 text-[10px]">Elevated Surfaces</span>
+            </div>
+            <div class="p-3 rounded-lg bg-[#15181D] border border-vault-border">
+              <div class="w-full h-10 rounded bg-[#D6A84F] mb-2 shadow-sm"></div>
+              <span class="font-semibold block text-vault-gold font-mono text-[11px]">#D6A84F</span>
+              <span class="text-neutral-400 text-[10px]">Champagne Gold Accent</span>
+            </div>
+            <div class="p-3 rounded-lg bg-[#15181D] border border-vault-border">
+              <div class="w-full h-10 rounded bg-[#F5F5F2] mb-2"></div>
+              <span class="font-semibold block text-white font-mono text-[11px]">#F5F5F2</span>
+              <span class="text-neutral-400 text-[10px]">Primary Text (Soft White)</span>
+            </div>
+            <div class="p-3 rounded-lg bg-[#15181D] border border-vault-border">
+              <div class="w-full h-10 rounded bg-[#9A9FA8] mb-2"></div>
+              <span class="font-semibold block text-neutral-300 font-mono text-[11px]">#9A9FA8</span>
+              <span class="text-neutral-400 text-[10px]">Secondary Cool Gray</span>
+            </div>
+            <div class="p-3 rounded-lg bg-[#15181D] border border-vault-border">
+              <div class="w-full h-10 rounded bg-[#292E35] mb-2"></div>
+              <span class="font-semibold block text-neutral-300 font-mono text-[11px]">#292E35</span>
+              <span class="text-neutral-400 text-[10px]">Borders / Dividers</span>
+            </div>
+            <div class="p-3 rounded-lg bg-[#15181D] border border-vault-border">
+              <div class="w-full h-10 rounded bg-[#5FAF7B] mb-2"></div>
+              <span class="font-semibold block text-[#5FAF7B] font-mono text-[11px]">#5FAF7B</span>
+              <span class="text-neutral-400 text-[10px]">Success</span>
+            </div>
+            <div class="p-3 rounded-lg bg-[#15181D] border border-vault-border">
+              <div class="w-full h-10 rounded bg-[#D66A6A] mb-2"></div>
+              <span class="font-semibold block text-[#D66A6A] font-mono text-[11px]">#D66A6A</span>
+              <span class="text-neutral-400 text-[10px]">Error</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Typography -->
+        <div>
+          <h4 class="font-headline font-bold text-sm text-vault-gold uppercase tracking-wider mb-3">Typography System</h4>
+          <div class="space-y-3 bg-vault-surface p-4 rounded-xl border border-vault-border">
+            <div>
+              <span class="text-[10px] text-vault-muted font-mono block">Headline / Display: Plus Jakarta Sans</span>
+              <h5 class="font-headline text-2xl font-bold text-white tracking-tight">Dune: Part Two</h5>
+            </div>
+            <div>
+              <span class="text-[10px] text-vault-muted font-mono block">Body / Descriptions: Inter Regular 400</span>
+              <p class="font-body text-xs text-vault-text/90 leading-relaxed">
+                Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.
+              </p>
+            </div>
+            <div>
+              <span class="text-[10px] text-vault-muted font-mono block">Chips & Action Labels: Inter SemiBold 600 / All Caps</span>
+              <div class="flex gap-2 mt-1">
+                <span class="px-2 py-0.5 rounded bg-vault-surfaceHigh text-vault-gold text-[10px] font-semibold border border-vault-gold/40">4K ULTRA HD</span>
+                <span class="px-2 py-0.5 rounded bg-vault-surfaceHigh text-vault-text text-[10px] font-semibold border border-vault-border">DOLBY ATMOS</span>
+                <span class="px-2 py-0.5 rounded bg-vault-gold text-vault-black text-[10px] font-bold">PLAY FILM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const screens = {
+      home: {
+        title: 'Home Screen',
+        id: 'b5a4ef348dcf4f8294af47b77b0e7515',
+        desc: 'Boutique luxury home showcasing featured premiere ("Dune: Part Two"), continuing playback queue with champagne gold progress tracking, curated spotlight selections, and auteur masterwork retrospectives.',
+        html: 'home_screen.html',
+        image: 'home_screenshot.png',
+        features: [
+          'Champagne Gold (#D6A84F) primary CTA & active badges',
+          'Continue watching cards with time remaining pill & progress bar',
+          'Curated masterwork collections ("Auteur Cinema", "35mm Archive")',
+          'Docked floating minimalist bottom navigation bar'
+        ]
+      },
+      details: {
+        title: 'Movie Details Screen',
+        id: '9214836a04874b78ae67ec74d115e5df',
+        desc: 'Master detail view for "Dune: Part Two" featuring edge-to-edge cinematic banner, 4K HDR technical badges, prominent champagne gold Play CTA, key cast portraits with gold rims, and archival specifications.',
+        html: 'details_screen.html',
+        image: 'details_screenshot.png',
+        features: [
+          'Full-bleed cinematic backdrop with natural dark fade',
+          'Technical format chips: 4K UHD, Dolby Vision, Dolby Atmos',
+          'Director & Key Cast circular portraits with fine gold accents',
+          'Archival Specifications drawer & Related Masterworks carousel'
+        ]
+      },
+      player: {
+        title: 'Cinematic Video Player',
+        id: '1a4556b8334340c2a95487236bb1378b',
+        desc: 'Distraction-free movie player for "Dune: Part Two" with 16:9 film still, lower-third subtitles, glowing champagne gold seekbar scrubber, chapter break notches, and interactive Dolby Atmos audio/subtitles selector.',
+        html: 'player_screen.html',
+        image: 'player_screenshot.png',
+        features: [
+          'Cinematic widescreen 16:9 canvas with crisp subtitles',
+          'Glowing gold seekbar with chapter notches & timecodes',
+          'Frosted glassmorphic skip controls (-10s / +10s / Play)',
+          'Interactive Dolby Atmos & Subtitles selector sheet'
+        ]
+      },
+      explore_search: {
+        title: 'Search & Explore Screen',
+        id: 'bb30eb97a1514a6081498e7fcb9a3048',
+        desc: 'Minimalist discovery interface featuring prominent search input, champagne gold-accented genre chips, trending auteur search tags, and 2-column high-contrast poster results grid.',
+        html: 'explore_search_screen.html',
+        image: 'explore_search_screenshot.png',
+        features: [
+          'Minimal search input with gold focus state & instant clear',
+          'Curated filter pills ("All", "4K Remasters", "Sci-Fi", "Neo-Noir")',
+          'Recent & Trending tags: Christopher Nolan, Roger Deakins',
+          '2-column visual poster grid with champagne gold star ratings'
+        ]
+      },
+      profile: {
+        title: 'VIP Member Profile & Queue',
+        id: '25b682664d944c668b9bb9f0d7db326d',
+        desc: 'Exclusive member club profile featuring CineVault Privé VIP Gold card, watch metrics, queue manager, and precision playback streaming preferences (Spatial Audio, 4K HDR direct bitstream).',
+        html: 'profile_screen.html',
+        image: 'profile_screenshot.png',
+        features: [
+          'CineVault Privé Member Pass with gold foil border & crest',
+          'Key metrics: 142 Watched, 28 Watchlist, 18 Offline 4K',
+          'Current Watch Queue with quick play & remove actions',
+          'Archival streaming toggles: Spatial Audio & Subtitle styling'
+        ]
+      }
+    };
+
+    let currentScreen = 'home';
+    let currentRenderMode = 'html';
+    let currentViewport = 'mobile';
+
+    function switchScreen(key) {
+      currentScreen = key;
+      const data = screens[key];
+
+      // Update tabs
+      document.querySelectorAll('.screen-tab').forEach(el => {
+        el.className = 'screen-tab px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 text-vault-muted hover:text-vault-text hover:bg-vault-surfaceHigh';
+      });
+      const activeTab = document.getElementById(`nav-${key}`);
+      if (activeTab) {
+        activeTab.className = 'screen-tab px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 bg-vault-gold text-vault-dark font-semibold shadow-sm';
+      }
+
+      // Update Sidebar Info
+      document.getElementById('screen-title').textContent = data.title;
+      document.getElementById('screen-desc').textContent = data.desc;
+      document.getElementById('screen-id-tag').textContent = data.id.substring(0, 10) + '...';
+      
+      const featList = document.getElementById('screen-features');
+      featList.innerHTML = data.features.map(f => `
+        <li class="flex items-start gap-2">
+          <span class="material-symbols-outlined text-vault-gold text-sm mt-0.5">check_circle</span>
+          <span>${f}</span>
+        </li>
+      `).join('');
+
+      // Update View Sources
+      document.getElementById('screen-iframe').src = data.html;
+      document.getElementById('screen-image').src = data.image;
+
+      // Update Download Links
+      document.getElementById('btn-download-html').href = data.html;
+      document.getElementById('btn-download-html').setAttribute('download', `cinevault_${key}.html`);
+      document.getElementById('btn-download-png').href = data.image;
+      document.getElementById('btn-download-png').setAttribute('download', `cinevault_${key}.png`);
+      document.getElementById('btn-open-external').href = data.html;
+    }
+
+    function setViewport(vp) {
+      currentViewport = vp;
+      const container = document.getElementById('viewport-container');
+      const notch = document.getElementById('device-notch');
+
+      ['mobile', 'tablet', 'desktop'].forEach(v => {
+        const btn = document.getElementById(`vp-${v}`);
+        btn.className = 'p-1.5 rounded text-vault-muted hover:text-vault-text transition';
+      });
+      document.getElementById(`vp-${vp}`).className = 'p-1.5 rounded text-vault-gold bg-vault-surfaceHigh transition';
+
+      if (vp === 'mobile') {
+        container.className = 'w-[390px] h-[844px] transition-all duration-300 relative rounded-[40px] overflow-hidden device-mockup bg-vault-dark border-4 border-neutral-800 flex flex-col';
+        notch.style.display = 'flex';
+      } else if (vp === 'tablet') {
+        container.className = 'w-[768px] h-[844px] transition-all duration-300 relative rounded-[28px] overflow-hidden device-mockup bg-vault-dark border-4 border-neutral-800 flex flex-col';
+        notch.style.display = 'none';
+      } else if (vp === 'desktop') {
+        container.className = 'w-full max-w-[1100px] h-[844px] transition-all duration-300 relative rounded-xl overflow-hidden device-mockup bg-vault-dark border border-vault-border flex flex-col';
+        notch.style.display = 'none';
+      }
+    }
+
+    function setRenderMode(mode) {
+      currentRenderMode = mode;
+      const iframe = document.getElementById('screen-iframe');
+      const imgWrapper = document.getElementById('screen-image-wrapper');
+
+      if (mode === 'html') {
+        iframe.classList.remove('hidden');
+        imgWrapper.classList.add('hidden');
+        document.getElementById('mode-html').className = 'px-2.5 py-1 rounded text-vault-gold font-medium bg-vault-surfaceHigh transition';
+        document.getElementById('mode-image').className = 'px-2.5 py-1 rounded text-vault-muted font-medium hover:text-vault-text transition';
+      } else {
+        iframe.classList.add('hidden');
+        imgWrapper.classList.remove('hidden');
+        document.getElementById('mode-image').className = 'px-2.5 py-1 rounded text-vault-gold font-medium bg-vault-surfaceHigh transition';
+        document.getElementById('mode-html').className = 'px-2.5 py-1 rounded text-vault-muted font-medium hover:text-vault-text transition';
+      }
+    }
+
+    function toggleTokensModal() {
+      const modal = document.getElementById('tokens-modal');
+      modal.classList.toggle('hidden');
+    }
+  </script>
+</body>
+</html>

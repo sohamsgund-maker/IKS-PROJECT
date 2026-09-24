@@ -3,14 +3,19 @@
   "name": "CineVault - Stream HD Movies & Shows",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "192x192 512x512"
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
   ],
   "start_url": "/",
-  "background_color": "#141414",
-  "theme_color": "#E50914",
+  "background_color": "#0B0E14",
+  "theme_color": "#E5A93C",
   "display": "standalone",
   "orientation": "portrait"
 }
