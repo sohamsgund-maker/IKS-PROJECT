@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Download, Loader2 } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Download } from 'lucide-react';
 import type { UpdateInfo } from '../services/updateService';
 import { updateService } from '../services/updateService';
-import { OFFICIAL_APK_DOWNLOAD_URL } from '../config/version';
+import { OFFICIAL_WEBSITE_URL } from '../config/version';
 
 interface UpdateModalProps {
   updateInfo: UpdateInfo;
@@ -21,33 +21,18 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
   onLater,
 }) => {
   const isForceUpdate = Boolean(updateInfo.forceUpdate || isMandatory);
-  // Direct APK download link to prevent redirecting to external website pages that require refreshing
-  const directApkUrl =
-    (updateInfo as any).directApkUrl ||
+  const websiteUrl =
+    updateInfo.websiteUrl ||
     updateInfo.apkDownloadUrl ||
     updateInfo.apkUrl ||
-    OFFICIAL_APK_DOWNLOAD_URL ||
-    'https://cinevaultapk.online/downloads/CineVault.apk';
-
-  const [isDownloading, setIsDownloading] = useState<boolean>(false);
-  const [downloadProgress, setDownloadProgress] = useState<number>(-1);
+    OFFICIAL_WEBSITE_URL ||
+    'https://cinevaultapk.online/';
 
   // Prevent background scrolling while modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = '';
-    };
-  }, []);
-
-  // Listen to native download progress from AndroidDevice
-  useEffect(() => {
-    (window as any).onApkDownloadProgress = (progress: number) => {
-      setIsDownloading(true);
-      setDownloadProgress(progress);
-    };
-    return () => {
-      delete (window as any).onApkDownloadProgress;
     };
   }, []);
 
@@ -67,8 +52,6 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
   useEffect(() => {
     if (!isForceUpdate) return;
     const blockBack = () => {
-      // Returning false tells MainActivity that web app does not handle internal back navigation,
-      // triggering double-back-to-exit rather than ever revealing the app content.
       return false;
     };
     (window as any).handleAndroidBack = blockBack;
@@ -81,34 +64,7 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
 
   const handleUpdateClick = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
-    if (isDownloading) return;
-
-    try {
-      const androidDevice = (window as any).AndroidDevice;
-      if (androidDevice && typeof androidDevice.downloadAndInstallApk === 'function') {
-        setIsDownloading(true);
-        setDownloadProgress(0);
-        androidDevice.downloadAndInstallApk(directApkUrl);
-        return;
-      } else if (androidDevice && typeof androidDevice.openExternalUrl === 'function') {
-        androidDevice.openExternalUrl(directApkUrl);
-        return;
-      }
-    } catch {}
-
-    // Fallback for browser direct download without page refresh
-    try {
-      const link = document.createElement('a');
-      link.href = directApkUrl;
-      link.download = 'CineVault.apk';
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch {
-      updateService.openUpdateUrl(directApkUrl);
-    }
+    updateService.openUpdateUrl(websiteUrl);
   };
 
   const handleLaterClick = () => {
@@ -140,7 +96,6 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
       >
         {/* CineVault Logo in Elevated Cinema Card */}
         <div className="relative mb-6 flex items-center justify-center w-36 h-36 sm:w-40 sm:h-40 rounded-3xl bg-[#11141B] border border-[#2B303C]/80 shadow-[0_16px_48px_rgba(0,0,0,0.85)] p-4">
-          {/* Subtle Ambient Gold Behind Logo */}
           <div className="absolute inset-0 rounded-3xl bg-[#D6A84F]/5 blur-xl pointer-events-none" />
           <img
             src="/logo-user.png"
@@ -179,43 +134,19 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
           </span>
         </div>
 
-        {/* Action Button: "Update Now" or Downloading Progress Bar */}
+        {/* Action Button: "Update Now" */}
         <div className="mt-7 w-full max-w-[260px] space-y-3">
-          {isDownloading ? (
-            <div className="w-full py-3.5 px-5 rounded-2xl bg-[#15181D] border border-[#D6A84F]/50 shadow-[0_8px_24px_rgba(0,0,0,0.6)] flex flex-col items-center gap-2.5 animate-pulse">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#E5BA60]">
-                <Loader2 className="w-4 h-4 animate-spin text-[#E5BA60] shrink-0" />
-                <span>
-                  {downloadProgress >= 100
-                    ? 'Installing update...'
-                    : downloadProgress >= 0
-                    ? `Downloading update ${downloadProgress}%`
-                    : 'Downloading update...'}
-                </span>
-              </div>
-              <div className="w-full h-2 bg-black/60 rounded-full overflow-hidden border border-white/10">
-                <div
-                  className="h-full bg-gradient-to-r from-[#D6A84F] to-[#E5BA60] rounded-full transition-all duration-150"
-                  style={{ width: `${Math.max(8, downloadProgress >= 0 ? downloadProgress : 40)}%` }}
-                />
-              </div>
-              <span className="text-[10px] text-gray-400 font-mono">
-                {downloadProgress >= 100 ? 'Opening installer...' : 'Direct fast download in background'}
-              </span>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={handleUpdateClick}
-              className="w-full py-4 px-8 rounded-full bg-gradient-to-r from-[#D6A84F] via-[#E5BA60] to-[#D6A84F] text-[#0B0D10] font-black text-base shadow-[0_10px_28px_rgba(214,168,79,0.35)] hover:shadow-[0_12px_32px_rgba(214,168,79,0.5)] active:scale-[0.97] transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wide"
-            >
-              <Download className="w-5 h-5 text-[#0B0D10]" />
-              <span>Update Now</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleUpdateClick}
+            className="w-full py-4 px-8 rounded-full bg-gradient-to-r from-[#D6A84F] via-[#E5BA60] to-[#D6A84F] text-[#0B0D10] font-black text-base shadow-[0_10px_28px_rgba(214,168,79,0.35)] hover:shadow-[0_12px_32px_rgba(214,168,79,0.5)] active:scale-[0.97] transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wide"
+          >
+            <Download className="w-5 h-5 text-[#0B0D10]" />
+            <span>Update Now</span>
+          </button>
 
           {/* Optional "Later" action for non-mandatory updates */}
-          {!isForceUpdate && !isDownloading && (
+          {!isForceUpdate && (
             <button
               type="button"
               onClick={handleLaterClick}
@@ -227,7 +158,7 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
         </div>
 
         <p className="mt-4 text-[11px] text-[#6B7280]">
-          Instant direct update • No web page refresh required
+          Official CineVault Website • https://cinevaultapk.online/
         </p>
       </div>
     </div>
