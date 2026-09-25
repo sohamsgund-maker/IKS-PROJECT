@@ -1,25 +1,25 @@
 {
-  "latestVersionCode": 2600,
-  "latestVersionName": "2.6.0",
+  "latestVersionCode": 2610,
+  "latestVersionName": "2.6.1",
   "websiteUrl": "https://cinevaultapk.online/",
   "apkDownloadUrl": "https://cinevaultapk.online/downloads/CineVault.apk",
   "directApkUrl": "https://cinevaultapk.online/downloads/CineVault.apk",
-  "updateMessage": "Ultra-clear banners, zero-lag instant playback, and streamlined Live TV",
+  "updateMessage": "Pure player landscape mode, simplified Live TV & Downloads, clean section titles",
   "forceUpdate": true,
-  "version": "2.6.0",
-  "versionCode": 2600,
-  "releaseDate": "2026-09-24",
+  "version": "2.6.1",
+  "versionCode": 2610,
+  "releaseDate": "2026-09-25",
   "changelog": [
-    "Ultra-clear, crystal-sharp banners across all movies and series",
-    "Zero-lag instant playback startup optimization",
-    "Streamlined Live TV player with locked original aspect ratio",
-    "Fixed rock-solid landscape orientation mode with back gesture support",
-    "Cleaned up UI without star clutter or redundant controls"
+    "Pure player landscape mode (only video rotates, rest of app stays in portrait)",
+    "Easy exit and recovery when live streams have connection errors",
+    "Streamlined, simple and easy-to-use Live TV player & channel guide",
+    "Simplified Downloads tab for effortless offline viewing",
+    "Removed secondary badge text from all content section headers"
   ],
   "apkUrl": "https://cinevaultapk.online/downloads/CineVault.apk",
   "mandatory": true,
   "minVersion": "2.0.0",
-  "sha256": "ce5ec3057d16b5dc30f2ab50b0c376d02d6f2c411eea4ab84d1ed650c0fa6cc2",
-  "fileSizeBytes": 9173660,
+  "sha256": "49e0b81ff98c3bb35d18fd9605df5d6cf30b420dd837addcde2c3fc5bb338ec0",
+  "fileSizeBytes": 9170112,
   "fileSizeMB": "8.7MB"
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import Hls from 'hls.js';
 import {
   Play,
@@ -19,10 +19,7 @@ import {
   RotateCcw,
   Loader2,
   AlertCircle,
-  Sun,
-  SunMedium,
-  SunDim,
-  Volume1,
+  ChevronLeft,
   Globe,
 } from 'lucide-react';
 import {
@@ -35,14 +32,13 @@ interface LiveTvViewProps {
   onSelectMovie?: (movie: any) => void;
 }
 
-export const LiveTvView: React.FC<LiveTvViewProps> = () => {
+export const LiveTvView: React.FC<LiveTvViewProps> = memo(() => {
   const allChannels: LiveChannel[] = useMemo(() => liveTvService.getChannels(), []);
   const [selectedCategory, setSelectedCategory] = useState<ChannelCategory>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeChannel, setActiveChannel] = useState<LiveChannel>(allChannels[0]);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [volume, setVolume] = useState<number>(1);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,36 +46,49 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
   const [needsUnmute, setNeedsUnmute] = useState<boolean>(false);
   const [showControls, setShowControls] = useState<boolean>(true);
 
-  const handleRetryStream = useCallback(() => {
-    setError(null);
-    setIsLoading(true);
-    setReloadKey((prev) => prev + 1);
-  }, []);
-
-  // Screen Brightness & Gesture Navigation State (for Landscape)
-  const [brightness, setBrightness] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem('cinevault_livetv_brightness');
-      return saved ? Math.max(0.1, Math.min(1.0, parseFloat(saved))) : 1.0;
-    } catch {
-      return 1.0;
+  // Track portrait orientation of the phone screen
+  const [isPortrait, setIsPortrait] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerHeight >= window.innerWidth;
     }
+    return true;
   });
-  const [activeGesture, setActiveGesture] = useState<'brightness' | 'volume' | null>(null);
-  const [gestureValue, setGestureValue] = useState<number>(100);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const gestureTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const touchStartPosRef = useRef<{
-    startX: number;
-    startY: number;
-    side: 'left' | 'right' | 'center';
-    initialVal: number;
-    hasMoved: boolean;
-  } | null>(null);
+
+  // Ensure Android app activity stays locked in portrait mode at all times
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).AndroidDevice?.setOrientation) {
+      try {
+        (window as any).AndroidDevice.setOrientation('portrait');
+        (window as any).AndroidDevice.setFullscreen(false);
+      } catch {}
+    }
+    return () => {
+      if (typeof window !== 'undefined' && (window as any).AndroidDevice?.setOrientation) {
+        try {
+          (window as any).AndroidDevice.setOrientation('portrait');
+          (window as any).AndroidDevice.setFullscreen(false);
+        } catch {}
+      }
+    };
+  }, []);
+
+  // Update portrait flag on resize or device rotation
+  useEffect(() => {
+    const handleResize = () => {
+      setIsPortrait(window.innerHeight >= window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   // Filtered Channels based on Category and Search Query
   const filteredChannels = useMemo(() => {
@@ -138,7 +147,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
     }
   }, [isMuted]);
 
-  // Load & Stream the Active Channel (Automatic Playback on Change & on Retry)
+  // Load & Stream the Active Channel
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !activeChannel) return;
@@ -149,15 +158,14 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
 
     let currentLoadedUrl = activeChannel.streamUrl;
     let retryAttempts = 0;
-    const maxRetries = 2;
+    const maxRetries = 3;
 
-    // Destroy existing Hls instance if any
     if (hlsRef.current) {
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
 
-    // 1. Try HLS.js when supported (standard desktop & android browsers)
+    // 1. Try HLS.js when supported
     if (Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
@@ -187,7 +195,6 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
 
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
-          // Do not nudge currentTime; allow initial live buffer to naturally fill and decode
           return;
         }
         if (data.fatal) {
@@ -225,7 +232,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
         }
       });
     }
-    // 2. Native HLS support (Safari iOS & native Android WebView)
+    // 2. Native HLS support
     else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = currentLoadedUrl;
       video.addEventListener('loadedmetadata', () => {
@@ -243,7 +250,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
       };
       video.addEventListener('error', handleError, { once: true });
     } else {
-      setError('Live streaming is not supported on this browser.');
+      setError('Live streaming is not supported on this device.');
       setIsLoading(false);
     }
 
@@ -255,11 +262,19 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
     };
   }, [activeChannel, reloadKey, startAutoplay]);
 
-  // Channel Selection Handler (Instant Channel Switching)
+  const handleRetryStream = useCallback(() => {
+    setError(null);
+    setIsLoading(true);
+    setReloadKey((prev) => prev + 1);
+  }, []);
+
+  // Channel Selection Handler
   const handleSelectChannel = useCallback((channel: LiveChannel) => {
     if (channel.id === activeChannel.id) return;
     queueMicrotask(() => { if (navigator.vibrate) navigator.vibrate(8); });
     setActiveChannel(channel);
+    setError(null);
+    setIsLoading(true);
   }, [activeChannel.id]);
 
   // Play / Pause Toggle
@@ -277,7 +292,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
     triggerShowControls();
   }, [triggerShowControls]);
 
-  // Mute Toggle & Unmute Action
+  // Mute Toggle
   const toggleMute = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -286,88 +301,22 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
     setIsMuted(next);
     if (!next) {
       setNeedsUnmute(false);
-      if (volume === 0) {
-        setVolume(1);
-        video.volume = 1;
-      }
+      video.volume = 1;
     }
-  }, [volume]);
+  }, []);
 
-  // Exit Fullscreen & Return to Portrait
+  // Fullscreen / Landscape Toggle (Pure player landscape — keeps entire app safely in portrait)
   const exitFullscreenMode = useCallback(() => {
-    try {
-      if (typeof window !== 'undefined' && (window as any).AndroidDevice?.setOrientation) {
-        (window as any).AndroidDevice.setOrientation('portrait');
-        (window as any).AndroidDevice.setFullscreen(false);
-      }
-      const screenOrientation = window.screen?.orientation as any;
-      if (screenOrientation && typeof screenOrientation.unlock === 'function') {
-        screenOrientation.unlock();
-      }
-      if (screenOrientation && typeof screenOrientation.lock === 'function') {
-        screenOrientation.lock('portrait').catch(() => {});
-      }
-      if (document.fullscreenElement && typeof document.exitFullscreen === 'function') {
-        document.exitFullscreen().catch(() => {});
-      }
-    } catch {}
+    queueMicrotask(() => { if (navigator.vibrate) navigator.vibrate(8); });
     setIsFullscreen(false);
+    setShowControls(true);
   }, []);
 
-  // Enter Fullscreen & Landscape
-  const enterFullscreenMode = useCallback(() => {
-    const container = playerContainerRef.current;
-    setIsFullscreen(true);
-
-    try {
-      if (typeof window !== 'undefined' && (window as any).AndroidDevice?.setOrientation) {
-        (window as any).AndroidDevice.setOrientation('landscape');
-        (window as any).AndroidDevice.setFullscreen(true);
-      }
-      const screenOrientation = window.screen?.orientation as any;
-      if (screenOrientation && typeof screenOrientation.lock === 'function') {
-        screenOrientation.lock('landscape').catch(() => {});
-      }
-      if (container && typeof container.requestFullscreen === 'function') {
-        container.requestFullscreen().catch(() => {});
-      }
-    } catch {}
-  }, []);
-
-  // Fullscreen Handler Toggle
   const toggleFullscreen = useCallback(() => {
     queueMicrotask(() => { if (navigator.vibrate) navigator.vibrate(8); });
-    setIsFullscreen((prev) => {
-      const next = !prev;
-      if (next) {
-        enterFullscreenMode();
-      } else {
-        exitFullscreenMode();
-      }
-      return next;
-    });
-  }, [enterFullscreenMode, exitFullscreenMode]);
-
-  // Synchronize orientation state from window/screen events
-  useEffect(() => {
-    const handleOrientation = () => {
-      const isLandscape = window.innerWidth > window.innerHeight;
-      setIsFullscreen(isLandscape);
-    };
-    window.addEventListener('resize', handleOrientation);
-    window.addEventListener('orientationchange', handleOrientation);
-    return () => {
-      window.removeEventListener('resize', handleOrientation);
-      window.removeEventListener('orientationchange', handleOrientation);
-    };
+    setIsFullscreen((prev) => !prev);
+    setShowControls(true);
   }, []);
-
-  // Clean orientation release on unmount only
-  useEffect(() => {
-    return () => {
-      exitFullscreenMode();
-    };
-  }, [exitFullscreenMode]);
 
   // Handle Hardware Back Button while in Fullscreen
   useEffect(() => {
@@ -399,7 +348,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
     };
   }, [isFullscreen]);
 
-  // Video Buffer Event Handlers (No artificial currentTime nudges)
+  // Video Native Event Handlers
   const handleVideoWaiting = useCallback(() => {
     setIsLoading(true);
   }, []);
@@ -409,141 +358,27 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
     setIsPlaying(true);
   }, []);
 
+  const handleVideoPause = useCallback(() => {
+    setIsPlaying(false);
+  }, []);
+
   const handleVideoStalled = useCallback(() => {
-    // Normal HTML5 video buffering event — do not artificially nudge currentTime
+    // Stalled event handled naturally by Hls.js buffer
   }, []);
 
-  // Player surface tap toggles controls visibility
-  const handlePlayerTap = useCallback(() => {
-    triggerShowControls();
-  }, [triggerShowControls]);
-
-  // Touch Gesture Handlers for Brightness (Left half) and Volume (Right half) in Fullscreen Landscape
-  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isFullscreen || e.touches.length !== 1) return;
-    const touch = e.touches[0];
-    const rect = playerContainerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = touch.clientX - rect.left;
-
-    let side: 'left' | 'right' | 'center' = 'center';
-    let initialVal = 1;
-    if (x < rect.width * 0.45) {
-      side = 'left';
-      initialVal = brightness;
-    } else if (x > rect.width * 0.55) {
-      side = 'right';
-      const v = videoRef.current ? videoRef.current.volume : volume;
-      initialVal = isMuted ? 0 : v;
-    }
-
-    touchStartPosRef.current = {
-      startX: touch.clientX,
-      startY: touch.clientY,
-      side,
-      initialVal,
-      hasMoved: false,
-    };
-  }, [isFullscreen, brightness, volume, isMuted]);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!touchStartPosRef.current || e.touches.length !== 1) return;
-    const touch = e.touches[0];
-    const { startX, startY, side, initialVal } = touchStartPosRef.current;
-    if (side === 'center') return;
-
-    const deltaY = startY - touch.clientY;
-    const deltaX = Math.abs(touch.clientX - startX);
-
-    if (!touchStartPosRef.current.hasMoved) {
-      if (Math.abs(deltaY) < 8) return;
-      if (deltaX > Math.abs(deltaY)) {
-        touchStartPosRef.current.side = 'center';
-        return;
-      }
-      touchStartPosRef.current.hasMoved = true;
-    }
-
-    const sensitivity = window.innerHeight * 0.65;
-    const change = deltaY / sensitivity;
-
-    if (gestureTimeoutRef.current) {
-      clearTimeout(gestureTimeoutRef.current);
-      gestureTimeoutRef.current = null;
-    }
-
-    if (side === 'left') {
-      const nextBrightness = Math.max(0.1, Math.min(1.0, initialVal + change));
-      setBrightness(nextBrightness);
-      try {
-        localStorage.setItem('cinevault_livetv_brightness', nextBrightness.toFixed(2));
-      } catch {}
-      setActiveGesture('brightness');
-      setGestureValue(Math.round(nextBrightness * 100));
-    } else if (side === 'right') {
-      const nextVol = Math.max(0, Math.min(1.0, initialVal + change));
-      if (videoRef.current) {
-        videoRef.current.volume = nextVol;
-        if (nextVol > 0 && videoRef.current.muted) {
-          videoRef.current.muted = false;
-          setIsMuted(false);
-        }
-      }
-      setVolume(nextVol);
-      if (nextVol === 0) {
-        setIsMuted(true);
-      } else if (isMuted) {
-        setIsMuted(false);
-      }
-      setActiveGesture('volume');
-      setGestureValue(Math.round(nextVol * 100));
-    }
-  }, [isMuted]);
-
-  const handleTouchEnd = useCallback(() => {
-    if (touchStartPosRef.current?.hasMoved) {
-      if (gestureTimeoutRef.current) clearTimeout(gestureTimeoutRef.current);
-      gestureTimeoutRef.current = setTimeout(() => {
-        setActiveGesture(null);
-      }, 1000);
-    }
-    setTimeout(() => {
-      touchStartPosRef.current = null;
-    }, 50);
-  }, []);
-
-  // Category Icon Resolver
+  // Render Category Icon Helper
   const renderCategoryIcon = (catId: ChannelCategory) => {
     switch (catId) {
+      case 'all': return <Radio className="w-3.5 h-3.5" />;
       case 'hindi-news':
-      case 'english-news':
-        return <Radio className="w-3.5 h-3.5" />;
-      case 'hindi-movies':
-        return <Film className="w-3.5 h-3.5" />;
-      case 'hindi-entertainment':
-        return <Tv className="w-3.5 h-3.5" />;
-      case 'sports':
-        return <Trophy className="w-3.5 h-3.5" />;
-      case 'music':
-        return <Music className="w-3.5 h-3.5" />;
-      case 'kids':
-        return <Smile className="w-3.5 h-3.5" />;
-      case 'documentary':
-        return <Compass className="w-3.5 h-3.5" />;
-      case 'marathi':
-      case 'tamil':
-      case 'telugu':
-      case 'malayalam':
-      case 'kannada':
-      case 'bengali':
-      case 'gujarati':
-      case 'punjabi':
-      case 'odia':
-      case 'assamese':
-      case 'bhojpuri':
-        return <Globe className="w-3.5 h-3.5" />;
-      default:
-        return <Sparkles className="w-3.5 h-3.5" />;
+      case 'english-news': return <Tv className="w-3.5 h-3.5" />;
+      case 'hindi-movies': return <Film className="w-3.5 h-3.5" />;
+      case 'sports': return <Trophy className="w-3.5 h-3.5" />;
+      case 'music': return <Music className="w-3.5 h-3.5" />;
+      case 'hindi-entertainment': return <Sparkles className="w-3.5 h-3.5" />;
+      case 'kids': return <Smile className="w-3.5 h-3.5" />;
+      case 'documentary': return <Compass className="w-3.5 h-3.5" />;
+      default: return <Globe className="w-3.5 h-3.5" />;
     }
   };
 
@@ -572,7 +407,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search Aaj Tak, Goldmines, Sports..."
+              placeholder="Search Aaj Tak, Star, Sports..."
               className="w-full pl-9 pr-3 py-1.5 sm:py-2 rounded-xl bg-[#15181D] border border-[#292E35] text-xs sm:text-sm text-[#F5F5F2] placeholder-gray-500 focus:outline-none focus:border-[#F0B429] transition-colors"
             />
             {searchQuery && (
@@ -591,7 +426,6 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
         <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
           {LIVE_CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.id;
-            const count = cat.id === 'all' ? allChannels.length : allChannels.filter(c => c.category === cat.id).length;
             return (
               <button
                 key={cat.id}
@@ -600,7 +434,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                   queueMicrotask(() => { if (navigator.vibrate) navigator.vibrate(8); });
                   setSelectedCategory(cat.id);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer press-feedback border ${
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer border ${
                   isSelected
                     ? 'bg-[#F0B429] text-[#0B0D10] border-[#F0B429] shadow-[0_2px_10px_rgba(240,180,41,0.3)]'
                     : 'bg-[#15181D] text-gray-300 hover:text-white hover:bg-[#1D2127] border-[#292E35]'
@@ -608,11 +442,6 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
               >
                 {renderCategoryIcon(cat.id)}
                 <span>{cat.name}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
-                  isSelected ? 'bg-[#0B0D10]/20 text-[#0B0D10] font-black' : 'bg-[#292E35] text-gray-400'
-                }`}>
-                  {count}
-                </span>
               </button>
             );
           })}
@@ -621,24 +450,34 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
 
       {/* Main Content Layout: Live Player + Channel Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2">
-        {/* Sticky Live Player Container */}
         <div className="flex flex-col gap-3">
+          {/* Live Player Container (Supports Pure CSS Player Landscape) */}
           <div
             ref={playerContainerRef}
-            onMouseMove={triggerShowControls}
-            onClick={handlePlayerTap}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onTouchCancel={handleTouchEnd}
-            style={{
-              transform: 'translate3d(0, 0, 0)',
-              WebkitTransform: 'translate3d(0, 0, 0)',
-              willChange: 'transform',
-              backfaceVisibility: 'hidden',
-            }}
+            onClick={triggerShowControls}
+            style={
+              isFullscreen
+                ? isPortrait
+                  ? {
+                      position: 'fixed',
+                      top: '50%',
+                      left: '50%',
+                      width: '100vh',
+                      height: '100vw',
+                      transform: 'translate(-50%, -50%) rotate(90deg)',
+                      zIndex: 9999,
+                    }
+                  : {
+                      position: 'fixed',
+                      inset: 0,
+                      width: '100vw',
+                      height: '100vh',
+                      zIndex: 9999,
+                    }
+                : undefined
+            }
             className={`relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-[#292E35] select-none ${
-              isFullscreen ? 'fixed inset-0 z-[9999] rounded-none w-screen h-screen' : ''
+              isFullscreen ? 'rounded-none' : ''
             }`}
           >
             {/* HTML5 Video Tag — Default original fit (object-contain) */}
@@ -646,75 +485,12 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
               ref={videoRef}
               playsInline
               autoPlay
-              style={{
-                transform: 'translate3d(0, 0, 0)',
-                WebkitTransform: 'translate3d(0, 0, 0)',
-                willChange: 'transform',
-              }}
               className="w-full h-full object-contain bg-black"
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
               onWaiting={handleVideoWaiting}
               onPlaying={handleVideoPlaying}
+              onPause={handleVideoPause}
               onStalled={handleVideoStalled}
             />
-
-            {/* Software Brightness Scrim */}
-            <div
-              className="absolute inset-0 pointer-events-none z-10 transition-opacity duration-100"
-              style={{
-                backgroundColor: '#000000',
-                opacity: Math.max(0, 1 - brightness),
-              }}
-            />
-
-            {/* Left Edge: Brightness Gesture HUD */}
-            {activeGesture === 'brightness' && (
-              <div className="absolute left-6 sm:left-10 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center bg-[#15181D]/90 backdrop-blur-xl border border-white/20 px-3 py-4 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.85)] pointer-events-none animate-fade-in min-w-[56px]">
-                <div className="text-[#F0B429] mb-3">
-                  {gestureValue > 60 ? (
-                    <Sun className="w-6 h-6" />
-                  ) : gestureValue > 30 ? (
-                    <SunMedium className="w-6 h-6" />
-                  ) : (
-                    <SunDim className="w-6 h-6" />
-                  )}
-                </div>
-                <div className="relative w-2 h-28 sm:h-36 bg-white/20 rounded-full overflow-hidden flex flex-col justify-end">
-                  <div
-                    className="w-full bg-gradient-to-t from-[#F0B429] to-[#FFF0B3] rounded-full transition-all duration-75"
-                    style={{ height: `${gestureValue}%` }}
-                  />
-                </div>
-                <span className="mt-3 text-[11px] font-mono font-bold text-white tracking-wider">
-                  {gestureValue}%
-                </span>
-              </div>
-            )}
-
-            {/* Right Edge: Volume Gesture HUD */}
-            {activeGesture === 'volume' && (
-              <div className="absolute right-6 sm:right-10 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center bg-[#15181D]/90 backdrop-blur-xl border border-white/20 px-3 py-4 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.85)] pointer-events-none animate-fade-in min-w-[56px]">
-                <div className="text-[#F0B429] mb-3">
-                  {gestureValue === 0 || isMuted ? (
-                    <VolumeX className="w-6 h-6 text-red-400" />
-                  ) : gestureValue < 50 ? (
-                    <Volume1 className="w-6 h-6" />
-                  ) : (
-                    <Volume2 className="w-6 h-6" />
-                  )}
-                </div>
-                <div className="relative w-2 h-28 sm:h-36 bg-white/20 rounded-full overflow-hidden flex flex-col justify-end">
-                  <div
-                    className="w-full bg-gradient-to-t from-[#F0B429] to-[#FFF0B3] rounded-full transition-all duration-75"
-                    style={{ height: `${gestureValue}%` }}
-                  />
-                </div>
-                <span className="mt-3 text-[11px] font-mono font-bold text-white tracking-wider">
-                  {gestureValue}%
-                </span>
-              </div>
-            )}
 
             {/* Tap to Unmute Audio Banner */}
             {needsUnmute && !isLoading && (
@@ -740,10 +516,10 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
               </div>
             )}
 
-            {/* Error Screen with Retry & Switch Channel */}
+            {/* Error Screen with Retry & Back to Channels */}
             {error && (
-              <div className="absolute inset-0 z-20 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center gap-3">
-                <AlertCircle className="w-9 h-9 sm:w-11 sm:h-11 text-red-400" />
+              <div className="absolute inset-0 z-30 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center gap-3">
+                <AlertCircle className="w-10 h-10 text-red-400" />
                 <h3 className="text-sm sm:text-base font-bold text-white">
                   Broadcast Temporarily Unavailable
                 </h3>
@@ -754,11 +530,21 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                   <button
                     type="button"
                     onClick={handleRetryStream}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#F0B429] text-[#0B0D10] text-xs font-bold cursor-pointer press-feedback shadow-[0_4px_16px_rgba(240,180,41,0.35)]"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#F0B429] text-[#0B0D10] text-xs font-bold cursor-pointer active:scale-95 shadow-[0_4px_16px_rgba(240,180,41,0.35)]"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Retry Broadcast</span>
                   </button>
+                  {isFullscreen && (
+                    <button
+                      type="button"
+                      onClick={exitFullscreenMode}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 cursor-pointer active:scale-95"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      <span>Back to Channels</span>
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -770,14 +556,23 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
               }`}
             >
               {/* Top Controls Bar */}
-              <div
-                className="flex items-center justify-between"
-                style={{
-                  paddingLeft: 'max(8px, env(safe-area-inset-left, 8px))',
-                  paddingRight: 'max(8px, env(safe-area-inset-right, 8px))',
-                }}
-              >
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  {/* Dedicated Back Button when in Landscape/Fullscreen */}
+                  {isFullscreen && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        exitFullscreenMode();
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white font-bold text-xs border border-white/20 active:scale-95 transition-all cursor-pointer mr-1"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      <span>Back</span>
+                    </button>
+                  )}
+
                   <div className="w-8 h-8 rounded-lg bg-black/60 border border-white/10 p-1 flex items-center justify-center overflow-hidden">
                     <img
                       src={activeChannel.logo}
@@ -809,15 +604,9 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
               </div>
 
               {/* Bottom Controls Bar */}
-              <div
-                className="flex items-center justify-between"
-                style={{
-                  paddingLeft: 'max(8px, env(safe-area-inset-left, 8px))',
-                  paddingRight: 'max(8px, env(safe-area-inset-right, 8px))',
-                }}
-              >
-                {/* Left: Play/Pause, Mute & Landscape Controls */}
-                <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center justify-between">
+                {/* Left: Play/Pause & Mute */}
+                <div className="flex items-center gap-2.5">
                   <button
                     type="button"
                     onClick={(e) => {
@@ -841,70 +630,9 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                   >
                     {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-[#F0B429]" />}
                   </button>
-
-                  {/* Landscape On-Screen Brightness & Volume Sliders */}
-                  {isFullscreen && (
-                    <>
-                      <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md ml-1">
-                        <Sun className="w-3.5 h-3.5 text-[#F0B429]" />
-                        <input
-                          type="range"
-                          min={0.1}
-                          max={1.0}
-                          step={0.02}
-                          value={brightness}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            setBrightness(val);
-                            try {
-                              localStorage.setItem('cinevault_livetv_brightness', val.toFixed(2));
-                            } catch {}
-                            setActiveGesture('brightness');
-                            setGestureValue(Math.round(val * 100));
-                            if (gestureTimeoutRef.current) clearTimeout(gestureTimeoutRef.current);
-                            gestureTimeoutRef.current = setTimeout(() => setActiveGesture(null), 1000);
-                          }}
-                          className="w-16 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#F0B429]"
-                          title="Screen Brightness"
-                        />
-                        <span className="font-mono text-[10px] text-gray-300 w-7 text-right">{Math.round(brightness * 100)}%</span>
-                      </div>
-
-                      <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md">
-                        <Volume2 className="w-3.5 h-3.5 text-[#F0B429]" />
-                        <input
-                          type="range"
-                          min={0}
-                          max={1}
-                          step={0.02}
-                          value={isMuted ? 0 : volume}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (videoRef.current) {
-                              videoRef.current.volume = val;
-                              if (val > 0 && videoRef.current.muted) {
-                                videoRef.current.muted = false;
-                                setIsMuted(false);
-                              }
-                            }
-                            setVolume(val);
-                            if (val === 0) setIsMuted(true);
-                            else if (isMuted) setIsMuted(false);
-                            setActiveGesture('volume');
-                            setGestureValue(Math.round(val * 100));
-                            if (gestureTimeoutRef.current) clearTimeout(gestureTimeoutRef.current);
-                            gestureTimeoutRef.current = setTimeout(() => setActiveGesture(null), 1000);
-                          }}
-                          className="w-16 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#F0B429]"
-                          title="Audio Volume"
-                        />
-                        <span className="font-mono text-[10px] text-gray-300 w-7 text-right">{isMuted ? '0%' : `${Math.round(volume * 100)}%`}</span>
-                      </div>
-                    </>
-                  )}
                 </div>
 
-                {/* Right: Fullscreen Toggle Only */}
+                {/* Right: Fullscreen Toggle */}
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -913,7 +641,7 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
                       toggleFullscreen();
                     }}
                     className="w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center cursor-pointer active:scale-95 transition-all"
-                    title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                    title={isFullscreen ? 'Exit Fullscreen' : 'Landscape Mode'}
                   >
                     {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
                   </button>
@@ -955,15 +683,12 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
             </div>
           </div>
 
-          {/* Channel Grid Section */}
+          {/* Channel Guide Grid Section */}
           <div className="mt-2">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold text-gray-200">
                 Channel Guide ({filteredChannels.length})
               </h3>
-              <span className="text-[11px] text-gray-400">
-                Tap any channel to tune in
-              </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3">
@@ -1022,4 +747,6 @@ export const LiveTvView: React.FC<LiveTvViewProps> = () => {
       </div>
     </div>
   );
-};
+});
+
+LiveTvView.displayName = 'LiveTvView';

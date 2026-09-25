@@ -28,16 +28,9 @@ export const MovieRow: React.FC<MovieRowProps> = memo(({ shelf, onSelectMovie, p
     <section className="relative py-2.5 sm:py-3.5 cv-lazy-section">
       {/* Shelf Header */}
       <div className="flex items-baseline justify-between px-4 sm:px-6 md:px-8 mb-2 sm:mb-2.5">
-        <div className="flex items-center gap-2.5">
-          <h3 className="text-base sm:text-lg md:text-xl font-bold text-[#F5F5F2] tracking-tight font-headline">
-            {shelf.title}
-          </h3>
-          {shelf.badge && (
-            <span className="text-[10px] sm:text-[11px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#F0B429]/10 text-[#F0B429] border border-[#F0B429]/30 uppercase font-mono shadow-sm">
-              {shelf.badge}
-            </span>
-          )}
-        </div>
+        <h3 className="text-base sm:text-lg md:text-xl font-bold text-[#F5F5F2] tracking-tight font-headline">
+          {shelf.title}
+        </h3>
       </div>
 
       {/* Row Carousel Area */}
